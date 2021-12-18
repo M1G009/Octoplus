@@ -7,7 +7,7 @@ import toast from "../../components/Toast";
 import styles from '../../styles/Auth.module.scss'
 import Router from 'next/router'
 import Layout from '../../components/layout'
-import Logo from '../../public/images/logo_auth.svg'
+import Logo from '../../public/images/Logo_auth.svg'
 import { setCookies } from 'cookies-next'
 import { withAuthSync } from '../../utils/auth'
 

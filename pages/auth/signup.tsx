@@ -5,7 +5,7 @@ import styles from '../../styles/Auth.module.scss'
 import Router from 'next/router'
 import Layout from '../../components/layout'
 import Image from 'next/image'
-import Logo from '../../public/images/logo_auth.svg'
+import Logo from '../../public/images/Logo_auth.svg'
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import { Formik, Field, Form, FormikHelpers } from 'formik';
 import { withAuthSync } from '../../utils/auth'
