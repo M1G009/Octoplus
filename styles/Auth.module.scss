@@ -1,0 +1,264 @@
+$darkBlue: #091e42;
+$lightBlue: #2236f1;
+
+$XSmall: 425px;
+$Small: 575.98px;
+$Medium: 991px;
+$Large: 1200px;
+$XLarge: 1339px;
+$XXLarge: 1600px;
+
+.authContainer {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    background-image: url("../public//images//auth_background.svg");
+    background-repeat: no-repeat;
+    background-size: 100% auto;
+    background-position: bottom;
+    padding: 15px;
+
+    .logo {
+        position: relative;
+        width: 198px;
+        max-width: 100%;
+        aspect-ratio: 198/48;
+        margin-bottom: 30px;
+
+        @media (max-width: $Large) {
+            margin-bottom: 15px;
+        }
+    }
+
+    .authForm {
+        width: 550px;
+        max-width: 100%;
+        margin: 0 auto;
+        padding: 40px;
+        background: #ffffff;
+        border: 1px solid rgba(0, 0, 0, 0.12);
+        box-shadow: 0px 40px 80px rgb(0 0 0 / 5%), 0px 8px 13px rgb(0 0 0 / 3%);
+        border-radius: 20px;
+
+        form {
+            display: flex;
+            flex-flow: column;
+
+            .titleBox {
+                text-align: center;
+
+                h3 {
+                    font-weight: 500;
+                    font-size: 25px;
+                    color: $darkBlue;
+                }
+
+                p {
+                    font-size: 16px;
+                    color: #b5b5c3;
+                    a {
+                        color: $lightBlue;
+                    }
+                }
+
+                @media (max-width: $XLarge) {
+                    h3{
+                        font-size: 22px;
+                        margin-bottom: 0px;
+                    }
+
+                    p{
+                        margin-bottom: 5px
+                    }
+                }
+            }
+
+            .inputBox {
+                display: flex;
+                flex-direction: column;
+                margin-bottom: 28px;
+
+                label {
+                    font-weight: 500;
+                    font-size: 17px;
+                    color: $darkBlue;
+                    margin-bottom: 12px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+
+                    a {
+                        color: #2236f1;
+                    }
+                }
+
+                input,
+                select {
+                    background: #f4f5f7;
+                    border: 2px solid #0000001f;
+                    border-radius: 4px;
+                    padding: 12px;
+                    font-size: 16px;
+                    color: $darkBlue;
+                    outline: none;
+                }
+
+                input.blue,
+                select.blue {
+                    border-color: $lightBlue;
+                }
+
+                input.red,
+                select.red {
+                    border-color: #f12222;
+                }
+
+                svg {
+                    color: #8993a4;
+                    font-size: 20px;
+                    position: absolute;
+                    right: 15px;
+                    top: 16px;
+                    cursor: pointer;
+                }
+
+                select {
+                    background-image: url("../public/images/down_arrow.svg");
+                    background-position: calc(100% - 14px) 50%;
+                    background-size: 18px;
+                    background-repeat: no-repeat;
+                    -webkit-appearance: none;
+                    -moz-appearance: none;
+                }
+
+                @media (max-width: $XXLarge) {
+                    margin-bottom: 15px;
+
+                    label {
+                        margin-bottom: 5px;
+                    }
+
+                    input,
+                    select {
+                        padding: 8px;
+                    }
+
+                    svg {
+                        right: 10px;
+                        top: 12px;
+                    }
+                }
+
+                @media (max-width: $XLarge) {
+                    margin-bottom: 15px;
+
+                    label {
+                        margin-bottom: 5px;
+                    }
+
+                    input,
+                    select {
+                        padding: 8px;
+                    }
+
+                    svg {
+                        right: 10px;
+                        top: 12px;
+                    }
+                }
+
+                @media (max-width: $Large) {
+                    margin-bottom: 12px;
+
+                    input,
+                    select {
+                        padding: 5px;
+                    }
+
+                    svg {
+                        top: 10px;
+                    }
+                }
+            }
+
+            .radioBox {
+                display: flex;
+                align-items: center;
+                margin-bottom: 28px;
+
+                input {
+                    width: 16px;
+                    height: 16px;
+                }
+
+                label {
+                    margin: 0px 0px 0px 10px;
+                    color: #000000d9;
+
+                    a {
+                        color: $lightBlue;
+                    }
+                }
+
+                @media (max-width: $XXLarge) {
+                    margin-bottom: 15px;
+                }
+            }
+
+            button[type="submit"] {
+                background: $lightBlue;
+                border-radius: 4px;
+                font-weight: 500;
+                font-size: 17px;
+                color: #fff;
+                border: none;
+                padding: 12px;
+
+                &:active {
+                    opacity: 0.9;
+                }
+
+                &:disabled {
+                    opacity: 0.8;
+                }
+            }
+
+            .btnGroup {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                button {
+                    margin: 10px;
+                    width: 150px;
+                }
+                .cancelBtn {
+                    font-weight: 500;
+                    font-size: 17px;
+                    border: none;
+                    padding: 12px;
+                    background: rgba(34, 54, 241, 0.12);
+                    border-radius: 4px;
+                    color: #2236f1;
+                }
+            }
+
+            .formError {
+                color: #f12222;
+            }
+
+            .formMessage {
+                color: #2236f1;
+            }
+        }
+
+        @media (max-width: $XXLarge) {
+            padding: 25px;
+        }
+
+        @media (max-width: $XLarge) {
+            padding: 15px;
+        }
+    }
+}
