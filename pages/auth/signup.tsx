@@ -979,7 +979,7 @@ const Signup: NextPage = () => {
         username: yup.string().required("Please enter user name"),
         email: yup.string().required('Please enter email').email("Please enter valid email"),
         password: yup.string().required('Please enter password').min(8, 'Password is too short - should be 8 chars minimum'),
-        confirmpassword: yup.string().oneOf([yup.ref('password'), null], 'Passwords must match'),
+        confirmpassword: yup.string().required('Please enter confirm password').oneOf([yup.ref('password'), null], 'Passwords must match'),
         location: yup.object().shape({
             name: yup.string().required("Please select country"),
             code: yup.string().required("Please select country"),
