@@ -1,21 +1,32 @@
+// React Module Imports
 import React, { useState, useRef, useEffect } from 'react';
-import Router from 'next/router';
+
+// Next Module Imports
+import { useRouter } from 'next/router';
 import type { NextPage } from 'next'
 import Image from 'next/image'
-import { FaCamera } from "react-icons/fa";
-import { InputTextarea } from 'primereact/inputtextarea';
-import { InputText } from 'primereact/inputtext';
+
+// Prime React Imports
 import { Dropdown } from 'primereact/dropdown';
+
+// 3rd Party Imports
+import * as yup from 'yup';
+import { ErrorMessage, Formik, Field, FormikHelpers } from 'formik';
+import { FaCamera } from "react-icons/fa";
 import { ToastContainer } from "react-toastify";
-import toast from "../../components/Toast";
 
-import { withProtectSync } from "../../utils/protect"
+// Style and Component Imports
 import DashboardLayout from '../../components/DashboardLayout';
+import { withProtectSync } from "../../utils/protect"
+import toast from "../../components/Toast";
 import User from '../../public/images/user.png'
-
 import layoutStyles from '../../styles/Home.module.scss';
 import styles from '../../styles/profile.module.scss';
 import "react-toastify/dist/ReactToastify.css";
+
+// Interface/Helper Imports
+import service from '../../helper/api/api';
+
 
 export interface Access {
   create: string;
@@ -52,27 +63,12 @@ export interface ILoginUserData {
 }
 
 export interface updatedData {
-  username: {
-    error: boolean;
-    value: string;
-  };
-  Company: {
-    error: boolean;
-    value: string;
-  };
+  username: string;
+  Company: string;
   email: string;
-  country: {
-    error: boolean;
-    value: string;
-  };
-  phone_number: {
-    error: boolean;
-    value: string;
-  };
-  Language: {
-    error: boolean;
-    value: string;
-  };
+  country: string;
+  phone_number: string;
+  Language: string;
 }
 
 export interface IupdatedObject {
@@ -85,43 +81,23 @@ export interface IupdatedObject {
 }
 
 const Account: NextPage = () => {
+  const router = useRouter();
+  const [formSpinner, setFormSpinner] = useState(false);
   const imageFileRef = useRef<HTMLInputElement>(null);
   const [editProfile, setEditProfile] = useState(false);
   const [loginUserData, setLoginUserData] = useState<ILoginUserData>();
-  const [editProfileFields, setEditProfileFields] = useState<updatedData>({
-    username: { error: false, value: '' },
-    Company: { error: false, value: '' },
-    email: '',
-    country: { error: false, value: '' },
-    phone_number: { error: false, value: '' },
-    Language: { error: false, value: 'Hindi' },
-  })
-  const [saveChangeBox, setSaveChangesBox] = useState(false);
 
   useEffect(() => {
     let userData = window.localStorage.getItem('loginUserdata');
     if (userData) {
       let parseData = JSON.parse(userData);
-      // console.log(parseData);
       setLoginUserData(parseData);
-      setEditProfileFields({
-        username: { error: false, value: parseData.username },
-        Company: { error: false, value: parseData.Company },
-        email: parseData.email,
-        country: { error: false, value: parseData.country },
-        phone_number: { error: false, value: parseData.phone_number },
-        Language: { error: false, value: parseData.Language },
-      })
     }
   }, [])
 
-  const languages = [
-    { name: 'Hindi' },
-    { name: 'English' },
-    { name: 'Gujarati' },
-    { name: 'Spanish' },
-    { name: 'Russian' }
-  ];
+  const countriesData = ["Afghanistan", "Albania", "Algeria", "American Samoa", "Andorra", "Angola", "Anguilla", "Antigua", "Argentina", "Armenia", "Aruba", "Australia", "Austria", "Azerbaijan", "Bahrain", "Bangladesh", "Barbados", "Belarus", "Belgium", "Belize", "Benin", "Bermuda", "Bhutan", "Bolivia", "Bosnia and Herzegovina", "Botswana", "Brazil", "British Indian Ocean Territory", "British Virgin Islands", "Brunei", "Bulgaria", "Burkina Faso", "Burma Myanmar", "Burundi", "Cambodia", "Cameroon", "Canada", "Cape Verde", "Cayman Islands", "Central African Republic", "Chad", "Chile", "China", "Colombia", "Comoros", "Cook Islands", "Costa Rica", "Côte d'Ivoire", "Croatia", "Cuba", "Cyprus", "Czech Republic", "Democratic Republic of Congo", "Denmark", "Djibouti", "Dominica", "Dominican Republic", "Ecuador", "Egypt", "El Salvador", "Equatorial Guinea", "Eritrea", "Estonia", "Ethiopia", "Falkland Islands", "Faroe Islands", "Federated States of Micronesia", "Fiji", "Finland", "France", "French Guiana", "French Polynesia", "Gabon", "Georgia", "Germany", "Ghana", "Gibraltar", "Greece", "Greenland", "Grenada", "Guadeloupe", "Guam", "Guatemala", "Guinea", "Guinea-Bissau", "Guyana", "Haiti", "Honduras", "Hong Kong", "Hungary", "Iceland", "India", "Indonesia", "Iran", "Iraq", "Ireland", "Israel", "Italy", "Jamaica", "Japan", "Jordan", "Kazakhstan", "Kenya", "Kiribati", "Kosovo", "Kuwait", "Kyrgyzstan", "Laos", "Latvia", "Lebanon", "Lesotho", "Liberia", "Libya", "Liechtenstein", "Lithuania", "Luxembourg", "Macau", "Macedonia", "Madagascar", "Malawi", "Malaysia", "Maldives", "Mali", "Malta", "Marshall Islands", "Martinique", "Mauritania", "Mauritius", "Mayotte", "Mexico", "Moldova", "Monaco", "Mongolia", "Montenegro", "Montserrat", "Morocco", "Mozambique", "Namibia", "Nauru", "Nepal", "Netherlands", "Netherlands Antilles", "New Caledonia", "New Zealand", "Nicaragua", "Niger", "Nigeria", "Niue", "Norfolk Island", "North Korea", "Northern Mariana Islands", "Norway", "Oman", "Pakistan", "Palau", "Palestine", "Panama", "Papua New Guinea", "Paraguay", "Peru", "Philippines", "Poland", "Portugal", "Puerto Rico", "Qatar", "Republic of the Congo", "Réunion", "Romania", "Russia", "Rwanda", "Saint Barthélemy", "Saint Helena", "Saint Kitts and Nevis", "Saint Martin", "Saint Pierre and Miquelon", "Saint Vincent and the Grenadines", "Samoa", "San Marino", "São Tomé and Príncipe", "Saudi Arabia", "Senegal", "Serbia", "Seychelles", "Sierra Leone", "Singapore", "Slovakia", "Slovenia", "Solomon Islands", "Somalia", "South Africa", "South Korea", "Spain", "Sri Lanka", "St. Lucia", "Sudan", "Suriname", "Swaziland", "Sweden", "Switzerland", "Syria", "Taiwan", "Tajikistan", "Tanzania", "Thailand", "The Bahamas", "The Gambia", "Timor-Leste", "Togo", "Tokelau", "Tonga", "Trinidad and Tobago", "Tunisia", "Turkey", "Turkmenistan", "Turks and Caicos Islands", "Tuvalu", "Uganda", "Ukraine", "United Arab Emirates", "United Kingdom", "United States", "Uruguay", "US Virgin Islands", "Uzbekistan", "Vanuatu", "Vatican City", "Venezuela", "Vietnam", "Wallis and Futuna", "Yemen", "Zambia", "Zimbabwe"]
+
+  const languages = ["Abkhaz", "Afar", "Afrikaans", "Akan", "Albanian", "Amharic", "Arabic", "Aragonese", "Armenian", "Assamese", "Avaric", "Avestan", "Aymara", "Azerbaijani", "Bambara", "Bashkir", "Basque", "Belarusian", "Bengali", "Bihari", "Bislama", "Bosnian", "Breton", "Bulgarian", "Burmese", "Catalan", "Chamorro", "Chechen", "Chichewa", "Chinese", "Chuvash", "Cornish", "Corsican", "Cree", "Croatian", "Czech", "Danish", "Divehi", "Dutch", "English", "Esperanto", "Estonian", "Ewe", "Faroese", "Fijian", "Finnish", "French", "Fula", "Galician", "Georgian", "German", "Greek, Modern", "Guaraní", "Gujarati", "Haitian Creole", "Hausa", "Hebrew", "Hebrew", "Herero", "Hindi", "Hiri Motu", "Hungarian", "Interlingua", "Indonesian", "Interlingue", "Irish", "Igbo", "Inupiaq", "Ido", "Icelandic", "Italian", "Inuktitut", "Japanese", "Javanese", "Kalaallisut, Greenlandic", "Kannada", "Kanuri", "Kashmiri", "Kazakh", "Khmer", "Kikuyu, Gikuyu", "Kinyarwanda", "Kirghiz, Kyrgyz", "Komi", "Kongo", "Korean", "Kurdish", "Kwanyama, Kuanyama", "Latin", "Luxembourgish, Letzeburgesch", "Luganda", "Limburgish, Limburgan, Limburger", "Lingala", "Lao", "Lithuanian", "Luba-Katanga", "Latvian", "Manx", "Macedonian", "Malagasy", "Malay", "Malayalam", "Maltese", "Māori", "Marathi (Marāṭhī)", "Marshallese", "Mongolian", "Nauru", "Navajo, Navaho", "Norwegian Bokmål", "North Ndebele", "Nepali", "Ndonga", "Norwegian Nynorsk", "Norwegian", "Nuosu", "South Ndebele", "Occitan", "Ojibwe, Ojibwa", "Oromo", "Oriya", "Ossetian, Ossetic", "Panjabi", "Pāli", "Persian", "Polish", "Pashto, Pushto", "Portuguese", "Quechua", "Romansh", "Kirundi", "Romanian, Moldavian, Moldovan", "Russian", "Sanskrit (Saṁskṛta)", "Sardinian", "Sindhi", "Northern Sami", "Samoan", "Sango", "Serbian", "Scottish", "Shona", "Sinhala, Sinhalese", "Slovak", "Slovene", "Somali", "Southern Sotho", "Spanish", "Sundanese", "Swahili", "Swati", "Swedish", "Tamil", "Telugu", "Tajik", "Thai", "Tigrinya", "Tibetan Standard, Tibetan, Central", "Turkmen", "Tagalog", "Tswana", "Tonga (Tonga Islands)", "Turkish", "Tsonga", "Tatar", "Twi", "Tahitian", "Uighur, Uyghur", "Ukrainian", "Urdu", "Uzbek", "Venda", "Vietnamese", "Volapük", "Walloon", "Welsh", "Wolof", "Western Frisian", "Xhosa", "Yiddish", "Yoruba", "Zhuang, Chuang"]
 
   const imageFileBtnHandler = () => {
     if (imageFileRef.current) {
@@ -141,35 +117,24 @@ const Account: NextPage = () => {
     reader.readAsDataURL(file);
   }
 
-  const editProfileHandler = (key: any, value: any) => {
-    let error = false;
-    if (!value.length) {
-      error = true
-    }
-    setEditProfileFields((prevState) => ({ ...prevState, [key]: { error, value } }));
-  }
+  const validationSchema = yup.object().shape({
+    username: yup.string().required('Please enter user name'),
+    Company: yup.string().required('Please enter company'),
+    email: yup.string().required('Please enter email').email("Please enter valid email"),
+    country: yup.string().required('Please select country'),
+    phone_number: yup.string().required('Please enter phone number'),
+    Language: yup.string().required('Please select language')
+  });
 
-  const updateProfileHandler = async () => {
+  // .matches(/^(\+\d{1,3}[- ]?)?\d{10}$/i , 'Please enter valid phone number')
+
+  const updateProfileHandler = async (userData: any) => {
     try {
-      if (!editProfileFields.username.value || !editProfileFields.Company.value || !editProfileFields.country.value || !editProfileFields.phone_number.value || !editProfileFields.Language.value) {
-        return toast({ type: "error", message: "Please Enter Correct Value" });;
-      }
-      let updatedObject: IupdatedObject = {} as IupdatedObject;
-      if (loginUserData) {
-        if (!(loginUserData.username == editProfileFields.username.value)) {
-          updatedObject['username'] = editProfileFields.username.value;
-        }
-        if (!(loginUserData.Company == editProfileFields.Company.value)) {
-          updatedObject['Company'] = editProfileFields.Company.value;
-        }
-        if (!(loginUserData.country == editProfileFields.country.value)) {
-          updatedObject['country'] = editProfileFields.country.value;
-        }
-        if (!(loginUserData.phone_number == editProfileFields.phone_number.value)) {
-          updatedObject['phone_number'] = editProfileFields.phone_number.value;
-        }
-        if (!(loginUserData.Language == editProfileFields.Language.value)) {
-          updatedObject['Language'] = editProfileFields.Language.value;
+      let updateUser = JSON.parse(userData);
+      delete updateUser.email
+      for (const key in updateUser) {
+        if (loginUserData && updateUser[key] == loginUserData[key as keyof updatedData]) {
+          delete updateUser[key];
         }
       }
 
@@ -179,68 +144,46 @@ const Account: NextPage = () => {
         window.localStorage.removeItem("authToken")
         window.localStorage.removeItem("ValidUser")
         window.localStorage.removeItem('loginUserdata');
-        return Router.push('/auth');
+        return router.push('/auth');
       }
 
-      if (Object.keys(updatedObject).length) {
-        setSaveChangesBox(true);
-        fetch(`${process.env.API_BASE_URL}/profile_update`, {
+      if (Object.keys(updateUser).length) {
+        setFormSpinner(true);
+        const { data } = await service({
+          url: `${process.env.API_BASE_URL}/profile_update`,
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) },
-          body: JSON.stringify(updatedObject),
-        })
-          .then(res => res.json())
-          .then(async res => {
-            if (res.status != 200) {
-              await toast({ type: "error", message: res.message });
-              setSaveChangesBox(false);
-              return setEditProfile(false);
-            }
+          data: userData,
+          headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
+        });
 
-            await toast({ type: "success", message: "Profile update successful" });
-            if (loginUserData) {
-              let newProfile = loginUserData;
-              if (updatedObject['username']) {
-                newProfile.username = updatedObject['username'];
-              }
-              if (updatedObject['Company']) {
-                newProfile.Company = updatedObject['Company'];
-              }
-              if (updatedObject['country']) {
-                newProfile.country = updatedObject['country'];
-              }
-              if (updatedObject['phone_number']) {
-                newProfile.phone_number = updatedObject['phone_number'];
-              }
-              if (updatedObject['Language']) {
-                newProfile.Language = updatedObject['Language'];
-              }
-              window.localStorage.setItem('loginUserdata', JSON.stringify(newProfile));
-              setLoginUserData(newProfile);
-            }
-            setSaveChangesBox(false);
-            return setEditProfile(false)
-          })
+        if (data.status != 200) {
+          await toast({ type: "error", message: data.message });
+          return setEditProfile(false);
+        }
+
+        await toast({ type: "success", message: "Profile update successful" });
+        if (loginUserData) {
+          let newProfile = loginUserData;
+          for (const key in updateUser) {
+            newProfile[key as keyof updatedData] = updateUser[key]
+          }
+          window.localStorage.setItem('loginUserdata', JSON.stringify(newProfile));
+          setLoginUserData(newProfile);
+        }
+        setFormSpinner(false);
+        return setEditProfile(false)
+
       }
     } catch (err) {
-
+      await toast({ type: "error", message: err });
+      return setFormSpinner(false);
     }
   }
 
   const discardHandler = () => {
-    if (loginUserData) {
-      let parseData = loginUserData;
-      setEditProfileFields({
-        username: { error: false, value: parseData.username },
-        Company: { error: false, value: parseData.Company },
-        email: parseData.email,
-        country: { error: false, value: parseData.country },
-        phone_number: { error: false, value: parseData.phone_number },
-        Language: { error: false, value: parseData.Language },
-      })
-    }
     setEditProfile(false);
   }
+
 
   return (
     <DashboardLayout sidebar={true}>
@@ -283,73 +226,136 @@ const Account: NextPage = () => {
           </div>
         </div>
         <div className={layoutStyles.headContentBox}>
-          <div className={layoutStyles.head}>
-            <h4>Profile Detail</h4>
-            <div className={layoutStyles.editButtons}>
-              {
-                !editProfile ?
-                  <button onClick={() => setEditProfile(true)} className={layoutStyles.blueBgBtn}>Edit Profle</button>
-                  :
-                  <>
-                    <button onClick={discardHandler} className={layoutStyles.blueBtn}>Discard</button>
-                    <button disabled={saveChangeBox} onClick={updateProfileHandler} className={layoutStyles.blueBgBtn}>Save Change</button>
-                  </>
-              }
-            </div>
-          </div>
-          <div className={layoutStyles.textBox}>
-            <div className={styles.profileForm}>
-              <div className={styles.inputBox}>
-                <label htmlFor="Name">Name</label>
+          <Formik
+            enableReinitialize
+            initialValues={{
+              username: loginUserData ? loginUserData.username : '',
+              Company: loginUserData ? loginUserData.Company : '',
+              email: loginUserData ? loginUserData.email : '',
+              country: loginUserData ? loginUserData.country : 'Italy',
+              phone_number: loginUserData ? loginUserData.phone_number : '',
+              Language: loginUserData ? loginUserData.Language : 'English',
+            }}
+            validationSchema={validationSchema}
+            onSubmit={(
+              values: updatedData,
+              { setSubmitting }: FormikHelpers<updatedData>
+            ) => {
+              updateProfileHandler(JSON.stringify(values, null, 2));
+              setSubmitting(false);
+            }}
+          >
+            {props => (
+              <form onSubmit={props.handleSubmit}>
                 {
-                  editProfile ?
-                    <InputText className={editProfileFields.username.error ? styles.errorField : ''} id="Name" name="username" type="text" value={editProfileFields.username.value} onChange={(e) => editProfileHandler(e.target.name, e.target.value)} />
-                    : <p>{loginUserData ? loginUserData.username : ''}</p>
+                  formSpinner ? <div className={styles.formSpinner}>
+                    <div className={styles.loading}></div>
+                  </div> : null
                 }
-              </div>
-              <div className={styles.inputBox}>
-                <label htmlFor="Company">Company</label>
-                {
-                  editProfile ? <InputText className={editProfileFields.Company.error ? styles.errorField : ''} id="Company" name="Company" type="text" value={editProfileFields.Company.value} onChange={(e) => editProfileHandler(e.target.name, e.target.value)} /> :
-                    <p>{loginUserData ? loginUserData.Company : ''}</p>
-                }
-              </div>
-              <div className={styles.inputBox}>
-                <label htmlFor="emailAdress">Email Address</label>
-                {
-                  editProfile ? <InputText readOnly id="emailAdress" name="email" type="text" value={editProfileFields.email} /> :
-                    <p>{editProfileFields.email}</p>
-                }
-              </div>
-              <div className={styles.inputBox}>
-                <label htmlFor="Country">Country</label>
-                {
-                  editProfile ? <InputText className={editProfileFields.country.error ? styles.errorField : ''} id="Country" name="country" type="text" value={editProfileFields.country.value} onChange={(e) => editProfileHandler(e.target.name, e.target.value)} /> :
-                    <p>{loginUserData ? loginUserData.country : ''}</p>
-                }
-              </div>
-              <div className={styles.inputBox}>
-                <label htmlFor="phone_number">Phone Number</label>
-                {
-                  editProfile ? <InputText className={editProfileFields.phone_number.error ? styles.errorField : ''} id="phone_number" name="phone_number" type="text" value={editProfileFields.phone_number.value} onChange={(e) => editProfileHandler(e.target.name, e.target.value)} /> :
-                    <p>{loginUserData ? loginUserData.phone_number : ''}</p>
-                }
-              </div>
-              <div className={styles.inputBox}>
-                <label htmlFor="Language">Language</label>
-                {
-                  editProfile ?
-                    <select className={editProfileFields.Language.error ? styles.errorField + ' ' + styles.selectBox : styles.selectBox} id="Language" name="Language" value={editProfileFields.Language.value} onChange={(e) => editProfileHandler(e.target.name, e.target.value)} >
+                <div className={layoutStyles.head}>
+                  <h4>Profile Detail</h4>
+                  <div className={layoutStyles.editButtons}>
+                    {
+                      !editProfile ?
+                        <button type="button" onClick={() => setEditProfile(true)} className={layoutStyles.blueBgBtn}>Edit Profle</button>
+                        :
+                        <>
+                          <button type="button" onClick={discardHandler} className={layoutStyles.blueBtn}>Discard</button>
+                          <button type="submit" className={layoutStyles.blueBgBtn}>Save Change</button>
+                        </>
+                    }
+                  </div>
+                </div>
+                <div className={layoutStyles.textBox}>
+                  <div className={styles.profileForm}>
+                    <div className={styles.inputBox}>
+                      <label htmlFor="Name">Name</label>
                       {
-                        languages.map(lan => <option key={"language" + lan.name} value={lan.name}>{lan.name}</option>)
+                        editProfile ?
+                          <div>
+                            <Field type="text" name="username" />
+                            <ErrorMessage name="username">
+                              {(msg) => <p className={styles.error}>{msg}</p>}
+                            </ErrorMessage>
+                          </div>
+                          : <p>{loginUserData ? loginUserData.username : ''}</p>
                       }
-                    </select>
-                    :
-                    <p>{loginUserData ? loginUserData.Language : ''}</p>
-                }
-              </div>
-            </div>
-          </div>
+                    </div>
+                    <div className={styles.inputBox}>
+                      <label htmlFor="Company">Company</label>
+                      {
+                        editProfile ?
+                          <div>
+                            <Field type="text" name="Company" />
+                            <ErrorMessage name="Company">
+                              {(msg) => <p className={styles.error}>{msg}</p>}
+                            </ErrorMessage>
+                          </div>
+                          :
+                          <p>{loginUserData ? loginUserData.Company : ''}</p>
+                      }
+                    </div>
+                    <div className={styles.inputBox}>
+                      <label htmlFor="emailAdress">Email Address</label>
+                      {
+                        editProfile ?
+                          <div>
+                            <Field type="email" name="email" readOnly />
+                            <ErrorMessage name="email">
+                              {(msg) => <p className={styles.error}>{msg}</p>}
+                            </ErrorMessage>
+                          </div>
+                          :
+                          <p>{loginUserData ? loginUserData.email : ''}</p>
+                      }
+                    </div>
+                    <div className={styles.inputBox}>
+                      <label htmlFor="Country">Country</label>
+                      {
+                        editProfile ?
+                          <div>
+                            <Dropdown id="text" name="country" className={styles.dropDown} value={props.values.country} options={countriesData} onChange={(e: any) => props.setFieldValue('country', e.target.value)} />
+                            <ErrorMessage name="country">
+                              {(msg) => <p className={styles.error}>{msg}</p>}
+                            </ErrorMessage>
+                          </div>
+                          :
+                          <p>{loginUserData ? loginUserData.country : ''}</p>
+                      }
+                    </div>
+                    <div className={styles.inputBox}>
+                      <label htmlFor="phone_number">Phone Number</label>
+                      {
+                        editProfile ?
+                          <div>
+                            <Field type="phone_number" name="phone_number" />
+                            <ErrorMessage name="phone_number">
+                              {(msg) => <p className={styles.error}>{msg}</p>}
+                            </ErrorMessage>
+                          </div>
+                          :
+                          <p>{loginUserData ? loginUserData.phone_number : ''}</p>
+                      }
+                    </div>
+                    <div className={styles.inputBox}>
+                      <label htmlFor="Language">Language</label>
+                      {
+                        editProfile ?
+                          <div>
+                            <Dropdown id="Language" name="Language" className={styles.dropDown} value={props.values.Language} options={languages} onChange={(e) => props.setFieldValue('Language', e.target.value)} />
+                            <ErrorMessage name="Language">
+                              {(msg) => <p className={styles.error}>{msg}</p>}
+                            </ErrorMessage>
+                          </div>
+                          :
+                          <p>{loginUserData ? loginUserData.Language : ''}</p>
+                      }
+                    </div>
+                  </div>
+                </div>
+              </form>
+            )}
+          </Formik>
         </div>
       </div>
     </DashboardLayout>

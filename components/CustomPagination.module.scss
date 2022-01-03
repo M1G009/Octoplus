@@ -1,0 +1,112 @@
+$darkBlue: #091e42;
+$lightBlue: #2236f1;
+
+.customPagination {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 15px;
+
+    .totalItems {
+        span {
+            margin: 0px 15px;
+        }
+    }
+
+    .prevPage,
+    .nextPage {
+        button {
+            background-color: transparent;
+            border: 0px;
+            color: #6c757d;
+            width: 25px;
+            min-width: 25px;
+            height: 25px;
+            margin: 0px 2px;
+            padding: 0px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+
+            &:disabled {
+                color: #a7acb1;
+                cursor: default;
+            }
+
+            svg {
+                font-size: 16px;
+            }
+        }
+    }
+
+    .pagesNum {
+        display: flex;
+        align-items: center;
+
+        .pageNumbers {
+            box-shadow: none;
+            height: 25px;
+            width: 25px;
+            min-width: 25px;
+            margin: 0px 2px;
+            background-color: transparent;
+            border: none;
+            color: #091e42;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border-radius: 3px;
+
+            &:hover {
+                background: #e9ecef;
+                border-color: transparent;
+                color: #495057;
+            }
+        }
+
+        .curruntPageActive {
+            border: 1px solid $lightBlue;
+            color: $lightBlue;
+            border-radius: 2px;
+            background-color: transparent;
+            box-shadow: none;
+
+            &:hover {
+                border: 1px solid #2236f1;
+                color: #2236f1;
+                border-radius: 2px;
+                background-color: transparent;
+                box-shadow: none;
+            }
+        }
+    }
+
+    .perPageBox {
+        .pagePerDropdown {
+            background: #ffffff;
+            border: 1px solid #d9d9d9;
+            border-radius: 2px;
+            padding: 0px;
+            margin: 0px 10px;
+            color: $darkBlue;
+            box-shadow: none !important;
+
+            span {
+                color: $darkBlue;
+            }
+        }
+    }
+
+    .goToBox {
+        color: #091E42;
+        .jumpInput {
+            background: #ffffff;
+            border: 1px solid #d9d9d9;
+            border-radius: 2px;
+            padding: 3px 5px;
+        }
+    }
+}

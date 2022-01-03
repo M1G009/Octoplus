@@ -10,6 +10,8 @@ $lightBlue: #2236f1;
 
     h5 {
         margin: 0px;
+        font-weight: 500;
+        font-size: 20px;
     }
 
     .btnGroup {
@@ -53,8 +55,11 @@ $lightBlue: #2236f1;
 }
 
 .contectTableBox {
-    overflow: auto;
+    .contectTableOverflow {
+        overflow: auto;
+    }
     .contectTable {
+        border-collapse: collapse;
         margin-top: 15px;
         width: 100%;
 
@@ -68,6 +73,8 @@ $lightBlue: #2236f1;
                     font-size: 14px;
                     color: #344563;
                     position: relative;
+                    text-align: left;
+                    text-transform: capitalize;
 
                     &:after {
                         content: "";
@@ -116,9 +123,6 @@ $lightBlue: #2236f1;
     }
 }
 
-.totalItemsText {
-}
-
 .pageNumbers,
 .leftArrowIc,
 .rightArrowIc {
@@ -157,151 +161,174 @@ $lightBlue: #2236f1;
     }
 }
 
-.createContactModal {
-    h5 {
-        font-weight: 500;
-        font-size: 20px;
-        color: $darkBlue;
-        margin-bottom: 15px;
-    }
+.createNewContactCustomStyles {
+    max-height: 100%;
+    height: 100%;
+    margin: 0px !important;
 
-    .contactFields {
-        .inputBox {
-            display: flex;
-            align-items: center;
-            margin-bottom: 10px;
+    .createContactModal {
+        h5 {
+            font-weight: 500;
+            font-size: 20px;
+            color: $darkBlue;
+            margin: 15px 0px;
+        }
 
-            label {
-                margin: 0px;
-                width: 140px;
-                min-width: 140px;
-                font-size: 14px;
-                color: $darkBlue;
-            }
+        .contactFields {
+            .inputBox {
+                display: flex;
+                align-items: center;
+                margin-bottom: 10px;
 
-            input,
-            select,
-            textarea {
-                width: 100%;
-                background: #f4f5f7;
-                border-radius: 4px;
-                outline: none !important;
-                border: 1px solid rgba(0, 0, 0, 0.12);
-                font-weight: 500;
-                font-size: 16px;
-                color: $darkBlue;
-                padding: 0.4rem;
-
-                &:focus {
-                    border: 1px solid $lightBlue !important;
-                    box-sizing: border-box;
-                    box-shadow: 0px 0px 0px 2px rgb(24 144 255 / 20%);
+                > div {
+                    width: 100%;
                 }
 
-                &[type="date"] {
-                    width: 180px;
-                }
-            }
-
-            > div {
-                > label {
-                    width: auto;
-                    min-width: auto;
+                label {
                     margin: 0px;
+                    width: 140px;
+                    min-width: 140px;
                     font-size: 14px;
-                    color: #000000d9;
-                    cursor: pointer;
-                }
-            }
-
-            .checkBoxes {
-                margin: 5px;
-                .p-highlight {
-                    background-color: red;
-                }
-            }
-
-            .typeNumber {
-                width: 100px;
-                border: 1px solid rgba(0, 0, 0, 0.06);
-                border-radius: 8px;
-
-                &:focus-within {
-                    border: 1px solid $lightBlue !important;
-                    box-sizing: border-box;
-                    box-shadow: 0px 0px 0px 2px rgb(24 144 255 / 20%);
+                    color: $darkBlue;
+                    text-transform: capitalize;
                 }
 
-                input {
-                    border: none;
-                    background: transparent;
+                input[type="checkbox"] {
+                    width: auto;
+                }
+
+                input,
+                select,
+                textarea {
+                    width: 100%;
+                    background: #f4f5f7;
                     border-radius: 4px;
-                    box-shadow: none !important;
                     outline: none !important;
-                    border: 1px solid transparent !important;
+                    border: 1px solid rgba(0, 0, 0, 0.12);
                     font-weight: 500;
                     font-size: 16px;
                     color: $darkBlue;
+                    padding: 0.4rem;
+
+                    &:focus {
+                        border: 1px solid $lightBlue !important;
+                        box-sizing: border-box;
+                        box-shadow: 0px 0px 0px 2px rgb(24 144 255 / 20%);
+                    }
+
+                    &[type="date"] {
+                        width: 180px;
+                    }
                 }
 
-                button {
-                    background-color: transparent;
-                    color: $darkBlue;
+                .error {
+                    color: #ff0000;
+                    margin: 0px;
+                }
+
+                > div {
+                    > label {
+                        width: auto;
+                        min-width: auto;
+                        margin: 0px;
+                        font-size: 14px;
+                        color: #000000d9;
+                        cursor: pointer;
+                    }
+                }
+
+                .checkBoxes {
+                    margin: 5px;
+                    .p-highlight {
+                        background-color: red;
+                    }
+                }
+
+                .typeNumber {
+                    width: 100px;
                     border: 1px solid rgba(0, 0, 0, 0.06);
+                    border-radius: 8px;
+
+                    &:focus-within {
+                        border: 1px solid $lightBlue !important;
+                        box-sizing: border-box;
+                        box-shadow: 0px 0px 0px 2px rgb(24 144 255 / 20%);
+                    }
+
+                    input {
+                        border: none;
+                        background: transparent;
+                        border-radius: 4px;
+                        box-shadow: none !important;
+                        outline: none !important;
+                        border: 1px solid transparent !important;
+                        font-weight: 500;
+                        font-size: 16px;
+                        color: $darkBlue;
+                    }
+
+                    button {
+                        background-color: transparent;
+                        color: $darkBlue;
+                        border: 1px solid rgba(0, 0, 0, 0.06);
+                    }
                 }
             }
         }
     }
 }
 
-.addNewFieldModal {
-    h5 {
-        margin-bottom: 15px;
-        background-color: #001529;
-        font-size: 16px;
-        color: #ffffff;
-        padding: 12px;
-    }
+.dialogMask {
+    backdrop-filter: blur(7px);
+}
 
-    .inputFields {
-        padding: 15px;
-        .inputBox {
-            display: flex;
-            flex-direction: column;
-            margin-bottom: 10px;
+.addNewFieldModalCustomStyles {
+    padding: 0px !important;
+    .addNewFieldModal {
+        h5 {
+            margin: 0px;
+            background-color: #001529;
+            font-size: 16px;
+            color: #ffffff;
+            padding: 12px;
+        }
 
-            label {
-                font-size: 15px;
-                color: #000000;
-            }
+        .inputFields {
+            padding: 30px;
 
-            input,
-            select,
-            textarea {
-                width: 100%;
-                background: #f4f5f7;
-                border-radius: 4px;
-                outline: none !important;
-                border: 1px solid rgba(0, 0, 0, 0.12);
-                font-weight: 500;
-                font-size: 16px;
-                color: $darkBlue;
-                padding: 0.4rem;
+            .inputBox {
+                display: flex;
+                flex-direction: column;
+                margin-bottom: 25px;
 
-                &:focus {
-                    border: 1px solid $lightBlue !important;
-                    box-sizing: border-box;
-                    box-shadow: 0px 0px 0px 2px rgb(24 144 255 / 20%);
+                label {
+                    font-size: 15px;
+                    margin-bottom: 10px;
+                    color: #000000;
                 }
-            }
 
-            select {
-                background-image: url("../public/images/down_arrow.svg");
-                background-position: calc(100% - 14px) 52%;
-                background-size: 15px;
-                background-repeat: no-repeat;
-                -webkit-appearance: none;
-                -moz-appearance: none;
+                input {
+                    width: 100%;
+                    background: #f4f5f7;
+                    border-radius: 4px;
+                    outline: none !important;
+                    border: 1px solid rgba(0, 0, 0, 0.12);
+                    font-weight: 500;
+                    font-size: 16px;
+                    color: $darkBlue;
+                    padding: 0.4rem;
+
+                    &:focus {
+                        border: 1px solid $lightBlue !important;
+                        box-sizing: border-box;
+                        box-shadow: 0px 0px 0px 2px rgb(24 144 255 / 20%);
+                    }
+                }
+
+                .error {
+                    margin: 0px;
+                    color: #ff0000;
+                }
             }
         }
     }
@@ -318,6 +345,17 @@ $lightBlue: #2236f1;
 
     .inputFields {
         padding: 15px;
+        .replaceFields {
+            display: flex;
+            justify-content: space-between;
+
+            .swapIcon {
+                font-size: 35px;
+                align-self: center;
+                margin: 0px 25px;
+                color: #2236f1;
+            }
+        }
         .inputBox {
             display: flex;
             flex-direction: column;
@@ -358,19 +396,92 @@ $lightBlue: #2236f1;
             }
         }
 
-        .radioBox{
+        .radioBox {
             display: flex;
             align-items: center;
-            flex-direction: row;
-            margin: 15px 0px;
+            flex-direction: row !important;
 
-            label{
+            label {
                 margin: 0px;
                 margin-left: 5px;
                 font-size: 14px;
                 color: #000000d9;
                 cursor: pointer;
             }
+        }
+    }
+}
+
+.tableSettings {
+    h5 {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        .closeIcon {
+            padding: 0px;
+            font-size: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: transparent;
+            border: none;
+            color: #ffffff;
+            cursor: pointer;
+        }
+    }
+}
+
+.formSpinner {
+    position: absolute;
+    inset: 0px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #ffffff87;
+    z-index: 999;
+
+    .loading {
+        height: 0;
+        width: 0;
+        padding: 15px;
+        border: 6px solid #293cf1;
+        border-right-color: #0000;
+        border-radius: 22px;
+        -webkit-animation: rotate 1s infinite linear;
+        animation: rotate 1s infinite linear;
+    }
+
+    @-webkit-keyframes rotate {
+        100% {
+            -webkit-transform: rotate(360deg);
+            transform: rotate(360deg);
+        }
+    }
+
+    @keyframes rotate {
+        100% {
+            -webkit-transform: rotate(360deg);
+            transform: rotate(360deg);
+        }
+    }
+}
+
+.deleteColumn {
+    h5 {
+        font-weight: 500;
+        font-size: 18px;
+        color: #000000;
+    }
+
+    .radioBox {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        label {
+            margin: 0px 0px 0px 10px;
+            color: #f12222;
         }
     }
 }

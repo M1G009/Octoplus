@@ -1,0 +1,137 @@
+.dragDropBox {
+    display: flex;
+    padding: 18px;
+    justify-content: space-between;
+
+    .inputWrapper {
+        border: 1px solid white;
+        margin: 10px;
+        display: flex;
+        align-items: center;
+
+        .threeDot {
+            padding: 0px;
+            background-color: transparent;
+            border: none;
+            color: #a5adba;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .deleteIcon {
+            padding: 0px;
+            font-size: 18px;
+            margin-left: 8px;
+            background-color: transparent;
+            border: none;
+            color: #2236f1;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .inputBox {
+            border: 2px solid #f4f5f7;
+            border-radius: 4px;
+            padding: 0px 5px 0px 0px;
+            width: 180px;
+            background-color: #f4f5f7;
+            input {
+                box-shadow: none !important;
+                border: none !important;
+                background-color: transparent;
+            }
+
+            .editIcon {
+                padding: 0px;
+                background-color: transparent;
+                border: none;
+                color: #2236f1;
+                font-size: 20px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+            }
+        }
+
+        .inputFocus {
+            background-color: #ffffff;
+        }
+
+        &:focus-within {
+            .inputBox {
+                border-color: #2236f1;
+            }
+            .deleteIcon {
+                display: flex;
+            }
+        }
+    }
+}
+
+.boxTitle {
+    background: #fafafa;
+    border-radius: 0px;
+    padding: 10px;
+    text-align: center;
+    font-weight: 500;
+    font-size: 15px;
+    color: #091e42;
+    margin: 0px 0px 10px;
+}
+.smallBox {
+    width: 48%;
+}
+
+.dragged {
+    background-color: rgba(200, 200, 200, 0.3);
+    opacity: 0.5;
+    cursor: pointer;
+}
+// .draggedOver {
+//     background: #293cf103;
+//     .task {
+//         background: #293cf103
+//     }
+// }
+
+// .dragUp {
+//     animation: dragup ease 0.2s 1;
+//     animation-fill-mode: forwards;
+//     border: solid 2px #cccccc;
+//   }
+
+//   .dragDown {
+//     animation: dragdown ease 0.2s 1;
+//     animation-fill-mode: forwards;
+//     border: solid 2px #cccccc;
+
+//   }
+
+//   @keyframes dragup
+//   {
+//     from {
+//       margin-top:10px;
+//     }
+//     to {
+//       margin-top:60px;
+//     }
+//   }
+
+//   @keyframes dragdown
+//   {
+//     from {
+//       margin-bottom:10px;
+//       margin-top:60px;
+//     }
+//     to {
+//       margin-bottom:60px;
+//       margin-top:10px;
+
+//     }
+//   }

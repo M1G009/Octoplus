@@ -38,7 +38,6 @@ const ElementsForm = () => {
     // to find your CardElement because there can only ever be one of
     // each type of element.
     const cardElement = elements!.getElement(CardElement);
-    console.log(cardElement);
   };
 
   return (

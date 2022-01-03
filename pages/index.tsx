@@ -1,80 +1,202 @@
-import { useState, useEffect } from 'react';
+// React Module Imports
+import React, { useState, useEffect } from 'react';
+
+// Next Module Imports
 import type { NextPage } from 'next'
-import Router from 'next/router'
-import { removeCookies } from 'cookies-next';
-import { Menubar } from 'primereact/menubar';
-import { Paginator } from 'primereact/paginator';
+import { useRouter } from 'next/router'
+
+// Prime React Imports
 import { Dropdown } from 'primereact/dropdown';
-import { InputText } from 'primereact/inputtext';
-import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
-import Modal from 'react-modal';
+import { Menubar } from 'primereact/menubar';
 import { RadioButton } from 'primereact/radiobutton';
-import { InputNumber } from 'primereact/inputnumber';
-import { InputTextarea } from 'primereact/inputtextarea';
+import { Checkbox } from 'primereact/checkbox';
+import { Dialog } from 'primereact/dialog';
 
+// 3rd Party Imports
+import * as yup from 'yup';
+import { AiOutlineSwap, AiOutlineClose } from "react-icons/ai";
+import { ErrorMessage, Formik, FieldArray, Field, FormikHelpers } from 'formik';
+import toast from "../components/Toast";
+import DragDrop from '../components/DragDrop'
 
+// Style and Component Imports
+import CustomPagination from '../components/CustomPagination'
 import { withProtectSync } from "../utils/protect"
 import DashboardLayout from '../components/DashboardLayout';
-
 import layoutStyles from '../styles/Home.module.scss';
 import styles from '../styles/registry.module.scss'
-import moment from 'moment';
 
+// Interface/Helper Imports
+import service from '../helper/api/api';
+
+
+export interface AddNewFiled {
+  column: string;
+  dtype: string;
+}
+
+export interface ReplaceData {
+  replace_from: string,
+  replace_to: string,
+  column: string
+}
+
+export interface DynamicFields {
+  [key: string]: string
+}
+
+export interface columnsHideShowFileds {
+  [key: string]: boolean
+}
+
+export interface TableColumns {
+  id: Number,
+  name: String,
+  editedName: String,
+  hide: Boolean,
+  readonly: Boolean
+}
 
 const Dashboard: NextPage = () => {
+  const router = useRouter();
+  const [addFiledSpinner, setAddFiledSpinner] = useState(false);
+  const [replaceDataSpinner, setReplaceDataSpinner] = useState(false);
+  const [settingDataModal, setSettingDataModal] = useState(false);
+  const [contactDataUpdated, setContactDataUpdated] = useState(false);
+  const [createContactSpinner, setCreateContactSpinner] = useState(false);
   const [createNewContactModal, setCreateNewContactModal] = useState(false);
+  const [deleteColumnModal, setDeleteColumnModal] = useState(false);
+  const [deleteColumnName, setDeleteColumnName] = useState(null)
+  const [deleteFromDatabase, setDeleteFromDatabase] = useState(false);
+  const [deleteColumnModalSpinner, setDeleteColumnModalSpinner] = useState(false);
+  const [editContactRowId, setEditContactRowId] = useState(null)
+  const [editColumnModalSpinner, setEditColumnModalSpinner] = useState(false);
+  const [createContactTableSpinner, setCreateContactTableSpinner] = useState(false);
   const [addNewFieldModal, setAddNewFieldModal] = useState(false);
   const [replaceDataModal, setReplaceDataModal] = useState(false);
-  const [customFirst1, setCustomFirst1] = useState(0);
+  const [initialValues, setInitialValues] = useState<DynamicFields>()
+  const [types, setTypes] = useState<DynamicFields>()
+  const [columns, setColumns] = useState<TableColumns[]>([])
+
+  // const TASKS = [
+  //   {
+  //     id: 0,
+  //     name: "loundry",
+  //     hide: false
+  //   },
+  //   {
+  //     id: 1,
+  //     name: "this program",
+  //     hide: false
+  //   },
+  //   {
+  //     id: 2,
+  //     name: "FrasierApp",
+  //     hide: false
+  //   },
+  //   {
+  //     id: 3,
+  //     name: "hide one",
+  //     hide: true
+  //   },
+  //   {
+  //     id: 4,
+  //     name: "learn Redux",
+  //     hide: false
+  //   },
+  //   {
+  //     id: 5,
+  //     name: "cook dinner",
+  //     hide: true
+  //   }
+  // ];
+
+  // Pagination States
+  const [totalRecords, setTotalRecords] = useState(1);
   const [currentPage, setCurrentPage] = useState(1);
-  const [customRows1, setCustomRows1] = useState(10);
-  const [totalRecords, setTotalRecords] = useState(0);
-  const [pageInputTooltip, setPageInputTooltip] = useState('Press \'Enter\' key to go to this page.');
-  const [contactFields, setContactFields] = useState({
-    "name": '',
-    "surname": '',
-    "dob": `${moment().format('YYYY-MM-DD')}`,
-    "sex": 'male',
-    "cob": `${moment().format('YYYY-MM-DD')}`,
-    "mob": '',
-    "dor": `${moment().format('YYYY-MM-DD')}`,
-    "family": 0,
-    "group": '',
-    "address": '',
-    "streetno": 0
-  })
-  const [contactDataUpdated, setContactDataUpdated] = useState(true);
+  const [perPage, setPerPage] = useState(10);
+  const [dataType, setDataType] = useState(["text", "email", "date", "number", "textarea", "checkbox"])
+  const [contacts, setContacts] = useState<any[]>([]);
+  const [replaceColumn, setReplaceColumn] = useState(true)
 
-  const [addNewFields, setAddNewFields] = useState({
-    "name": '',
-    "datatype": 'string'
-  })
+  const fetchAllContact = async (page: number, limit: number) => {
+    try {
+      let authToken = await window.localStorage.getItem('authToken');
 
-  const [replaceDataFields, setReplaceDataFields] = useState({
-    "selectdata": '',
-    "changeto": '',
-    "replacedata": 'specificcolumn',
-    "selectcolumn": 'string'
-  })
+      if (!authToken) {
+        window.localStorage.removeItem("authToken")
+        window.localStorage.removeItem("ValidUser")
+        window.localStorage.removeItem('loginUserdata');
+        return router.push('/auth');
+      }
+      setCreateContactTableSpinner(true)
+      const { data } = await service({
+        url: `https://octoplusapi.herokuapp.com/getregistry?page=${page}&limit=${limit}`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
+      });
+      if (data) {
+        // setColumns
+        let withVal = { ...data.data.dtypes };
+        Object.keys(withVal).forEach(function (key) { withVal[key] = "" });
+        delete withVal.id
+        setInitialValues(withVal);
 
+        let columnArray: TableColumns[] = [];
 
-  const logoutHandler = async () => {
-    removeCookies("ValidUser")
-    window.localStorage.removeItem("authToken")
-    window.localStorage.removeItem("ValidUser")
-    window.localStorage.removeItem('loginUserdata');
-    Router.push('/auth');
-    // await fetch(`${process.env.API_BASE_URL}/user/signout`)
-    //   .then(res => res.json())
-    //   .then(async res => {
-    //     console.log(res);
-    //     removeCookies("ValidUser")
-    //     window.localStorage.removeItem("ValidUser")
-    //     window.localStorage.removeItem('loginUserdata');
-    //     return Router.push('/auth');
-    //   }).catch(err => {
-    //     console.log(err);
-    //   })
+        let showFields = data.data.show;
+        Object.keys(showFields).map((el: any, index: number) => {
+          let columnObj = { id: index, name: "", editedName: "", hide: true, readonly: true }
+          columnObj['name'] = el;
+          columnObj['editedName'] = el;
+          columnObj['hide'] = !Boolean(showFields[el]);
+          columnObj['readonly'] = true;
+          columnArray.push(columnObj)
+        })
+
+        let hideFields = data.data.hide;
+        Object.keys(hideFields).map((el: any, index: number) => {          
+          let columnObj = { id: Object.keys(showFields).length + index, name: "", editedName: "", hide: true, readonly: true }
+          columnObj['name'] = el;
+          columnObj['editedName'] = el;
+          columnObj['hide'] = !Boolean(hideFields[el]);
+          columnObj['readonly'] = true;
+          columnArray.push(columnObj)
+        })
+        
+        setColumns(columnArray);
+        setTypes(data.data.dtypes);
+        setContacts(data.data.registry);
+        setTotalRecords(data.data.total_rows)
+      }
+      setCreateContactTableSpinner(false)
+    } catch (err) {
+      setCreateContactTableSpinner(false)
+      return await toast({ type: "error", message: err });
+    }
+  }
+
+  useEffect(() => {
+    fetchAllContact(currentPage, perPage);
+  }, [currentPage, perPage])
+
+  const validationSchema = yup.object().shape({
+    column: yup.string().required('Please field name')
+  });
+
+  const replaceValueSchema = yup.object().shape({
+    replace_from: yup.string().required('Please enter Select data'),
+    replace_to: yup.string().required('Please enter Change to'),
+    column: yup.string()
+  });
+
+  const currentPageHandler = (num: number) => {
+    setCurrentPage(num);
+  }
+
+  const perPageHandler = (num: number) => {
+    setCurrentPage(1);
+    setPerPage(num);
   }
 
   const items = [
@@ -84,11 +206,12 @@ const Dashboard: NextPage = () => {
       command: () => { setReplaceDataModal(true) }
     },
     {
-      label: 'Export in PDF',
+      label: 'Export in CSV',
       className: `${styles.menuItem} ${styles.dropMenu}`,
       items: [
         {
           label: 'Export in CSV',
+          command: () => { exportCsvGenerator() }
         }
       ]
     },
@@ -99,163 +222,325 @@ const Dashboard: NextPage = () => {
     }
   ];
 
-  const [contacts, setContacts] = useState([
-    { name: "Francesco Perone", surname: 'Perone', dob: '12/09/1992', sex: 'Male', country: 'Italy', municipalty: 'Potenza', dor: '28/04/1998', family: '5532', par: 'MG', addr: 'Via Aldo Moro', street: '34' },
-    { name: "Francesco Perone", surname: 'Perone', dob: '12/09/1992', sex: 'Male', country: 'Italy', municipalty: 'Potenza', dor: '28/04/1998', family: '5532', par: 'MG', addr: 'Via Aldo Moro', street: '34' },
-    { name: "Francesco Perone", surname: 'Perone', dob: '12/09/1992', sex: 'Male', country: 'Italy', municipalty: 'Potenza', dor: '28/04/1998', family: '5532', par: 'MG', addr: 'Via Aldo Moro', street: '34' },
-    { name: "Francesco Perone", surname: 'Perone', dob: '12/09/1992', sex: 'Male', country: 'Italy', municipalty: 'Potenza', dor: '28/04/1998', family: '5532', par: 'MG', addr: 'Via Aldo Moro', street: '34' },
-    { name: "Francesco Perone", surname: 'Perone', dob: '12/09/1992', sex: 'Male', country: 'Italy', municipalty: 'Potenza', dor: '28/04/1998', family: '5532', par: 'MG', addr: 'Via Aldo Moro', street: '34' },
-    { name: "Francesco Perone", surname: 'Perone', dob: '12/09/1992', sex: 'Male', country: 'Italy', municipalty: 'Potenza', dor: '28/04/1998', family: '5532', par: 'MG', addr: 'Via Aldo Moro', street: '34' }
-  ]);
+  const exportCsvGenerator = async () => {
+    try {
+      let authToken = await window.localStorage.getItem('authToken');
 
-  const onCustomPageChange1 = (event: any) => {
-    setCustomFirst1(event.first);
-    setCustomRows1(event.rows);
-    setCurrentPage(event.page + 1);
-  }
-
-  const onPageInputKeyDown = (event: any, options: any) => {
-    if (event.key === 'Enter') {
-      const page = currentPage;
-      if (page <= 0 || page > options.totalPages) {
-        setPageInputTooltip(`Value must be between 1 and ${options.totalPages}.`);
+      if (!authToken) {
+        window.localStorage.removeItem("authToken")
+        window.localStorage.removeItem("ValidUser")
+        window.localStorage.removeItem('loginUserdata');
+        return router.push('/auth');
       }
-      else {
-        const first = currentPage ? options.rows * (page - 1) : 0;
 
-        setCustomFirst1(first);
-        setPageInputTooltip('Press \'Enter\' key to go to this page.');
-      }
+      await service({
+        url: `https://octoplusapi.herokuapp.com/edit_feild`,
+        method: 'POST',
+        data: {"format":"csv"},
+        headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
+      });
+
+    } catch (err) {
+      return await toast({ type: "error", message: err });
     }
   }
 
-  const onPageInputChange = (event: any) => {
-    setCurrentPage(event.target.value);
+  const contactFieldsTypeHandler = (key: string) => {
+    if (types) {
+      if (types[key].toLowerCase() == "textarea") {
+        return <div>
+          <Field name={key}>
+            {({ field }: any) => (
+              <textarea {...field} />
+            )}
+          </Field>
+          <ErrorMessage name={key}>
+            {(msg) => <p className={styles.error}>{msg}</p>}
+          </ErrorMessage>
+        </div>
+      } else if (types[key].toLowerCase() == "checkbox") {
+        return <div>
+          <Field name={key}>
+            {({ field }: any) => (
+              <Checkbox {...field} checked={field.value}></Checkbox>
+            )}
+          </Field>
+          <ErrorMessage name={key}>
+            {(msg) => <p className={styles.error}>{msg}</p>}
+          </ErrorMessage>
+        </div>
+      }
+      return <div>
+        <Field type={types[key].toLowerCase()} name={key} />
+        <ErrorMessage name={key}>
+          {(msg) => <p className={styles.error}>{msg}</p>}
+        </ErrorMessage>
+      </div>
+    }
   }
 
-  const template1 = ({
-    layout: 'PrevPageLink PageLinks NextPageLink RowsPerPageDropdown CurrentPageReport',
-    PrevPageLink: (options: any) => {
-      return (
-        <>
-          <span className={styles.totalItemsText}>Total {totalRecords} items</span>
-          <button type="button" className={options.className + ' ' + styles.leftArrowIc} onClick={options.onClick} disabled={options.disabled}>
-            <FaChevronLeft />
-          </button>
-        </>
-      )
-    },
-    NextPageLink: (options: any) => {
-      return (
-        <button type="button" className={options.className + ' ' + styles.rightArrowIc} onClick={options.onClick} disabled={options.disabled}>
-          <FaChevronRight />
-        </button>
-      )
-    },
-    PageLinks: (options: any) => {
-      // if ((options.view.startPage === options.page && options.view.startPage !== 0) || (options.view.endPage === options.page && options.page + 1 !== options.totalPages)) {
-      //   const className = options.className + " p-disabled";
+  const emptyContactFiledHandler = () => {
+    let values = { ...initialValues };
+    Object.keys(values).map(key => {
+      values[key] = '';
+    })
+    setEditContactRowId(null);
+    setInitialValues(values);
+    setCreateNewContactModal(false);
 
-      //   return <span className={className} style={{ userSelect: 'none' }}>...</span>;
-      // }
-      if (options.page == options.currentPage) {
-        return (
-          <button type="button" className={options.className + ' ' + styles.curruntPageActive + ' ' + styles.pageNumbers} onClick={options.onClick}>
-            {options.page + 1}
-          </button>
-        )
+  }
+
+  const createNewContactHanler = async (getData: any) => {
+    try {
+      let authToken = await window.localStorage.getItem('authToken');
+
+      if (!authToken) {
+        window.localStorage.removeItem("authToken")
+        window.localStorage.removeItem("ValidUser")
+        window.localStorage.removeItem('loginUserdata');
+        return router.push('/auth');
       }
 
+      setCreateContactSpinner(true)
+      if (editContactRowId) {
+        let editObj = Object.assign(JSON.parse(getData), { "row_id": editContactRowId });
+        await service({
+          url: `https://octoplusapi.herokuapp.com/edit_feild`,
+          method: 'POST',
+          data: editObj,
+          headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
+        });
+      } else {
+        await service({
+          url: `https://octoplusapi.herokuapp.com/insert_registry`,
+          method: 'POST',
+          data: { insert: [JSON.parse(getData)] },
+          headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
+        });
+      }
 
-      return (
-        <button type="button" className={options.className + ' ' + styles.pageNumbers} onClick={options.onClick}>
-          {options.page + 1}
-        </button>
-      )
-    },
-    RowsPerPageDropdown: (options: any) => {
-      setTotalRecords(options.totalRecords);
-      const dropdownOptions = [
-        { label: "10 / page", value: 10 },
-        { label: "20 / page", value: 20 },
-        { label: "30 / page", value: 30 }
-      ];
+      setCreateContactSpinner(false)
+      setCreateNewContactModal(false)
+      setEditContactRowId(null);
+      return await fetchAllContact(currentPage, perPage);
 
-      return <Dropdown value={options.value} options={dropdownOptions} className={styles.pagePerDropdown} onChange={options.onChange} />;
-    },
-    CurrentPageReport: (options: any) => {
-
-      return (
-        <span className="p-mx-3" style={{ color: 'var(--text-color)', userSelect: 'none' }}>
-          Go to <InputText size={2} className={"p-ml-1 py-0 px-1 " + styles.jumpInput} value={currentPage}
-            onKeyDown={(e) => onPageInputKeyDown(e, options)} onChange={onPageInputChange} />
-        </span>
-      )
+    } catch (err) {
+      setCreateContactSpinner(false)
+      setEditContactRowId(null);
+      return await toast({ type: "error", message: err });
     }
-  });
+  }
 
-  const createNewContactCustomStyles = {
-    overlay: {
-      background: "#00000021",
-      backdropFilter: "blur(7px)"
-    },
-    content: {
-      top: '0px',
-      left: 'auto',
-      right: '0px',
-      bottom: '0px',
-      width: "550px",
-      maxWidth: "100%"
-    },
-  };
+  const addNewFiledHandler = async (getData: any) => {
+    try {
+      let authToken = await window.localStorage.getItem('authToken');
 
-  const addNewFieldModalCustomStyles = {
-    overlay: {
-      background: "#00000021",
-      backdropFilter: "blur(7px)"
-    },
-    content: {
-      "border": "1px solid rgb(204, 204, 204)",
-      "background": "rgb(255, 255, 255)",
-      "overflow": "auto",
-      "borderRadius": "4px",
-      "outline": "none",
-      "width": "550px",
-      "padding": "0px",
-      "maxWidth": "100%",
-      "top": "50%",
-      "left": "50%",
-      "bottom": "auto",
-      "right": "auto",
-      "transform": "translate(-50%, -50%)"
+      if (!authToken) {
+        window.localStorage.removeItem("authToken")
+        window.localStorage.removeItem("ValidUser")
+        window.localStorage.removeItem('loginUserdata');
+        return router.push('/auth');
+      }
+
+      setAddFiledSpinner(true)
+      await service({
+        url: `https://octoplusapi.herokuapp.com/add_feild`,
+        method: 'POST',
+        data: getData,
+        headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
+      });
+      setAddFiledSpinner(false)
+      setAddNewFieldModal(false)
+      return await fetchAllContact(currentPage, perPage);
+    } catch (err) {
+      setAddFiledSpinner(false)
+      await toast({ type: "error", message: err });
+      return setAddNewFieldModal(false)
     }
-  };
-
-  const contactFieldHandler = (key: any, value: any) => {
-    // console.log(key, value);
-    setContactFields((prevState) => ({ ...prevState, [key]: value }));
   }
 
-  const newContactSaveBtnHandler = () => {
-    console.log(contactFields);
+  const replacedataSaveBtnHandler = async (getData: any) => {
+    try {
+      let authToken = await window.localStorage.getItem('authToken');
+
+      if (!authToken) {
+        window.localStorage.removeItem("authToken")
+        window.localStorage.removeItem("ValidUser")
+        window.localStorage.removeItem('loginUserdata');
+        return router.push('/auth');
+      }
+
+      let replacedata = JSON.parse(getData);
+
+      if (!replacedata.column) {
+        delete replacedata.column;
+      }
+      setReplaceDataSpinner(true)
+      await service({
+        url: `https://octoplusapi.herokuapp.com/replace_registry`,
+        method: 'POST',
+        data: replacedata,
+        headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
+      });
+
+      setReplaceDataSpinner(false)
+      setReplaceDataModal(false)
+      return await fetchAllContact(currentPage, perPage);
+    } catch (err) {
+      setReplaceDataSpinner(false)
+      return await toast({ type: "error", message: err });
+    }
   }
 
-  const addNewFieldHandler = (key: any, value: any) => {
-    // console.log(key, value);
-    setAddNewFields((prevState) => ({ ...prevState, [key]: value }));
+  const editContactFiledHandler = async (id: any) => {
+    let copyObj = [...contacts].slice().find(el => el.id == id);
+    var checkId = Object.assign({}, copyObj);
+    setEditContactRowId(id);
+    delete checkId.id;
+    setInitialValues(checkId);
+    setCreateNewContactModal(true);
   }
 
-  const addFieldSaveBtnHandler = () => {
-    console.log(addNewFields);
+  const columnEditHandler = (id: any) => {
+    let columnData = columns.map((task: any) => {
+      if (task.id == id) task.readonly = !task.readonly;
+      return task;
+    });
+
+    setColumns(columnData);
   }
 
-  const replaceDataHandler = (key: any, value: any) => {
-    // console.log(key, value);
-    setReplaceDataFields((prevState) => ({ ...prevState, [key]: value }));
+  const setEditNameHandler = (value: any, id: number) => {
+    let newArray: TableColumns[] = [...columns];
+    let newObj = newArray.find(el => el.id == id);
+    if (newObj) {
+      newObj['editedName'] = value;
+    }
+
+    newArray.map(obj => obj.id == id ? newObj : obj);
+    setColumns(newArray)
   }
 
-  const replacedataSaveBtnHandler = () => {
-    console.log(replaceDataFields);
+  const saveColumnHandler = async (id: number) => {
+    try {
+      let findObj = columns.find(el => el.id == id);
+      if (findObj) {
+        let newArray: TableColumns[] = [...columns];
+        let newObj = newArray.find(el => el.id == id);
+        if (newObj) {
+          newObj['readonly'] = true;
+        }
+        if (findObj.editedName == findObj.name) {
+          newArray.map(obj => obj.id == id ? newObj : obj);
+          setColumns(newArray)
+        } else {
+          newArray.map(obj => obj.id == id ? newObj : obj);
+          setColumns(newArray)
+          // ...... Update Column Name Handler ......
+          let authToken = await window.localStorage.getItem('authToken');
+
+          if (!authToken) {
+            window.localStorage.removeItem("authToken")
+            window.localStorage.removeItem("ValidUser")
+            window.localStorage.removeItem('loginUserdata');
+            return router.push('/auth');
+          }
+          setEditColumnModalSpinner(true)
+          await service({
+            url: `https://octoplusapi.herokuapp.com/rename`,
+            method: 'POST',
+            data: { "column": findObj.name, "rename": findObj.editedName },
+            headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
+          });
+          setEditColumnModalSpinner(false);
+          return await fetchAllContact(currentPage, perPage);
+        }
+      }
+    } catch (err) {
+      setEditColumnModalSpinner(false);
+      return await toast({ type: "error", message: err });
+    }
+  }
+
+  const hideShowColumnHandler = async (dataColumn: any) => {
+    try {
+      let authToken = await window.localStorage.getItem('authToken');
+
+      if (!authToken) {
+        window.localStorage.removeItem("authToken")
+        window.localStorage.removeItem("ValidUser")
+        window.localStorage.removeItem('loginUserdata');
+        return router.push('/auth');
+      }
+      setEditColumnModalSpinner(true)
+
+      if (dataColumn) {
+        let columnsObj: columnsHideShowFileds = {};
+        dataColumn.map((el: any) => {
+          columnsObj[`${el.name}`] = !el.hide;
+        })
+        await service({
+          url: `https://octoplusapi.herokuapp.com/getregistry`,
+          method: 'POST',
+          data: { column: columnsObj },
+          headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
+        });
+
+        let columnsOrder: String[] = [];
+        dataColumn.map((el: any) => {
+          if (!el.hide) {
+            columnsOrder.push(el.name)
+          }
+        })
+        
+        await service({
+          url: `https://octoplusapi.herokuapp.com/columnorder`,
+          method: 'POST',
+          data: { columns: columnsOrder },
+          headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
+        });
+      }
+
+      setEditColumnModalSpinner(false);
+      return await fetchAllContact(currentPage, perPage);
+    } catch (err) {
+      setEditColumnModalSpinner(false)
+      return await toast({ type: "error", message: err });
+    }
+  }
+
+  const deleteColumnHandler = async () => {
+    try {
+      let authToken = await window.localStorage.getItem('authToken');
+
+      if (!authToken) {
+        window.localStorage.removeItem("authToken")
+        window.localStorage.removeItem("ValidUser")
+        window.localStorage.removeItem('loginUserdata');
+        return router.push('/auth');
+      }
+
+      setDeleteColumnModalSpinner(true)
+      if (types && deleteColumnName) {
+        let columnName = { "column": deleteColumnName, "dtype": types[deleteColumnName] }
+
+        await service({
+          url: `https://octoplusapi.herokuapp.com/delete_feild`,
+          method: 'POST',
+          data: columnName,
+          headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
+        });
+      }
+
+      setDeleteColumnName(null);
+      setDeleteColumnModalSpinner(false)
+      setDeleteColumnModal(false);
+      return await fetchAllContact(currentPage, perPage);
+    } catch (err) {
+      setDeleteColumnModalSpinner(true);
+      setDeleteColumnModal(false);
+      return await toast({ type: "error", message: err });
+    }
   }
 
   return (
@@ -274,211 +559,325 @@ const Dashboard: NextPage = () => {
           <div className={layoutStyles.head}>
             <h4>Table of Contact</h4>
             <div className={layoutStyles.editButtons}>
-              <button className={layoutStyles.blueBtn}>Table Settings</button>
+              <button onClick={() => setSettingDataModal(true)} className={layoutStyles.blueBtn}>Table Settings</button>
               <button onClick={() => setAddNewFieldModal(true)} className={layoutStyles.blueBgBtn}>Add New Field</button>
             </div>
           </div>
           <div className={styles.contectTableBox}>
-            <div>
-              <table className={styles.contectTable}>
-                <thead>
-                  <tr>
-                    <th>Name</th>
-                    <th>Surname</th>
-                    <th>Date of Birth</th>
-                    <th>Sex</th>
-                    <th>Country of Birth</th>
-                    <th>Municipality of Birth</th>
-                    <th>Date of Residence</th>
-                    <th>Family</th>
-                    <th>Par</th>
-                    <th>Address</th>
-                    <th>Street No.</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {
-                    contacts.map((el, i) => {
-                      return <tr key={"contact" + i}>
-                        <td>{el.name}</td>
-                        <td>{el.surname}</td>
-                        <td>{el.dob}</td>
-                        <td>{el.sex}</td>
-                        <td>{el.country}</td>
-                        <td>{el.municipalty}</td>
-                        <td>{el.dor}</td>
-                        <td>{el.family}</td>
-                        <td>{el.par}</td>
-                        <td>{el.addr}</td>
-                        <td>{el.street}</td>
+            <div className={styles.contectTableOverflow}>
+              {
+                createContactTableSpinner ? <div className={styles.formSpinner}>
+                  <div className={styles.loading}></div>
+                </div> : null
+              }
+              {
+                contacts.length ?
+                  <table className={styles.contectTable}>
+                    <thead>
+                      <tr>
+                        <th>id</th>
+                        {
+                          Object.keys(contacts[0]).map(function (key, index) {
+                            if (key != 'id') {
+                              return <th key={"tableTh" + index}>{key}</th>
+                            }
+                          })
+                        }
+                        <th>Actions</th>
                       </tr>
-                    })
-                  }
-                </tbody>
-              </table>
+                    </thead>
+                    <tbody>
+                      {
+                        contacts.map((el, i) => {
+                          return <tr key={"contact" + i}>
+                            <td>{i + 1}</td>
+                            {
+                              Object.keys(el).map(function (key, index, array) {
+                                if (key != "id" || index == array.length - 1) {
+                                  if (index == array.length - 1) {
+                                    return <React.Fragment key={"tableTdLast" + index + i}>
+                                      {
+                                        key != "id" ? <td>{`${contacts[i][key]}`}</td> : null
+                                      }
+                                      <td><button className={layoutStyles.blueTextBtn} onClick={() => editContactFiledHandler(contacts[i].id)}>Edit</button></td>
+                                    </React.Fragment>
+                                  }
+                                  return <td key={"tableTd" + index + i}>{`${contacts[i][key]}`}</td>
+                                }
+                              })
+                            }
+                          </tr>
+                        })
+                      }
+                    </tbody>
+                  </table>
+                  : <p className='p-text-center'>No data found</p>
+              }
             </div>
-            {/* <Paginator template={template1} first={customFirst1} rows={customRows1} totalRecords={120} onPageChange={onCustomPageChange1}></Paginator> */}
+
+            {
+              Math.ceil(totalRecords / perPage) >= 1 && contacts.length ?
+                <CustomPagination totalRecords={totalRecords} currentPage={currentPage} perPage={perPage} currentPageHandler={currentPageHandler} perPageHandler={perPageHandler} />
+                : ''
+            }
 
             {/* Create-Contact-Modal */}
-            <Modal
-              isOpen={createNewContactModal}
-              style={createNewContactCustomStyles}
-              contentLabel="Create New Contact Modal"
-              ariaHideApp={false}
-            >
+            <Dialog showHeader={false} className={styles.createNewContactCustomStyles} maskClassName={styles.dialogMask} position={'right'} visible={createNewContactModal} style={{ width: '500px', }} onHide={() => ''}>
               <div className={styles.createContactModal}>
                 <h5>Create new contact</h5>
-                <div className={styles.contactFields}>
-                  <div className={styles.inputBox}>
-                    <label htmlFor="name">Name</label>
-                    <InputText value={contactFields.name} id="name" name="name" type="text" onChange={(e) => contactFieldHandler(e.target.name, e.target.value)} />
-                  </div>
-                  <div className={styles.inputBox}>
-                    <label htmlFor="surname">Surname</label>
-                    <InputText value={contactFields.surname} id="surname" name="surname" type="text" onChange={(e) => contactFieldHandler(e.target.name, e.target.value)} />
-                  </div>
-                  <div className={styles.inputBox}>
-                    <label htmlFor="dob">Date of Birth</label>
-                    <input value={contactFields.dob} type="date" id="dob" name="dob" onChange={(e) => contactFieldHandler(e.target.name, e.target.value)} />
-                  </div>
-                  <div className={styles.inputBox}>
-                    <label htmlFor="sex">Sex</label>
-                    <div className="p-d-flex p-ai-center p-mr-2">
-                      <RadioButton className={styles.checkBoxes} inputId="male" name="sex" value="male" checked={contactFields.sex == "male"} onChange={(e) => contactFieldHandler(e.target.name, e.target.value)} />
-                      <label htmlFor="male">Male</label>
-                    </div>
-                    <div className="p-d-flex p-ai-center p-mr-2">
-                      <RadioButton className={styles.checkBoxes} inputId="female" name="sex" value="female" checked={contactFields.sex == "female"} onChange={(e) => contactFieldHandler(e.target.name, e.target.value)} />
-                      <label htmlFor="female">Female</label>
-                    </div>
-                    <div className="p-d-flex p-ai-center p-mr-2">
-                      <RadioButton className={styles.checkBoxes} inputId="unspecified" name="sex" value="Unspecified" checked={contactFields.sex == "Unspecified"} onChange={(e) => contactFieldHandler(e.target.name, e.target.value)} />
-                      <label htmlFor="unspecified">Unspecified</label>
-                    </div>
-                  </div>
-                  <div className={styles.inputBox}>
-                    <label htmlFor="cob">Country of Birth</label>
-                    <input value={contactFields.cob} type="date" id="cob" name="cob" onChange={(e) => contactFieldHandler(e.target.name, e.target.value)} />
-                  </div>
-                  <div className={styles.inputBox}>
-                    <label htmlFor="mob">Municipality of Birth</label>
-                    <InputText value={contactFields.mob} id="mob" name="mob" type="text" onChange={(e) => contactFieldHandler(e.target.name, e.target.value)} />
-                  </div>
-                  <div className={styles.inputBox}>
-                    <label htmlFor="dor">Date of residence</label>
-                    <input value={contactFields.dor} type="date" id="dor" name="dor" onChange={(e) => contactFieldHandler(e.target.name, e.target.value)} />
-                  </div>
-                  <div className={styles.inputBox}>
-                    <label htmlFor="family">Family</label>
-                    <InputNumber value={contactFields.family} name="family" id="family" className={styles.typeNumber} showButtons buttonLayout="stacked" min={1} onChange={(e) => contactFieldHandler("family", e.value)} />
-                  </div>
-                  <div className={styles.inputBox}>
-                    <label htmlFor="group">Group</label>
-                    <InputText value={contactFields.group} id="group" name="group" type="text" onChange={(e) => contactFieldHandler(e.target.name, e.target.value)} />
-                  </div>
-                  <div className={styles.inputBox + " align-items-start"}>
-                    <label htmlFor="address">Address</label>
-                    <InputTextarea value={contactFields.address} name="address" id="address" rows={3} onChange={(e) => contactFieldHandler(e.target.name, e.target.value)} />
-                  </div>
-                  <div className={styles.inputBox}>
-                    <label htmlFor="streetno">Street No.</label>
-                    <InputNumber value={contactFields.streetno} id="streetno" name="streetno" className={styles.typeNumber} onChange={(e) => contactFieldHandler("streetno", e.value)} showButtons buttonLayout="stacked" min={1} />
-                  </div>
-                </div>
-                <div className="p-d-flex p-ai-center p-mt-4">
-                  {
-                    contactDataUpdated ? <button className={layoutStyles.customBluebtn}>See original details</button> : null
-                  }
-                  <div className="p-ml-auto">
-                    <button onClick={newContactSaveBtnHandler} className={layoutStyles.customBlueBgbtn}>Save</button>
-                    <button onClick={() => setCreateNewContactModal(false)} className={layoutStyles.customDarkBgbtn}>Cancel</button>
-                  </div>
-                </div>
+                {
+                  initialValues && types ?
+                    <Formik
+                      enableReinitialize
+                      initialValues={initialValues}
+                      validate={(values) => {
+                        let error: any = {};
+                        Object.keys(values).map(el => {
+                          if (types[el].toLowerCase() !== "checkbox") {
+                            if (types[el].toLowerCase() == "number") {
+                              var reg = /^\d+$/
+                              if (!reg.test(values[el]) || !values[el]) {
+                                error[el] = "Please enter number";
+                              }
+                            } else if (!values[el]) {
+                              error[el] = "Please enter value";
+                            }
+                          }
+                        })
+                        return error;
+                      }}
+                      onSubmit={(
+                        values: DynamicFields,
+                        { setSubmitting }: FormikHelpers<DynamicFields>
+                      ) => {
+                        createNewContactHanler(JSON.stringify(values, null, 2));
+                        setSubmitting(false);
+                      }}
+                    >
+                      {props => (
+                        <form onSubmit={props.handleSubmit}>
+                          <FieldArray
+                            name="contact"
+                            render={arrayHelpers => (
+                              <div className={styles.contactFields}>
+                                {
+                                  createContactSpinner ? <div className={styles.formSpinner}>
+                                    <div className={styles.loading}></div>
+                                  </div> : null
+                                }
+                                {
+                                  Object.keys(props.values).map(function (key, index) {
+                                    if (key.toLowerCase() == "id") {
+                                      return false
+                                    }
+                                    return <div className={styles.inputBox} key={"contactField" + index}>
+                                      <label>{key}</label>
+                                      {
+                                        contactFieldsTypeHandler(key)
+                                      }
+                                    </div>
+                                  })
+                                }
+                              </div>
+                            )}
+                          />
+                          <div className="p-d-flex p-ai-center p-mt-4">
+                            {
+                              contactDataUpdated ? <button type="button" className={layoutStyles.customBluebtn}>See original details</button> : null
+                            }
+                            <div className="p-ml-auto">
+                              <button type='submit' className={layoutStyles.customBlueBgbtn}>Save</button>
+                              <button type='button' onClick={emptyContactFiledHandler} className={layoutStyles.customDarkBgbtn}>Cancel</button>
+                            </div>
+                          </div>
+                        </form>
+                      )}
+                    </Formik> : null
+                }
               </div>
-            </Modal>
+            </Dialog>
 
             {/* Add New Field-Modal */}
-            <Modal
-              isOpen={addNewFieldModal}
-              style={addNewFieldModalCustomStyles}
-              contentLabel="Add New Field Modal"
-              ariaHideApp={false}
-            >
+            <Dialog showHeader={false} contentClassName={styles.addNewFieldModalCustomStyles} maskClassName={styles.dialogMask} visible={addNewFieldModal} style={{ width: '500px', }} onHide={() => ''}>
               <div className={styles.addNewFieldModal}>
                 <h5>Add new field</h5>
-                <div className={styles.inputFields}>
-                  <div className={styles.inputBox}>
-                    <label htmlFor="name">Enter field name for new column</label>
-                    <InputText value={addNewFields.name} id="name" name="name" type="text" onChange={(e) => addNewFieldHandler(e.target.name, e.target.value)} />
-                  </div>
+                <Formik
+                  enableReinitialize
+                  initialValues={{
+                    column: '',
+                    dtype: 'text'
+                  }}
+                  validationSchema={validationSchema}
+                  onSubmit={(
+                    values: AddNewFiled,
+                    { setSubmitting }: FormikHelpers<AddNewFiled>
+                  ) => {
+                    addNewFiledHandler(JSON.stringify(values, null, 2));
+                    setSubmitting(false);
+                  }}
+                >
+                  {props => (
+                    <form onSubmit={props.handleSubmit}>
+                      {
+                        addFiledSpinner ? <div className={styles.formSpinner}>
+                          <div className={styles.loading}></div>
+                        </div> : null
+                      }
+                      <div className={styles.inputFields}>
+                        <div className={styles.inputBox}>
+                          <label htmlFor="column">Enter field name for new column</label>
+                          <Field type="text" name="column" />
+                          <ErrorMessage name="column">
+                            {(msg) => <p className={styles.error}>{msg}</p>}
+                          </ErrorMessage>
+                        </div>
 
-                  <div className={styles.inputBox}>
-                    <label htmlFor="dataType">Select the data type</label>
-                    <select id="datatype" name="datatype" value={addNewFields.datatype} onChange={(e) => addNewFieldHandler(e.target.name, e.target.value)}>
-                      <option selected={addNewFields.datatype == "string"} value="string">string</option>
-                      <option selected={addNewFields.datatype == "boolean"} value="boolean">boolean</option>
-                    </select>
-                  </div>
-                  <div className="p-d-flex p-ai-center p-mt-4">
-                    <div className="p-m-auto">
-                      <button onClick={addFieldSaveBtnHandler} className={layoutStyles.customBlueBgbtn}>Save</button>
-                      <button onClick={() => setAddNewFieldModal(false)} className={layoutStyles.customBluebtn}>Cancel</button>
-                    </div>
-                  </div>
-                </div>
+                        <div className={styles.inputBox}>
+                          <label htmlFor="dataType">Select the data type</label>
+                          <Dropdown id="inviteRole" className={styles.selectBox} name="dtype" value={props.values.dtype} options={dataType} onChange={(e: any) => props.setFieldValue('dtype', e.target.value)} />
+                        </div>
+                        <div className="p-d-flex p-ai-center p-mt-4">
+                          <div className="p-m-auto">
+                            <button type='submit' className={layoutStyles.customBlueBgbtn}>Save</button>
+                            <button type='button' onClick={() => setAddNewFieldModal(false)} className={layoutStyles.customBluebtn}>Cancel</button>
+                          </div>
+                        </div>
+                      </div>
+                    </form>
+                  )}
+                </Formik>
               </div>
-            </Modal>
+            </Dialog>
 
             {/* Replace data-Modal */}
-            <Modal
-              isOpen={replaceDataModal}
-              style={addNewFieldModalCustomStyles}
-              contentLabel="Replace data Modal"
-              ariaHideApp={false}
-            >
-              <div className={styles.replaceDataModal}>
-                <h5>Add new field</h5>
-                <div className={styles.inputFields}>
-                  <div>
-                    <div className={styles.inputBox}>
-                      <label htmlFor="selectdata">Select data</label>
-                      <InputText value={replaceDataFields.selectdata} id="selectdata" name="selectdata" type="text" onChange={(e) => replaceDataHandler(e.target.name, e.target.value)} />
-                    </div>
-                    <div className={styles.inputBox}>
-                      <label htmlFor="changeto">Change to</label>
-                      <InputText value={replaceDataFields.changeto} id="changeto" name="changeto" type="text" onChange={(e) => replaceDataHandler(e.target.name, e.target.value)} />
-                    </div>
-                  </div>
-                  <div className={styles.inputBox + ' ' + styles.radioBox}>
-                    <div className="p-d-flex p-ai-center p-mr-2">
-                      <RadioButton className={styles.checkBoxes} inputId="specificcolumn" name="replacedata" value="specificcolumn" checked={replaceDataFields.replacedata == "specificcolumn"} onChange={(e) => replaceDataHandler(e.target.name, e.target.value)} />
-                      <label htmlFor="specificcolumn">Replace data on specific column</label>
-                    </div>
-                    <div className="p-d-flex p-ai-center">
-                      <RadioButton className={styles.checkBoxes} inputId="wholeregistry" name="replacedata" value="wholeregistry" checked={replaceDataFields.replacedata == "wholeregistry"} onChange={(e) => replaceDataHandler(e.target.name, e.target.value)} />
-                      <label htmlFor="wholeregistry">Replace data on whole registry</label>
-                    </div>
-                  </div>
+            <Dialog showHeader={false} contentClassName={styles.addNewFieldModalCustomStyles} maskClassName={styles.dialogMask} visible={replaceDataModal} style={{ width: '500px', }} onHide={() => ''}>
+              <div className={styles.addNewFieldModal}>
+                <Formik
+                  enableReinitialize
+                  initialValues={{
+                    replace_from: '',
+                    replace_to: '',
+                    column: contacts[0] ? Object.keys(contacts[0])[0] : ''
+                  }}
+                  validationSchema={replaceValueSchema}
+                  onSubmit={(
+                    values: ReplaceData,
+                    { setSubmitting }: FormikHelpers<ReplaceData>
+                  ) => {
+                    replacedataSaveBtnHandler(JSON.stringify(values, null, 2));
+                    setSubmitting(false);
+                  }}
+                >
+                  {props => (
+                    <form onSubmit={props.handleSubmit}>
+                      {
+                        replaceDataSpinner ? <div className={styles.formSpinner}>
+                          <div className={styles.loading}></div>
+                        </div> : null
+                      }
+                      <div className={styles.replaceDataModal}>
+                        <h5>Replace Data</h5>
+                        <div className={styles.inputFields}>
+                          <div className={styles.replaceFields}>
+                            <div className={styles.inputBox}>
+                              <label htmlFor="selectdata">Select data</label>
+                              <Field type="text" name="replace_from" />
+                              <ErrorMessage name="replace_from">
+                                {(msg) => <p className={styles.error}>{msg}</p>}
+                              </ErrorMessage>
+                            </div>
+                            <AiOutlineSwap className={styles.swapIcon} />
+                            <div className={styles.inputBox}>
+                              <label htmlFor="changeto">Change to</label>
+                              <Field type="text" name="replace_to" />
+                              <ErrorMessage name="replace_to">
+                                {(msg) => <p className={styles.error}>{msg}</p>}
+                              </ErrorMessage>
+                            </div>
+                          </div>
+                          <div className={styles.inputBox + ' ' + styles.radioBox}>
+                            <div className="p-d-flex p-ai-center p-mr-2">
+                              <RadioButton className={styles.checkBoxes} inputId="specificcolumn" name="replacedata" value="specificcolumn" checked={replaceColumn} onChange={(e) => { setReplaceColumn(true); props.setFieldValue('column', Object.keys(contacts[0])[0]) }} />
+                              <label htmlFor="specificcolumn">Replace data on specific column</label>
+                            </div>
+                            <div className="p-d-flex p-ai-center">
+                              <RadioButton className={styles.checkBoxes} inputId="wholeregistry" name="replacedata" value="wholeregistry" checked={!replaceColumn} onChange={(e) => { setReplaceColumn(false); props.setFieldValue('column', '') }} />
+                              <label htmlFor="wholeregistry">Replace data on whole registry</label>
+                            </div>
+                          </div>
 
-                  <div className={styles.inputBox}>
-                    <select id="datatype" name="datatype" value={replaceDataFields.selectcolumn} onChange={(e) => replaceDataHandler(e.target.name, e.target.value)}>
-                      <option selected={replaceDataFields.selectcolumn == "string"} value="string">string</option>
-                      <option selected={replaceDataFields.selectcolumn == "boolean"} value="boolean">boolean</option>
-                    </select>
-                  </div>
-                  <div className="p-d-flex p-ai-center p-mt-4">
-                    <div className="p-m-auto">
-                      <button onClick={replacedataSaveBtnHandler} className={layoutStyles.customBlueBgbtn}>Save</button>
-                      <button onClick={() => setReplaceDataModal(false)} className={layoutStyles.customBluebtn}>Cancel</button>
+                          {
+                            replaceColumn ? <div className={styles.inputBox}>
+                              <Dropdown id="inviteRole" className={styles.selectBox} name="column" value={props.values.column} options={Object.keys(contacts[0])} onChange={(e: any) => props.setFieldValue('column', e.target.value)} />
+                              <ErrorMessage name="column">
+                                {(msg) => <p className={styles.error}>{msg}</p>}
+                              </ErrorMessage>
+                            </div> : null
+                          }
+
+                          <div className="p-d-flex p-ai-center p-mt-4">
+                            <div className="p-m-auto">
+                              <button type='submit' className={layoutStyles.customBlueBgbtn}>Save</button>
+                              <button type='button' onClick={() => setReplaceDataModal(false)} className={layoutStyles.customBluebtn}>Cancel</button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </form>
+                  )}
+                </Formik>
+              </div>
+            </Dialog>
+
+            {/* Table Setting data-Modal */}
+            <Dialog showHeader={false} contentClassName={styles.addNewFieldModalCustomStyles} maskClassName={styles.dialogMask} visible={settingDataModal} style={{ width: '600px', }} onHide={() => ''}>
+              <div className={styles.addNewFieldModal}>
+                {
+                  editColumnModalSpinner ? <div className={styles.formSpinner}>
+                    <div className={styles.loading}></div>
+                  </div> : null
+                }
+                <div className={styles.replaceDataModal + " " + styles.tableSettings}>
+                  <h5>
+                    Table Setting
+                    <button type='button' onClick={() => setSettingDataModal(false)} className={styles.closeIcon}><AiOutlineClose /></button>
+                  </h5>
+                  <DragDrop tasks={columns} setColumns={setColumns} editHandler={columnEditHandler} setEditNameHandler={setEditNameHandler} saveColumnHandler={saveColumnHandler} setDeleteColumnModal={setDeleteColumnModal} setDeleteColumnName={setDeleteColumnName} hideShowColumnHandler={hideShowColumnHandler} />
+                </div>
+              </div>
+            </Dialog>
+
+            {/* column delete modal */}
+            <Dialog showHeader={false} contentClassName={styles.addNewFieldModalCustomStyles} maskClassName={styles.dialogMask} visible={deleteColumnModal} style={{ width: '600px', }} onHide={() => ''}>
+              <div className={styles.addNewFieldModal}>
+                {
+                  deleteColumnModalSpinner ? <div className={styles.formSpinner}>
+                    <div className={styles.loading}></div>
+                  </div> : null
+                }
+                <div className={styles.deleteColumn}>
+                  <h5>Delete Column</h5>
+                  <div className={styles.inputFields}>
+                    <div className="p-text-center">
+                      <h3 className='p-mt-0'>Are you sure you want to delete the column ?</h3>
+                      <div className={styles.radioBox}>
+                        <Checkbox inputId='deleteCheck' className={styles.deleteCheckbox + " p-deleteCheckbox"} onChange={e => setDeleteFromDatabase(e.checked)} checked={deleteFromDatabase}></Checkbox>
+                        <label htmlFor="deleteCheck">Delete specific column data from database as well</label>
+                      </div>
+                    </div>
+                    <div className="p-d-flex p-ai-center p-mt-4">
+                      <div className="p-m-auto">
+                        <button type='button' onClick={() => { setDeleteColumnName(null); setDeleteFromDatabase(false); setDeleteColumnModal(false) }} className={layoutStyles.customBluebtn} >Cancel</button>
+                        <button type='button' onClick={deleteColumnHandler} className={layoutStyles.customBlueBgbtn}>Delete</button>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </Modal>
+            </Dialog>
           </div>
         </div>
       </div>
-
     </DashboardLayout>
   )
 }

@@ -17,6 +17,8 @@ $lightBlue: #2236f1;
 
     h5 {
         margin: 0px;
+        font-weight: 500;
+        font-size: 20px;
     }
 }
 
@@ -35,6 +37,7 @@ $lightBlue: #2236f1;
         background-color: #fff;
         border-radius: 8px;
         overflow: hidden;
+        position: relative;
 
         .head {
             padding: 20px;
@@ -44,9 +47,10 @@ $lightBlue: #2236f1;
             justify-content: space-between;
 
             h4 {
-                font-size: 22px;
+                font-size: 20px;
                 color: #091e42;
                 margin: 0px;
+                font-weight: 500;
             }
 
             .editButtons {
@@ -61,6 +65,8 @@ $lightBlue: #2236f1;
                     padding: 8px 15px;
                     font-weight: 500;
                     margin: 0px 10px;
+                    font-size: 16px;
+                    cursor: pointer;
 
                     &:disabled {
                         opacity: 0.85;
@@ -75,6 +81,8 @@ $lightBlue: #2236f1;
                     padding: 8px 15px;
                     font-weight: 500;
                     margin: 0px 10px;
+                    font-size: 16px;
+                    cursor: pointer;
 
                     &:disabled {
                         opacity: 0.85;
@@ -97,10 +105,24 @@ $lightBlue: #2236f1;
     padding: 8px 15px;
     font-weight: 500;
     margin: 0px 10px;
+    font-size: 16px;
+    cursor: pointer;
 
     &:disabled {
         opacity: 0.85;
     }
+}
+
+.blueTextBtn{
+    background: transparent;
+    color: $lightBlue;
+    border-radius: 4px;
+    border: none;
+    padding: 0px;
+    font-weight: 500;
+    margin: 0px 10px;
+    font-size: 16px;
+    cursor: pointer;
 }
 
 .customBlueBgbtn {
@@ -111,6 +133,8 @@ $lightBlue: #2236f1;
     padding: 8px 15px;
     font-weight: 500;
     margin: 0px 10px;
+    font-size: 16px;
+    cursor: pointer;
 
     &:disabled {
         opacity: 0.85;
@@ -123,8 +147,10 @@ $lightBlue: #2236f1;
     border-radius: 4px;
     border: none;
     padding: 8px 15px;
+    font-size: 16px;
     font-weight: 500;
     margin: 0px 10px;
+    cursor: pointer;
 
     &:disabled {
         opacity: 0.85;
@@ -137,8 +163,10 @@ $lightBlue: #2236f1;
     border-radius: 4px;
     border: none;
     padding: 8px 15px;
+    font-size: 16px;
     font-weight: 500;
     margin: 0px 10px;
+    cursor: pointer;
 
     &:disabled {
         opacity: 0.85;
@@ -151,10 +179,17 @@ $lightBlue: #2236f1;
     border-radius: 4px;
     border: none;
     padding: 8px 15px;
+    font-size: 16px;
     font-weight: 500;
     margin: 0px 10px;
+    cursor: pointer;
+    box-shadow: none !important;
 
     &:disabled {
         opacity: 0.85;
+    }
+
+    &:hover {
+        background-color: #f12222 !important;
     }
 }

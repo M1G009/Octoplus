@@ -22,7 +22,7 @@ $lightBlue: #2236f1;
                 font-weight: 500;
                 font-size: 20px;
                 color: $darkBlue;
-                margin-bottom: 0px;
+                margin: 0px;
             }
 
             p {
@@ -54,6 +54,22 @@ $lightBlue: #2236f1;
         display: flex;
         align-items: center;
         margin-bottom: 15px;
+
+        > div {
+            width: 100%;
+
+            .dropDown {
+                width: 100%;
+                background-color: #f4f5f7;
+                border-radius: 4px;
+                box-shadow: none !important;
+                outline: none !important;
+                border: 1px solid rgba(0, 0, 0, 0.12);
+                font-weight: 500;
+                font-size: 16px;
+                color: #091e42;
+            }
+        }
     }
 
     label {
@@ -75,6 +91,12 @@ $lightBlue: #2236f1;
         font-weight: 500;
         font-size: 16px;
         color: $darkBlue;
+
+        &.error {
+            font-size: 15px;
+            color: #f44336;
+            margin: 3px 0px 0px;
+        }
     }
 
     input,
@@ -133,6 +155,7 @@ $lightBlue: #2236f1;
     label {
         font-size: 14px;
         color: $darkBlue;
+        margin-bottom: 10px;
     }
 
     input {
@@ -145,6 +168,7 @@ $lightBlue: #2236f1;
         font-weight: 500;
         font-size: 16px;
         color: $darkBlue;
+        padding: 0.5rem;
 
         &.errorField {
             border-color: red !important;
@@ -159,11 +183,18 @@ $lightBlue: #2236f1;
     input.valid {
         border: 1px solid #2236f1;
     }
+
+    .error {
+        font-size: 15px;
+        color: #f44336;
+        margin: 3px 0px 0px;
+    }
 }
 
 .deleteAccForm {
     p {
         font-size: 14px;
+        margin-top: 0px;
         color: #a5adba;
     }
 
@@ -175,6 +206,7 @@ $lightBlue: #2236f1;
         padding: 10px 15px;
         font-weight: 500;
         margin: 0px;
+        cursor: pointer;
     }
 }
 
@@ -197,6 +229,7 @@ $lightBlue: #2236f1;
             color: #091e42;
             display: flex;
             align-items: center;
+            margin-bottom: 15px;
 
             span {
                 font-weight: 500;
@@ -232,7 +265,7 @@ $lightBlue: #2236f1;
                     font-weight: 500;
                     font-size: 16px;
                     color: #091e42;
-                    margin: 0px;
+                    margin: 0px 0px 5px;
                 }
 
                 p {
@@ -251,6 +284,8 @@ $lightBlue: #2236f1;
                     border: none;
                     background-color: transparent;
                     margin: 5px;
+                    font-size: 14px;
+                    cursor: pointer;
 
                     &.deleteBtn {
                         color: #f12222;
@@ -299,6 +334,7 @@ $lightBlue: #2236f1;
     display: flex;
     align-items: center;
     color: #2236f1;
+    cursor: pointer;
 
     svg {
         font-size: 20px;
@@ -306,12 +342,13 @@ $lightBlue: #2236f1;
     }
 }
 
-.teamMembertableBox{
+.teamMembertableBox {
     max-width: 100%;
     overflow: auto;
 }
 .teamMemberTable {
     width: 100%;
+    border-collapse: collapse;
     thead {
         tr {
             background: #f4f5f7;
@@ -391,6 +428,13 @@ $lightBlue: #2236f1;
     }
 }
 
+.subPlan {
+    h5 {
+        font-weight: 500;
+        font-size: 16px;
+    }
+}
+
 .deleteAccountModal {
     padding: 40px 15px;
 
@@ -413,7 +457,8 @@ $lightBlue: #2236f1;
             font-size: 14px;
             color: #091e42;
         }
-        input, .selectRoleDropdown {
+        input,
+        .selectRoleDropdown {
             width: 100%;
             background-color: #f4f5f7;
             border-radius: 4px;
@@ -426,7 +471,7 @@ $lightBlue: #2236f1;
             padding: 0.5rem;
         }
 
-        .selectRoleDropdown{
+        .selectRoleDropdown {
             padding: 0px;
         }
     }
@@ -460,8 +505,14 @@ $lightBlue: #2236f1;
 }
 
 .invitePeopleModal {
+    padding: 0px !important;
     > h5 {
         padding: 15px;
+        margin: 0px;
+        font-size: 18px;
+        background-color: #001529;
+        color: #fff;
+        font-weight: 500;
     }
 
     .inputFields {
@@ -471,6 +522,15 @@ $lightBlue: #2236f1;
             display: flex;
             align-items: center;
             margin-bottom: 15px;
+
+            > div {
+                width: 100%;
+                .error {
+                    margin: 3px 0px 0px;
+                    color: #ff0000;
+                }
+            }
+
             label {
                 margin: 0px;
                 width: 80px;
@@ -480,7 +540,7 @@ $lightBlue: #2236f1;
             }
 
             input,
-            select {
+            .selectBox {
                 width: 100%;
                 background-color: #f4f5f7;
                 border-radius: 4px;
@@ -493,21 +553,22 @@ $lightBlue: #2236f1;
                 padding: 0.5rem;
             }
 
-            select {
-                background-image: url("../public/images/down_arrow.svg");
-                background-position: calc(100% - 14px) 50%;
-                background-size: 18px;
-                background-repeat: no-repeat;
-                -webkit-appearance: none;
-                -moz-appearance: none;
+            .selectBox {
+                padding: 0rem;
             }
         }
     }
 }
 
 .addCardModal {
+    padding: 0px !important;
     > h5 {
         padding: 15px;
+        margin: 0px;
+        font-size: 18px;
+        background-color: #001529;
+        color: #fff;
+        font-weight: 500;
     }
 
     .inputFields {
@@ -517,6 +578,10 @@ $lightBlue: #2236f1;
             display: flex;
             align-items: center;
             margin-bottom: 15px;
+            .error {
+                margin: 0px;
+                color: #ff0000;
+            }
             label {
                 margin: 0px;
                 width: 120px;
@@ -525,7 +590,11 @@ $lightBlue: #2236f1;
                 color: #091e42;
             }
 
-            input{
+            > div {
+                width: 100%;
+            }
+
+            input {
                 width: 100%;
                 background-color: #f4f5f7;
                 border-radius: 4px;
@@ -538,11 +607,49 @@ $lightBlue: #2236f1;
                 padding: 0.5rem;
             }
 
-            svg{
-                font-size: 80px;
+            svg {
+                width: 50px;
+                min-width: 50px;
                 height: auto;
-                margin-left: 10px;            
+                margin-left: 10px;
+                display: flex;
+                align-self: flex-start;
             }
+        }
+    }
+}
+
+.formSpinner {
+    position: absolute;
+    inset: 0px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #ffffff87;
+    z-index: 999;
+
+    .loading {
+        height: 0;
+        width: 0;
+        padding: 15px;
+        border: 6px solid #293cf1;
+        border-right-color: #0000;
+        border-radius: 22px;
+        -webkit-animation: rotate 1s infinite linear;
+        animation: rotate 1s infinite linear;
+    }
+
+    @-webkit-keyframes rotate {
+        100% {
+            -webkit-transform: rotate(360deg);
+            transform: rotate(360deg);
+        }
+    }
+
+    @keyframes rotate {
+        100% {
+            -webkit-transform: rotate(360deg);
+            transform: rotate(360deg);
         }
     }
 }

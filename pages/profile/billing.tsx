@@ -1,28 +1,37 @@
-import type { NextPage } from 'next'
-import { SiVisa, SiMastercard } from "react-icons/si";
-import Router from 'next/router';
-import { RiDownload2Line } from "react-icons/ri";
-import { Dropdown } from 'primereact/dropdown';
+// React Module Imports
 import { useEffect, useState } from 'react';
-import Modal from 'react-modal';
-import { InputText } from 'primereact/inputtext';
+
+// Next Module Imports
+import type { NextPage } from 'next'
+import { useRouter } from 'next/router';
+
+// Prime React Imports
+import { Dropdown } from 'primereact/dropdown';
+import { Dialog } from 'primereact/dialog';
+import { confirmDialog } from 'primereact/confirmdialog';
+
+// 3rd Party Imports
+import * as yup from 'yup';
+import { ErrorMessage, Formik, Field, FormikHelpers } from 'formik';
+import { RiDownload2Line } from "react-icons/ri";
 import valid from "card-validator";
 import { FaCcVisa, FaCcMastercard, FaCcDinersClub, FaCcJcb, FaCcDiscover, FaCcAmex, FaCreditCard } from "react-icons/fa";
 import { ToastContainer } from "react-toastify";
 
+// Style and Component Imports
 import toast from "../../components/Toast";
-
 import {
-  validateInputs,
   formatCreditCard,
   dateCheck,
   cvvCheck
 } from "../../components/helper/helperFunctions";
 import { withProtectSync } from "../../utils/protect"
 import DashboardLayout from '../../components/DashboardLayout';
-
 import layoutStyles from '../../styles/Home.module.scss';
 import styles from '../../styles/profile.module.scss';
+
+// Interface/Helper Imports
+import service from '../../helper/api/api';
 
 
 export interface CardFields {
@@ -44,19 +53,16 @@ export interface GetCardDetails {
 }
 
 const Billing: NextPage = () => {
+  const router = useRouter();
+  const [formSpinner, setFormSpinner] = useState(false);
   const [addCardModal, setAddCardModal] = useState(false);
   const [selectMonth, setSelectMonth] = useState(null);
   const [cardType, setCardType] = useState('');
   const [editId, setEditId] = useState('');
-  const [cardFields, setCardFields] = useState<CardFields>({
-    Card_name: '',
-    card_number: '',
-    cvv: '',
-    expire_date: ''
-  })
+  const [cardFields, setCardFields] = useState<CardFields>()
   const [getCardDetails, setGetCardDetails] = useState<GetCardDetails[]>([])
 
-  const cities = [
+  const monthsOptions = [
     { name: 'January' },
     { name: 'February' },
     { name: 'March' },
@@ -71,65 +77,50 @@ const Billing: NextPage = () => {
     { name: 'December' }
   ];
 
-  const addCardModalCustomStyles = {
-    overlay: {
-      background: "#00000021",
-      backdropFilter: "blur(7px)"
-    },
-    content: {
-      "border": "1px solid rgb(204, 204, 204)",
-      "background": "rgb(255, 255, 255)",
-      "overflow": "auto",
-      "borderRadius": "4px",
-      "outline": "none",
-      "width": "550px",
-      "padding": "0px",
-      "maxWidth": "100%",
-      "top": "50%",
-      "left": "50%",
-      "bottom": "auto",
-      "right": "auto",
-      "transform": "translate(-50%, -50%)"
-    }
-  };
-
   const fatchingCards = async () => {
-    let authToken = await window.localStorage.getItem('authToken');
+    try {
+      let authToken = await window.localStorage.getItem('authToken');
 
-    if (!authToken) {
-      window.localStorage.removeItem("authToken")
-      window.localStorage.removeItem("ValidUser")
-      window.localStorage.removeItem('loginUserdata');
-      return Router.push('/auth');
+      if (!authToken) {
+        window.localStorage.removeItem("authToken")
+        window.localStorage.removeItem("ValidUser")
+        window.localStorage.removeItem('loginUserdata');
+        return router.push('/auth');
+      }
+      const { data } = await service({
+        url: `${process.env.API_BASE_URL}/card_detail`,
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
+      });
+
+      return setGetCardDetails(data.data)
+    } catch (err) {
+      return toast({ type: "error", message: err });
     }
-    await fetch(`${process.env.API_BASE_URL}/card_detail`, {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
-    })
-      .then(res => res.json())
-      .then(async res => {
-        if (res.status != 200) {
-          return await toast({ type: "error", message: res.message });
-        }
-        setGetCardDetails(res.data)
-      }).catch(err => {
-        toast({ type: "error", message: err });
-      })
   }
 
   useEffect(() => {
     async function fetchGetUserAPI() {
       await fatchingCards();
     }
-
-    fetchGetUserAPI()
+    fetchGetUserAPI();
   }, [])
+
+  const validationSchema = yup.object().shape({
+    Card_name: yup.string().required('Please enter card owner name'),
+    card_number: yup.string().required('Please enter card number').test({ message: 'Please enter correct card number', test: (value) => valid.number(value).isValid }),
+    expire_date: yup.string().required('Please enter expiry date').test({
+      message: 'Please enter correct expiry date',
+      test: (value) => valid.expirationDate(value).isValid
+    }),
+    cvv: yup.string().required('Please enter correct cvv').min(3).max(4)
+  });
 
   const onMonthChange = (e: { value: any }) => {
     setSelectMonth(e.value);
   }
 
-  const addCardFieldHandler = (key: any, value: any) => {
+  const addCardFieldHandler = (key: any, value: any, setFieldValue: any) => {
     let userValue: any;
 
     if (key == "Card_name") {
@@ -148,73 +139,59 @@ const Billing: NextPage = () => {
       userValue = cvvCheck(value);
     }
 
-    setCardFields(prevState => ({ ...prevState, [key]: userValue }))
+    setFieldValue(key, userValue)
   }
 
-  const saveCardHandler = async () => {
-    if (!validateInputs(cardFields.Card_name, cardFields.card_number, cardFields.expire_date, cardFields.cvv)) {
-      return await toast({ type: "error", message: "Please enter valid value" });
-    }
+  const saveCardHandler = async (getData: any) => {
+    try {
+      let userData = JSON.parse(getData);
+      let authToken = await window.localStorage.getItem('authToken');
+      if (!authToken) {
+        window.localStorage.removeItem("authToken")
+        window.localStorage.removeItem("ValidUser")
+        window.localStorage.removeItem('loginUserdata');
+        return router.push('/auth');
+      }
+      let newCardObj = { ...userData, ['card_number']: userData.card_number.replace(/ /g, '') }
 
-    let authToken = await window.localStorage.getItem('authToken');
-    if (!authToken) {
-      window.localStorage.removeItem("authToken")
-      window.localStorage.removeItem("ValidUser")
-      window.localStorage.removeItem('loginUserdata');
-      return Router.push('/auth');
-    }
-    let newCardObj = { ...cardFields, ['card_number']: cardFields.card_number.replace(/ /g, '') }
+      if (editId) {
+        let updateCardObj = { ...newCardObj, ['card_id']: editId }
+        setFormSpinner(true);
+        const { data } = await service({
+          url: `${process.env.API_BASE_URL}/card_update`,
+          method: 'POST',
+          data: JSON.stringify(updateCardObj),
+          headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
+        });
+        setFormSpinner(false);
+        if (data.status != 200) {
+          return await toast({ type: "error", message: data.message });
+        }
+        await fatchingCards();
+        setEditId('')
+        return setAddCardModal(false)
 
-    if (editId) {
-      let updateCardObj = { ...newCardObj, ['card_id']: editId }
-      await fetch(`${process.env.API_BASE_URL}/card_update`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) },
-        body: JSON.stringify(updateCardObj)
-      })
-        .then(res => res.json())
-        .then(async res => {
-          if (res.status != 200) {
-            return await toast({ type: "error", message: res.message });
-          }
-          await fatchingCards();
-          setCardFields({
-            Card_name: '',
-            card_number: '',
-            cvv: '',
-            expire_date: ''
-          })
-          setEditId('')
-          setAddCardModal(false)
-          return await toast({ type: "success", message: "Card update successful" });
-        }).catch(err => {
-          toast({ type: "error", message: err });
-        })
-    } else {
-      await fetch(`${process.env.API_BASE_URL}/card_insert`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) },
-        body: JSON.stringify(newCardObj)
-      })
-        .then(res => res.json())
-        .then(async res => {
-          if (res.status != 200) {
-            return await toast({ type: "error", message: res.message });
-          }
-          await fatchingCards();
-          setCardFields({
-            Card_name: '',
-            card_number: '',
-            cvv: '',
-            expire_date: ''
-          })
-          setAddCardModal(false)
-          return await toast({ type: "success", message: "Card insert successful" });
-        }).catch(err => {
-          toast({ type: "error", message: err });
-        })
-    }
+      } else {
+        setFormSpinner(true);
+        const { data } = await service({
+          url: `${process.env.API_BASE_URL}/card_insert`,
+          method: 'POST',
+          data: JSON.stringify(newCardObj),
+          headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
+        });
+        setFormSpinner(false);
+        if (data.status != 200) {
+          return await toast({ type: "error", message: data.message });
+        }
+        await fatchingCards();
 
+        return await setAddCardModal(false)
+      }
+
+    } catch (err) {
+      setFormSpinner(false);
+      return await toast({ type: "error", message: err });
+    }
   }
 
   const cardNumberHandler = (num: string) => {
@@ -245,35 +222,45 @@ const Billing: NextPage = () => {
   }
 
   const deleteCardHandler = async (id: any) => {
-    let authToken = await window.localStorage.getItem('authToken');
-    let deleteIdObj = { card_id: id }
-    if (!authToken) {
-      window.localStorage.removeItem("authToken")
-      window.localStorage.removeItem("ValidUser")
-      window.localStorage.removeItem('loginUserdata');
-      return Router.push('/auth');
-    }
+    try {
+      let authToken = await window.localStorage.getItem('authToken');
+      let deleteIdObj = { card_id: id }
+      if (!authToken) {
+        window.localStorage.removeItem("authToken")
+        window.localStorage.removeItem("ValidUser")
+        window.localStorage.removeItem('loginUserdata');
+        return router.push('/auth');
+      }
 
-    await fetch(`${process.env.API_BASE_URL}/card_delete`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) },
-      body: JSON.stringify(deleteIdObj)
-    })
-      .then(res => res.json())
-      .then(async res => {
-        if (res.status != 200) {
-          return await toast({ type: "error", message: res.message });
-        }
-        await fatchingCards();
-        return await toast({ type: "success", message: "Card delete successful" });
-      }).catch(err => {
-        toast({ type: "error", message: err });
-      })
+      const { data } = await service({
+        url: `${process.env.API_BASE_URL}/card_delete`,
+        method: 'POST',
+        data: JSON.stringify(deleteIdObj),
+        headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
+      });
+
+      if (data.status != 200) {
+        return await toast({ type: "error", message: data.message });
+      }
+
+      return await fatchingCards();
+    } catch (err) {
+      return toast({ type: "error", message: err });
+    }
+  }
+
+  const deleteConfirm = (id: any) => {
+    confirmDialog({
+      message: 'Are you sure you want to delete this card ?',
+      header: 'Delete Card',
+      icon: 'pi pi-info-circle',
+      acceptClassName: layoutStyles.customRedBgbtn,
+      accept: () => deleteCardHandler(id)
+    });
   }
 
   const editCardHandler = (id: string) => {
     let editCardDetails = getCardDetails.find(el => el._id === id);
-    // console.log(editCardDetails);
     if (editCardDetails) {
       let createEditCard = { Card_name: editCardDetails.Card_name, card_number: formatCreditCard(editCardDetails.card_number), cvv: editCardDetails.cvv, expire_date: editCardDetails.expire_date }
       setCardFields(createEditCard);
@@ -332,26 +319,29 @@ const Billing: NextPage = () => {
           <div className={layoutStyles.textBox}>
             <div className={styles.paymentMethod}>
               {
-                getCardDetails.map((card, i) => {
-                  return <div className={styles.methodCard} key={card._id}>
-                    <label htmlFor="">{card.Card_name} {i == 0 ? <span>Primary</span> : null}</label>
-                    <div className={styles.cardDetails}>
-                      <div className={styles.imgBox}>
-                        <div className={styles.cardType}>
-                          {cardTypeIconHandler(card.card_number)}
+                getCardDetails.length ?
+                  getCardDetails.map((card, i) => {
+                    return <div className={styles.methodCard} key={card._id}>
+                      <label htmlFor="">{card.Card_name} {i == 0 ? <span>Primary</span> : null}</label>
+                      <div className={styles.cardDetails}>
+                        <div className={styles.imgBox}>
+                          <div className={styles.cardType}>
+                            {cardTypeIconHandler(card.card_number)}
+                          </div>
+                          <div className={styles.textBox}>
+                            <h5>{card.card_type} {cardNumberHandler(card.card_number)}</h5>
+                            <p>Card expires at {card.expire_date}</p>
+                          </div>
                         </div>
-                        <div className={styles.textBox}>
-                          <h5>{card.card_type} {cardNumberHandler(card.card_number)}</h5>
-                          <p>Card expires at {card.expire_date}</p>
+                        <div className={styles.btnGroup}>
+                          <button onClick={() => deleteConfirm(card._id)} className={styles.deleteBtn}>Delete</button>
+                          <button onClick={() => editCardHandler(card._id)} className={styles.editBtn}>Edit</button>
                         </div>
-                      </div>
-                      <div className={styles.btnGroup}>
-                        <button onClick={() => deleteCardHandler(card._id)} className={styles.deleteBtn}>Delete</button>
-                        <button onClick={() => editCardHandler(card._id)} className={styles.editBtn}>Edit</button>
                       </div>
                     </div>
-                  </div>
-                })
+                  })
+                  :
+                  <p className='p-m-0'>No card details found</p>
               }
             </div>
           </div>
@@ -360,7 +350,7 @@ const Billing: NextPage = () => {
           <div className={layoutStyles.head}>
             <h4>Subcription Plan</h4>
           </div>
-          <div className={layoutStyles.textBox}>
+          <div className={layoutStyles.textBox + " " + styles.subPlan}>
             <div className="p-d-flex p-ai-center p-jc-between">
               <h5 className="p-m-0">Basic Plan</h5>
               <div>
@@ -377,7 +367,7 @@ const Billing: NextPage = () => {
           <div className={layoutStyles.textBox + " p-d-flex p-jc-between"}>
             <div className={styles.invoiceBox}>
               <label htmlFor="DownloadInvoice">Download Invoice</label>
-              <Dropdown inputId="DownloadInvoice" value={selectMonth} options={cities} onChange={onMonthChange} className={styles.selectBox} placeholder="Select" optionLabel="name" />
+              <Dropdown inputId="DownloadInvoice" value={selectMonth} options={monthsOptions} onChange={onMonthChange} className={styles.selectBox} placeholder="Select" optionLabel="name" />
             </div>
             <button className={styles.downloadBtn}><RiDownload2Line />Download PDF</button>
           </div>
@@ -385,56 +375,100 @@ const Billing: NextPage = () => {
       </div>
 
       {/* Payment Card */}
-      <Modal
-        isOpen={addCardModal}
-        style={addCardModalCustomStyles}
-        contentLabel="Add New Field Modal"
-        ariaHideApp={false}
-      >
+      <Dialog showHeader={false} contentClassName={styles.addCardModal} visible={addCardModal} style={{ width: '500px', }} onHide={() => ''}>
         <div className={styles.addCardModal}>
           <h5>
             {
               editId ? "Update Card" : "Add Card"
             }
           </h5>
-          <div className={styles.inputFields}>
-            <div className={styles.inputBox}>
-              <label htmlFor="inviteEmail">Card Number</label>
-              <InputText id="inviteEmail" name="card_number" type="text" value={cardFields.card_number} onChange={(e) => addCardFieldHandler("card_number", e.target.value)} placeholder='•••• •••• •••• ••••' />
-              {
-                cardType ?
-                  (
-                    cardType == 'mastercard' ? <FaCcMastercard /> : (cardType == 'visa' ? <FaCcVisa /> : (cardType == 'diners-club' ? <FaCcDinersClub /> : (cardType == 'jcb' ? <FaCcJcb /> : (cardType == 'discover' ? <FaCcDiscover /> : (cardType == 'american-express' ? <FaCcAmex /> : null)))))
-                  )
-                  :
-                  null
-              }
-            </div>
-            <div className={styles.inputBox}>
-              <label htmlFor="inviteName">Card Name</label>
-              <InputText id="inviteName" name="Card_name" type="text" value={cardFields.Card_name} onChange={(e) => addCardFieldHandler("Card_name", e.target.value)} placeholder='Enter your name' />
-            </div>
-            <div className={styles.inputBox}>
-              <label htmlFor="expire_date">Expire Date</label>
-              <InputText id="expire_date" name="expire_date" type="text" value={cardFields.expire_date} onChange={(e) => addCardFieldHandler("expire_date", e.target.value)} placeholder='01/23' />
-            </div>
-            <div className={styles.inputBox}>
-              <label htmlFor="cvv">CVV</label>
-              <InputText id="cvv" name="cvv" type="text" value={cardFields.cvv} onChange={(e) => addCardFieldHandler("cvv", e.target.value)} placeholder='123' />
-            </div>
-            <div className="p-d-flex p-ai-center p-mt-4">
-              <div className="p-m-auto">
-                <button onClick={saveCardHandler} className={layoutStyles.customBlueBgbtn}>
-                  {
-                    editId ? "Update Card" : "Add Card"
-                  }
-                  </button>
-                <button onClick={cancelAddCardHandler} className={layoutStyles.customBluebtn}>Cancel</button>
-              </div>
-            </div>
-          </div>
+          <Formik
+            enableReinitialize
+            initialValues={{
+              Card_name: cardFields ? cardFields.Card_name : 'asdas',
+              card_number: cardFields ? cardFields.card_number : '',
+              cvv: cardFields ? cardFields.cvv : '',
+              expire_date: cardFields ? cardFields.expire_date : ''
+
+            }}
+            validationSchema={validationSchema}
+            onSubmit={(
+              values: CardFields,
+              { setSubmitting }: FormikHelpers<CardFields>
+            ) => {
+              saveCardHandler(JSON.stringify(values, null, 2));
+              setSubmitting(false);
+            }}
+          >
+            {props => (
+              <form onSubmit={props.handleSubmit}>
+                {
+                  formSpinner ? <div className={styles.formSpinner}>
+                    <div className={styles.loading}></div>
+                  </div> : null
+                }
+                <div className={styles.inputFields}>
+                  <div className={styles.inputBox}>
+                    <label htmlFor="inviteEmail">Card Number</label>
+                    <div>
+                      <Field type="text" name="card_number" onChange={(e: any) => addCardFieldHandler('card_number', e.target.value, props.setFieldValue)} />
+                      <ErrorMessage name="card_number">
+                        {(msg) => <p className={styles.error}>{msg}</p>}
+                      </ErrorMessage>
+                    </div>
+                    {
+                      cardType ?
+                        (
+                          cardType == 'mastercard' ? <FaCcMastercard /> : (cardType == 'visa' ? <FaCcVisa /> : (cardType == 'diners-club' ? <FaCcDinersClub /> : (cardType == 'jcb' ? <FaCcJcb /> : (cardType == 'discover' ? <FaCcDiscover /> : (cardType == 'american-express' ? <FaCcAmex /> : null)))))
+                        )
+                        :
+                        null
+                    }
+                  </div>
+                  <div className={styles.inputBox}>
+                    <label htmlFor="inviteName">Card holder name</label>
+                    <div>
+                      <Field type="text" name="Card_name" onChange={(e: any) => addCardFieldHandler('Card_name', e.target.value, props.setFieldValue)} />
+                      <ErrorMessage name="Card_name">
+                        {(msg) => <p className={styles.error}>{msg}</p>}
+                      </ErrorMessage>
+                    </div>
+                  </div>
+                  <div className={styles.inputBox}>
+                    <label htmlFor="expire_date">Expire Date</label>
+                    <div>
+                      <Field type="text" name="expire_date" onChange={(e: any) => addCardFieldHandler('expire_date', e.target.value, props.setFieldValue)} />
+                      <ErrorMessage name="expire_date">
+                        {(msg) => <p className={styles.error}>{msg}</p>}
+                      </ErrorMessage>
+                    </div>
+                  </div>
+                  <div className={styles.inputBox}>
+                    <label htmlFor="cvv">CVV</label>
+                    <div>
+                      <Field type="text" name="cvv" onChange={(e: any) => addCardFieldHandler('cvv', e.target.value, props.setFieldValue)} />
+                      <ErrorMessage name="cvv">
+                        {(msg) => <p className={styles.error}>{msg}</p>}
+                      </ErrorMessage>
+                    </div>
+                  </div>
+                  <div className="p-d-flex p-ai-center p-mt-3">
+                    <div className="p-m-auto">
+                      <button type="submit" className={layoutStyles.customBlueBgbtn}>
+                        {
+                          editId ? "Update Card" : "Add Card"
+                        }
+                      </button>
+                      <button type="button" onClick={cancelAddCardHandler} className={layoutStyles.customBluebtn}>Cancel</button>
+                    </div>
+                  </div>
+                </div>
+              </form>
+            )}
+          </Formik>
         </div>
-      </Modal>
+      </Dialog>
+
     </DashboardLayout>
   )
 }

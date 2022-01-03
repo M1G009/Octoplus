@@ -1,0 +1,24 @@
+.loading {
+    height: 0;
+    width: 0;
+    padding: 15px;
+    border: 6px solid #293cf1;
+    border-right-color: #0000;
+    border-radius: 22px;
+    -webkit-animation: rotate 1s infinite linear;
+    animation: rotate 1s infinite linear;
+  }
+  
+  @-webkit-keyframes rotate {
+    100% {
+      -webkit-transform: rotate(360deg);
+      transform: rotate(360deg);
+    }
+  }
+
+  @keyframes rotate {
+    100% {
+      -webkit-transform: rotate(360deg);
+      transform: rotate(360deg);
+    }
+  }

@@ -25,7 +25,7 @@ $XXLarge: 1600px;
         width: 198px;
         max-width: 100%;
         aspect-ratio: 198/48;
-        margin-bottom: 30px;
+        margin-bottom: 15px;
 
         @media (max-width: $Large) {
             margin-bottom: 15px;
@@ -45,6 +45,8 @@ $XXLarge: 1600px;
         form {
             display: flex;
             flex-flow: column;
+            position: relative;
+            background-color: #ffffffb8;
 
             .titleBox {
                 text-align: center;
@@ -53,6 +55,7 @@ $XXLarge: 1600px;
                     font-weight: 500;
                     font-size: 25px;
                     color: $darkBlue;
+                    margin: 0;
                 }
 
                 p {
@@ -64,13 +67,23 @@ $XXLarge: 1600px;
                 }
 
                 @media (max-width: $XLarge) {
-                    h3{
+                    h3 {
                         font-size: 22px;
                         margin-bottom: 0px;
                     }
 
-                    p{
-                        margin-bottom: 5px
+                    p {
+                        margin-bottom: 5px;
+                    }
+                }
+            }
+
+            .passconFields {
+                @media (max-width: 500px) {
+                    flex-wrap: wrap;
+                    .inputBox {
+                        width: 100%;
+                        margin-right: 0px !important;
                     }
                 }
             }
@@ -103,16 +116,21 @@ $XXLarge: 1600px;
                     font-size: 16px;
                     color: $darkBlue;
                     outline: none;
+
+                    &:focus {
+                        border-color: $lightBlue;
+                    }
                 }
 
                 input.blue,
-                select.blue {
+                select.blue,
+                .blue input {
                     border-color: $lightBlue;
                 }
 
-                input.red,
-                select.red {
-                    border-color: #f12222;
+                .error {
+                    margin: 5px 0px 0px;
+                    color: #ff0000;
                 }
 
                 svg {
@@ -120,7 +138,7 @@ $XXLarge: 1600px;
                     font-size: 20px;
                     position: absolute;
                     right: 15px;
-                    top: 16px;
+                    top: 15px;
                     cursor: pointer;
                 }
 
@@ -147,7 +165,7 @@ $XXLarge: 1600px;
 
                     svg {
                         right: 10px;
-                        top: 12px;
+                        top: 10px;
                     }
                 }
 
@@ -165,28 +183,23 @@ $XXLarge: 1600px;
 
                     svg {
                         right: 10px;
-                        top: 12px;
-                    }
-                }
-
-                @media (max-width: $Large) {
-                    margin-bottom: 12px;
-
-                    input,
-                    select {
-                        padding: 5px;
-                    }
-
-                    svg {
                         top: 10px;
                     }
                 }
             }
 
             .radioBox {
-                display: flex;
-                align-items: center;
                 margin-bottom: 28px;
+
+                > div {
+                    display: flex;
+                    align-items: center;
+                }
+
+                .error {
+                    margin: 5px 0px 0px;
+                    color: #ff0000;
+                }
 
                 input {
                     width: 16px;
@@ -215,6 +228,7 @@ $XXLarge: 1600px;
                 color: #fff;
                 border: none;
                 padding: 12px;
+                cursor: pointer;
 
                 &:active {
                     opacity: 0.9;
@@ -241,6 +255,7 @@ $XXLarge: 1600px;
                     background: rgba(34, 54, 241, 0.12);
                     border-radius: 4px;
                     color: #2236f1;
+                    cursor: pointer;
                 }
             }
 
@@ -259,6 +274,41 @@ $XXLarge: 1600px;
 
         @media (max-width: $XLarge) {
             padding: 15px;
+        }
+    }
+}
+
+.formSpinner {
+    position: absolute;
+    inset: 0px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #ffffff87;
+    z-index: 999;
+
+    .loading {
+        height: 0;
+        width: 0;
+        padding: 15px;
+        border: 6px solid #293cf1;
+        border-right-color: #0000;
+        border-radius: 22px;
+        -webkit-animation: rotate 1s infinite linear;
+        animation: rotate 1s infinite linear;
+    }
+
+    @-webkit-keyframes rotate {
+        100% {
+            -webkit-transform: rotate(360deg);
+            transform: rotate(360deg);
+        }
+    }
+
+    @keyframes rotate {
+        100% {
+            -webkit-transform: rotate(360deg);
+            transform: rotate(360deg);
         }
     }
 }

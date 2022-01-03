@@ -1,17 +1,29 @@
+// React Module Imports
 import { useState } from 'react'
+
+// Next Module Imports
 import type { NextPage } from 'next'
+import { useRouter } from 'next/router'
 import Link from 'next/link'
-import { ToastContainer } from "react-toastify";
-import { setCookies } from 'cookies-next';
-import { Formik, Field, Form, FormikHelpers } from 'formik';
-import styles from '../../styles/Auth.module.scss'
-import Router from 'next/router'
-import Layout from '../../components/layout'
 import Image from 'next/image'
-import Logo from '../../public/images/Logo_auth.svg'
+import { setCookies } from 'cookies-next';
+
+// Prime React Imports
+import { Password } from 'primereact/password';
+
+// 3rd Party Imports
+import * as yup from 'yup';
+import { ErrorMessage, Formik, Field, FormikHelpers } from 'formik';
+import { ToastContainer } from "react-toastify";
+
+// Style and Component Imports
+import Logo from '../../public/images/logo_auth.svg'
+import styles from '../../styles/Auth.module.scss'
+import Layout from '../../components/layout'
 import { withAuthSync } from '../../utils/auth'
 
-import toast from "../../components/Toast";
+// Interface/Helper Imports
+import service from '../../helper/api/api';
 
 interface Values {
   email: string;
@@ -19,68 +31,43 @@ interface Values {
 }
 
 const Login: NextPage = () => {
-  const [submitDisable, setSubmitDisable] = useState(true);
-  const [errorMessage, setErrorMessage] = useState(false);
+  const router = useRouter();
+  const [errorMessage, setErrorMessage] = useState('');
+  const [authSpinner, setAuthSpinner] = useState(false);
 
-  const handleSubmit = async (userData: any) => {
+  const validationSchema = yup.object().shape({
+    email: yup.string().required('Please enter email').email("Please enter valid email"),
+    password: yup.string().required('Please enter password')
+  });
+
+  // LoginSubmitHandler
+  const LoginSubmitHandler = async (userData: any) => {
     try {
-      setSubmitDisable(true)
-      // console.log(userData);
+      setAuthSpinner(true)
 
-      fetch(`${process.env.API_BASE_URL}/user/login`, {
+      const { data } = await service({
+        url: `${process.env.API_BASE_URL}/user/login`,
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: userData,
-      })
-        .then(res => res.json())
-        .then(async res => {
-          // console.log(res);
-          
-          if (res.status != 200) {
-            setErrorMessage(res.message)
-            await toast({ type: "error", message: res.message });
-            return false
-          }
-          let setUser = Date.now()+JSON.parse(userData).email;
-          // console.log(setUser);
-          window.localStorage.setItem('loginUserdata', JSON.stringify(res.data[0].user));
-          window.localStorage.setItem('authToken', JSON.stringify(res.data[0].token));
-          await window.localStorage.setItem('ValidUser', setUser);
-          await setCookies('ValidUser', setUser);
-          setErrorMessage(false)
-          Router.push('/');
-        })
+        data: userData,
+        headers: { 'Content-Type': 'application/json' }
+      });
+      if (data.status != 200) {
+        setErrorMessage(data.message)
+        return setAuthSpinner(false)
+      }
+      let setUser = Date.now() + JSON.parse(userData).email;
+      window.localStorage.setItem('loginUserdata', JSON.stringify(data.data[0].user));
+      window.localStorage.setItem('authToken', JSON.stringify(data.data[0].token));
+      await window.localStorage.setItem('ValidUser', setUser);
+      await setCookies('ValidUser', setUser);
+      setErrorMessage('')
+      setAuthSpinner(false)
+      router.push('/');
 
-      setSubmitDisable(false)
-
-    } catch (error: any) {
-      console.error(error)
-      setSubmitDisable(false);
+    } catch (err: any) {
+      setErrorMessage(err.message)
+      setAuthSpinner(false);
     }
-  }
-
-  const validateEmail = (value: string) => {
-    setSubmitDisable(false);
-    setErrorMessage(false);
-    let error;
-    if (!value) {
-      error = 'Required';
-    } else if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(value)) {
-      error = 'Invalid email address';
-    }
-    return error;
-  }
-  
-  const validatePassword = (value: string) => {
-    setSubmitDisable(false);
-    setErrorMessage(false);
-    let error;
-    if (!value) {
-      error = 'Required';
-    } else if (value.length < 8) {
-      error = 'Invalid Password';
-    }
-    return error;
   }
 
   return (
@@ -101,7 +88,8 @@ const Login: NextPage = () => {
           <Image
             src={Logo}
             alt="Octoplus"
-            layout="fill"
+            width={198}
+            height={48}
           />
         </div>
         <div className={styles.authForm}>
@@ -110,17 +98,22 @@ const Login: NextPage = () => {
               email: '',
               password: ''
             }}
+            validationSchema={validationSchema}
             onSubmit={(
               values: Values,
               { setSubmitting }: FormikHelpers<Values>
             ) => {
-              handleSubmit(JSON.stringify(values, null, 2));
+              LoginSubmitHandler(JSON.stringify(values, null, 2));
               setSubmitting(false);
             }}
           >
             {props => (
               <form onSubmit={props.handleSubmit}>
-
+                {
+                  authSpinner ? <div className={styles.formSpinner}>
+                    <div className={styles.loading}></div>
+                  </div> : null
+                }
                 <div className={styles.titleBox}>
                   <h3>Sign In to Octoplus</h3>
                   <p>
@@ -132,13 +125,10 @@ const Login: NextPage = () => {
                 </div>
                 <div className={styles.inputBox}>
                   <label htmlFor="email">Email</label>
-                  <Field name="email" validate={validateEmail}>
-                    {({ field }: any) => (
-                      <input type="text" {...field}
-                        className={props.values.email ? (props.errors.email ? styles.red : styles.blue) : ''}
-                        id="email" autoFocus />
-                    )}
-                  </Field>
+                  <Field type="email" name="email" />
+                  <ErrorMessage name="email">
+                    {(msg) => <p className={styles.error}>{msg}</p>}
+                  </ErrorMessage>
                 </div>
 
                 <div className={styles.inputBox}>
@@ -146,20 +136,22 @@ const Login: NextPage = () => {
                     Password
                     <Link href="/auth/forgotpassword">
                       <a>Forgot Password ?</a>
-                    </Link></label>
-                  <Field name="password" validate={validatePassword}>
+                    </Link>
+                  </label>
+                  <Field name="password">
                     {({ field }: any) => (
-                      <input type="password" {...field}
-                        className={props.values.password ? (props.errors.password ? styles.red : styles.blue) : ''}
-                        id="password"
-                      />
+                      <Password {...field} toggleMask feedback={false} />
                     )}
                   </Field>
+                  <ErrorMessage name="password">
+                    {(msg) => <p className={styles.error}>{msg}</p>}
+                  </ErrorMessage>
+                  
                 </div>
                 {
-                  errorMessage ? <p className={styles.formError}>{errorMessage}</p> : null
+                  errorMessage ? <p className={styles.formError + " p-mt-0"}>{errorMessage}</p> : null
                 }
-                <button type="submit" disabled={submitDisable}>Login</button>
+                <button type="submit">Login</button>
               </form>
             )}
           </Formik>
