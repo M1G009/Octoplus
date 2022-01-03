@@ -20,7 +20,7 @@ import * as yup from 'yup';
 // Style and Component Imports
 import styles from '../../styles/Auth.module.scss'
 import Layout from '../../components/layout'
-import Logo from '../../public/images/logo_auth.svg'
+import Logo from '../../public/images/logo_authentication.svg'
 import { withAuthSync } from '../../utils/auth'
 
 // Interface/Helper Imports

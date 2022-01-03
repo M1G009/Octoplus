@@ -17,7 +17,7 @@ import { ErrorMessage, Formik, Field, FormikHelpers } from 'formik';
 import { ToastContainer } from "react-toastify";
 
 // Style and Component Imports
-import Logo from '../../public/images/logo_auth.svg'
+import Logo from '../../public/images/logo_authentication.svg'
 import styles from '../../styles/Auth.module.scss'
 import Layout from '../../components/layout'
 import { withAuthSync } from '../../utils/auth'
