@@ -976,7 +976,11 @@ const Signup: NextPage = () => {
     ]
 
     const validationSchema = yup.object().shape({
-        username: yup.string().required("Please enter user name"),
+        username: yup
+      .string()
+      .matches(/^[A-Za-z ]*$/, 'Please enter valid user name')
+      .max(40)
+      .required('Please enter user name'),
         email: yup.string().required('Please enter email').email("Please enter valid email"),
         password: yup.string().required('Please enter password').min(8, 'Password is too short - should be 8 chars minimum'),
         confirmpassword: yup.string().required('Please enter confirm password').oneOf([yup.ref('password'), null], 'Passwords must match'),
@@ -998,18 +1002,18 @@ const Signup: NextPage = () => {
             delete newUser.confirmpassword;
 
             const { data } = await service({
-                url: `${process.env.API_BASE_URL}/user/login`,
+                url: `${process.env.API_BASE_URL}/user/signup`,
                 method: 'POST',
                 data: JSON.stringify(newUser),
                 headers: { 'Content-Type': 'application/json' }
             });
-
+            
             if (data.status != 200) {
                 setErrorMessage(data.message)
                 return setAuthSpinner(false);
             }
-            let setUser = Date.now() + JSON.parse(userData).email;
-            window.localStorage.setItem('loginUserdata', JSON.stringify(data.data[0].user));
+            let setUser = Date.now() + userData.email;
+            window.localStorage.setItem('loginUserdata', JSON.stringify(data.data[0]));
             window.localStorage.setItem('authToken', JSON.stringify(data.data[0].token));
             window.localStorage.setItem('ValidUser', setUser);
             await setCookies('ValidUser', setUser);
