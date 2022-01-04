@@ -485,3 +485,35 @@ $lightBlue: #2236f1;
         }
     }
 }
+
+.CSVUpload {
+    label {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #2236f1;
+        padding: 7px 10px;
+        width: max-content;
+        max-width: 100%;
+        margin: auto;
+        border: 2px solid #2236f1;
+        border-radius: 5px;
+        cursor: pointer;
+
+        svg {
+            font-size: 22px;
+            margin-right: 5px;
+        }
+    }
+    .fileName {
+        margin: 5px 0px 0px;
+        color: #2236f1;
+    }
+    .CSVFileUpload {
+        display: none;
+    }
+    .error {
+        color: #ff0000;
+        margin: 0px;
+    }
+}

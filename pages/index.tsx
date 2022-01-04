@@ -11,10 +11,11 @@ import { Menubar } from 'primereact/menubar';
 import { RadioButton } from 'primereact/radiobutton';
 import { Checkbox } from 'primereact/checkbox';
 import { Dialog } from 'primereact/dialog';
+import { FiUpload } from 'react-icons/fi';
 
 // 3rd Party Imports
 import * as yup from 'yup';
-import { AiOutlineSwap, AiOutlineClose } from "react-icons/ai";
+import { AiOutlineSwap } from "react-icons/ai";
 import { ErrorMessage, Formik, FieldArray, Field, FormikHelpers } from 'formik';
 import toast from "../components/Toast";
 import DragDrop from '../components/DragDrop'
@@ -57,8 +58,14 @@ export interface TableColumns {
   readonly: Boolean
 }
 
+export interface CSVUpload {
+  file: any
+}
+
 const Dashboard: NextPage = () => {
   const router = useRouter();
+  const [noDataModal, setNoDataModal] = useState(false);
+  const [noDataModalSpinner, setNoDataModalSpinner] = useState(false);
   const [addFiledSpinner, setAddFiledSpinner] = useState(false);
   const [replaceDataSpinner, setReplaceDataSpinner] = useState(false);
   const [settingDataModal, setSettingDataModal] = useState(false);
@@ -77,39 +84,6 @@ const Dashboard: NextPage = () => {
   const [initialValues, setInitialValues] = useState<DynamicFields>()
   const [types, setTypes] = useState<DynamicFields>()
   const [columns, setColumns] = useState<TableColumns[]>([])
-
-  // const TASKS = [
-  //   {
-  //     id: 0,
-  //     name: "loundry",
-  //     hide: false
-  //   },
-  //   {
-  //     id: 1,
-  //     name: "this program",
-  //     hide: false
-  //   },
-  //   {
-  //     id: 2,
-  //     name: "FrasierApp",
-  //     hide: false
-  //   },
-  //   {
-  //     id: 3,
-  //     name: "hide one",
-  //     hide: true
-  //   },
-  //   {
-  //     id: 4,
-  //     name: "learn Redux",
-  //     hide: false
-  //   },
-  //   {
-  //     id: 5,
-  //     name: "cook dinner",
-  //     hide: true
-  //   }
-  // ];
 
   // Pagination States
   const [totalRecords, setTotalRecords] = useState(1);
@@ -136,6 +110,9 @@ const Dashboard: NextPage = () => {
         headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
       });
       if (data) {
+        if (!data.data.length) {
+          setNoDataModal(true)
+        }
         // setColumns
         let withVal = { ...data.data.dtypes };
         Object.keys(withVal).forEach(function (key) { withVal[key] = "" });
@@ -155,7 +132,7 @@ const Dashboard: NextPage = () => {
         })
 
         let hideFields = data.data.hide;
-        Object.keys(hideFields).map((el: any, index: number) => {          
+        Object.keys(hideFields).map((el: any, index: number) => {
           let columnObj = { id: Object.keys(showFields).length + index, name: "", editedName: "", hide: true, readonly: true }
           columnObj['name'] = el;
           columnObj['editedName'] = el;
@@ -163,7 +140,7 @@ const Dashboard: NextPage = () => {
           columnObj['readonly'] = true;
           columnArray.push(columnObj)
         })
-        
+
         setColumns(columnArray);
         setTypes(data.data.dtypes);
         setContacts(data.data.registry);
@@ -233,12 +210,15 @@ const Dashboard: NextPage = () => {
         return router.push('/auth');
       }
 
-      await service({
-        url: `https://octoplusapi.herokuapp.com/edit_feild`,
+      let data = await service({
+        url: `https://octoplusapi.herokuapp.com/export`,
         method: 'POST',
-        data: {"format":"csv"},
+        data: { "format": "csv" },
         headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
       });
+      let csvContent = "data:text/csv;charset=utf-8," + data.data;
+      var encodedUri = encodeURI(csvContent);
+      window.open(encodedUri);
 
     } catch (err) {
       return await toast({ type: "error", message: err });
@@ -247,6 +227,7 @@ const Dashboard: NextPage = () => {
 
   const contactFieldsTypeHandler = (key: string) => {
     if (types) {
+
       if (types[key].toLowerCase() == "textarea") {
         return <div>
           <Field name={key}>
@@ -492,7 +473,7 @@ const Dashboard: NextPage = () => {
             columnsOrder.push(el.name)
           }
         })
-        
+
         await service({
           url: `https://octoplusapi.herokuapp.com/columnorder`,
           method: 'POST',
@@ -540,6 +521,59 @@ const Dashboard: NextPage = () => {
       setDeleteColumnModalSpinner(true);
       setDeleteColumnModal(false);
       return await toast({ type: "error", message: err });
+    }
+  }
+
+  const createContactDialogCloseHandler = (e: any) => {
+    if (e.target.classList.contains("p-dialog-mask")) {
+      emptyContactFiledHandler();
+    }
+  }
+
+  const addNewFieldDialogCloseHandler = (e: any) => {
+    if (e.target.classList.contains("p-dialog-mask")) {
+      setAddNewFieldModal(false)
+    }
+  }
+
+  const replaceDataDialogCloseHandler = (e: any) => {
+    if (e.target.classList.contains("p-dialog-mask")) {
+      setReplaceDataModal(false);
+    }
+  }
+
+  const tableSettingDialogCloseHandler = (e: any) => {
+    if (e.target.classList.contains("p-dialog-mask")) {
+      setSettingDataModal(false);
+    }
+  }
+
+  const columnDeleteDialogCloseHandler = (e: any) => {
+    if (e.target.classList.contains("p-dialog-mask")) {
+      deleteColumnHandler();
+    }
+  }
+
+  const noDataDialogCloseHandler = (e: any) => {
+    if (e.target.classList.contains("p-dialog-mask")) {
+      setNoDataModal(false);
+    }
+  }
+
+  const csvFileUploadHandler = (e: any, setFieldValue: any) => {
+    {
+      setFieldValue("file", e.currentTarget.files[0]);
+    }
+  }
+
+  const CSVUploadSubmitHandler = (getData: any) => {
+    console.log(getData);
+    return router.push('/product');
+  }
+
+  const csvFileName = (value: any) => {
+    if (value && value.file) {
+        return "File Name:- " + value.file.name
     }
   }
 
@@ -622,7 +656,7 @@ const Dashboard: NextPage = () => {
             }
 
             {/* Create-Contact-Modal */}
-            <Dialog showHeader={false} className={styles.createNewContactCustomStyles} maskClassName={styles.dialogMask} position={'right'} visible={createNewContactModal} style={{ width: '500px', }} onHide={() => ''}>
+            <Dialog showHeader={false} onMaskClick={createContactDialogCloseHandler} className={styles.createNewContactCustomStyles} maskClassName={styles.dialogMask} position={'right'} visible={createNewContactModal} style={{ width: '500px', }} onHide={() => ''}>
               <div className={styles.createContactModal}>
                 <h5>Create new contact</h5>
                 {
@@ -698,7 +732,7 @@ const Dashboard: NextPage = () => {
             </Dialog>
 
             {/* Add New Field-Modal */}
-            <Dialog showHeader={false} contentClassName={styles.addNewFieldModalCustomStyles} maskClassName={styles.dialogMask} visible={addNewFieldModal} style={{ width: '500px', }} onHide={() => ''}>
+            <Dialog showHeader={false} onMaskClick={addNewFieldDialogCloseHandler} contentClassName={styles.addNewFieldModalCustomStyles} maskClassName={styles.dialogMask} visible={addNewFieldModal} style={{ width: '500px', }} onHide={() => ''}>
               <div className={styles.addNewFieldModal}>
                 <h5>Add new field</h5>
                 <Formik
@@ -750,7 +784,7 @@ const Dashboard: NextPage = () => {
             </Dialog>
 
             {/* Replace data-Modal */}
-            <Dialog showHeader={false} contentClassName={styles.addNewFieldModalCustomStyles} maskClassName={styles.dialogMask} visible={replaceDataModal} style={{ width: '500px', }} onHide={() => ''}>
+            <Dialog showHeader={false} onMaskClick={replaceDataDialogCloseHandler} contentClassName={styles.addNewFieldModalCustomStyles} maskClassName={styles.dialogMask} visible={replaceDataModal} style={{ width: '500px', }} onHide={() => ''}>
               <div className={styles.addNewFieldModal}>
                 <Formik
                   enableReinitialize
@@ -830,7 +864,7 @@ const Dashboard: NextPage = () => {
             </Dialog>
 
             {/* Table Setting data-Modal */}
-            <Dialog showHeader={false} contentClassName={styles.addNewFieldModalCustomStyles} maskClassName={styles.dialogMask} visible={settingDataModal} style={{ width: '600px', }} onHide={() => ''}>
+            <Dialog showHeader={false} onMaskClick={tableSettingDialogCloseHandler} contentClassName={styles.addNewFieldModalCustomStyles} maskClassName={styles.dialogMask} visible={settingDataModal} style={{ width: '600px', }} onHide={() => ''}>
               <div className={styles.addNewFieldModal}>
                 {
                   editColumnModalSpinner ? <div className={styles.formSpinner}>
@@ -840,7 +874,6 @@ const Dashboard: NextPage = () => {
                 <div className={styles.replaceDataModal + " " + styles.tableSettings}>
                   <h5>
                     Table Setting
-                    <button type='button' onClick={() => setSettingDataModal(false)} className={styles.closeIcon}><AiOutlineClose /></button>
                   </h5>
                   <DragDrop tasks={columns} setColumns={setColumns} editHandler={columnEditHandler} setEditNameHandler={setEditNameHandler} saveColumnHandler={saveColumnHandler} setDeleteColumnModal={setDeleteColumnModal} setDeleteColumnName={setDeleteColumnName} hideShowColumnHandler={hideShowColumnHandler} />
                 </div>
@@ -848,7 +881,7 @@ const Dashboard: NextPage = () => {
             </Dialog>
 
             {/* column delete modal */}
-            <Dialog showHeader={false} contentClassName={styles.addNewFieldModalCustomStyles} maskClassName={styles.dialogMask} visible={deleteColumnModal} style={{ width: '600px', }} onHide={() => ''}>
+            <Dialog showHeader={false} onMaskClick={columnDeleteDialogCloseHandler} contentClassName={styles.addNewFieldModalCustomStyles} maskClassName={styles.dialogMask} visible={deleteColumnModal} style={{ width: '600px', }} onHide={() => ''}>
               <div className={styles.addNewFieldModal}>
                 {
                   deleteColumnModalSpinner ? <div className={styles.formSpinner}>
@@ -873,6 +906,65 @@ const Dashboard: NextPage = () => {
                     </div>
                   </div>
                 </div>
+              </div>
+            </Dialog>
+
+            {/* No data upload csv modal */}
+            <Dialog showHeader={false} onMaskClick={noDataDialogCloseHandler} contentClassName={styles.addNewFieldModalCustomStyles} maskClassName={styles.dialogMask} visible={noDataModal} style={{ width: '600px', }} onHide={() => ''}>
+              <div className={styles.addNewFieldModal}>
+                {
+                  noDataModalSpinner ? <div className={styles.formSpinner}>
+                    <div className={styles.loading}></div>
+                  </div> : null
+                }
+                <Formik
+                  enableReinitialize
+                  validationSchema={yup.object().shape({
+                    file: yup.mixed().required("Please upload CSV file").test("type", "Only CSV format is accepted", (value) => {
+                      return value && (
+                        value.type === "application/vnd.ms-excel"
+                      );
+                    }),
+                  })}
+                  initialValues={{ file: null }}
+                  onSubmit={(
+                    values: CSVUpload | null,
+                    { setSubmitting }: FormikHelpers<CSVUpload>
+                  ) => {
+                    CSVUploadSubmitHandler(values);
+                    setSubmitting(false);
+                  }}
+                >
+                  {props => (
+                    <form onSubmit={props.handleSubmit}>
+                      <div className={styles.CSVUpload}>
+                        <h5>Upload CSV</h5>
+                        <div className={styles.inputFields}>
+                          <div className="p-text-center">
+                            <label
+                              htmlFor="CSVFileUpload"
+                              className="button">
+                                <FiUpload />
+                              Upload an image
+                            </label>
+                            <p className={styles.fileName}>{ csvFileName(props.values) }</p>
+                            <input id="CSVFileUpload" name="file" type="file" accept=".csv" onChange={(e) => csvFileUploadHandler(e, props.setFieldValue)} className={styles.CSVFileUpload} />
+                            
+                            <ErrorMessage name="file">
+                              {(msg) => <p className={styles.error}>{msg}</p>}
+                            </ErrorMessage>
+                          </div>
+                          <div className="p-d-flex p-ai-center p-mt-4">
+                            <div className="p-m-auto">
+                              <button type='button' onClick={() => { setDeleteColumnName(null); setDeleteFromDatabase(false); setNoDataModal(false) }} className={layoutStyles.customBluebtn} >Cancel</button>
+                              <button type='submit' className={layoutStyles.customBlueBgbtn}>Upload</button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </form>
+                  )}
+                </Formik>
               </div>
             </Dialog>
           </div>
