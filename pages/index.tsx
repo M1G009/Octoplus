@@ -109,8 +109,8 @@ const Dashboard: NextPage = () => {
         method: 'GET',
         headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
       });
-      if (data) {
-        if (!data.data.length) {
+      if (data) {       
+        if (!data.data.registry.length) {
           setNoDataModal(true)
         }
         // setColumns
