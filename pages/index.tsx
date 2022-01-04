@@ -110,8 +110,6 @@ const Dashboard: NextPage = () => {
         headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
       });
       if (data) {      
-        console.log(data);
-         
         if (!data.data.length && !data.data.registry) {
           setNoDataModal(true)
         }
@@ -569,13 +567,14 @@ const Dashboard: NextPage = () => {
   }
 
   const CSVUploadSubmitHandler = (getData: any) => {
-    console.log(getData);
+    // console.log(getData);
     return router.push('/product');
   }
 
   const csvFileName = (value: any) => {
     if (value && value.file) {
-        return "File Name:- " + value.file.name
+        // return "File Name:- " + value.file.name
+        return "File Name:- New Contacts.CSV"
     }
   }
 

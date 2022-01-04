@@ -215,8 +215,8 @@ const Account: NextPage = () => {
                 />
               </div>
               <div className={styles.textBox}>
-                <h5>Esther Howard</h5>
-                <p>debra.holt@example.com</p>
+                <h5>{loginUserData ? loginUserData.username : ''}</h5>
+                <p>{loginUserData ? loginUserData.email : ''}</p>
               </div>
             </div>
             <input type="file" className="p-d-none"
