@@ -96,7 +96,6 @@ const Team: NextPage = (props: any) => {
       scopes: []
     }
   );
-
   const [addScopeData, setAddScopeData] = useState<Scope>(
     {
       name: "",
@@ -113,6 +112,7 @@ const Team: NextPage = (props: any) => {
   const [roleNames, setRoleNames] = useState<RoleNames[]>([]);
   const [roleData, setRoleData] = useState<RoleData[]>();
   const [teamMember, setTeamMember] = useState<TeamMember[]>([])
+  const [editScopeSpinner, setEditScopeSpinner] = useState(false)
 
   // States Ends
   const fetchAllRoles = async () => {
@@ -246,6 +246,10 @@ const Team: NextPage = (props: any) => {
   }
 
   const editScopeHandler = (index: number) => {
+    setEditScopeSpinner(true)
+    setTimeout(() => {
+      setEditScopeSpinner(false)
+    }, 1000)
     setEditScopeIndex(index);
     let scopeOfRoleArray = createRoleScopeData.scopes.slice();
     setAddScopeData(scopeOfRoleArray[index]);
@@ -256,6 +260,17 @@ const Team: NextPage = (props: any) => {
     scopeOfRoleArray.splice(index, 1);
     const editRole = { ...createRoleScopeData, ['scopes']: scopeOfRoleArray };
     setCreateRoleScopeData(editRole);
+    setEditScopeIndex(-1);
+    setAddScopeData({
+      name: "",
+      slug: "",
+      access: {
+        create: true,
+        read: true,
+        update: true,
+        delete: true
+      }
+    })
     toast({ type: "success", message: "Delete Role Successful" });
   }
 
@@ -416,7 +431,8 @@ const Team: NextPage = (props: any) => {
 
   const sendInviteHandler = async (getData: any) => {
     try {
-      let inviteFields = JSON.parse(getData)
+      let inviteFields = JSON.parse(getData);
+      inviteFields.role = inviteFields.role.label;
       let authToken = await window.localStorage.getItem('authToken');
 
       if (!authToken) {
@@ -430,10 +446,10 @@ const Team: NextPage = (props: any) => {
         url: `${process.env.API_BASE_URL}/invite_send`,
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) },
-        data: JSON.stringify(inviteFields)
+        data: inviteFields
       });
 
-      toast({ type: "success", message: "Invite send successful" });
+      toast({ type: "success", message: data.message });
       return setInvitePeopleModal(false)
 
     } catch (err) {
@@ -466,7 +482,7 @@ const Team: NextPage = (props: any) => {
         await fetchAllRoles();
       }
     } catch (err) {
-      return  toast({ type: "error", message: err });
+      return toast({ type: "error", message: err });
     }
   }
 
@@ -494,7 +510,7 @@ const Team: NextPage = (props: any) => {
               <div className={layoutStyles.head}>
                 <h4>Team Members <span>({teamMember.length})</span></h4>
                 <div className={layoutStyles.editButtons}>
-                  <button onClick={() => setCreateRole(true)} className={layoutStyles.blueBtn}>Create Role</button>
+                  <button onClick={() => setCreateRole(true)} className={layoutStyles.blueBtn}>Create & Edit Role</button>
                   <button onClick={() => setInvitePeopleModal(true)} className={layoutStyles.blueBgBtn}>Invite People</button>
                 </div>
               </div>
@@ -542,7 +558,7 @@ const Team: NextPage = (props: any) => {
             :
             <div className={layoutStyles.headContentBox}>
               <div className={layoutStyles.head}>
-                <h4>Create Role</h4>
+                <h4>Create & Edit Role</h4>
                 <div className={layoutStyles.editButtons}>
                   {
                     (selectRoleName.label && selectRoleName.id) ? <button onClick={deleteRoleConfirmHandler} className={layoutStyles.customRedBgbtn}>Delete</button> : null
@@ -563,6 +579,11 @@ const Team: NextPage = (props: any) => {
               </div>
               <div className={layoutStyles.textBox}>
                 <div className={styles.profileForm + ' ' + styles.createRoleGroup}>
+                  {
+                    editScopeSpinner ? <div className={styles.formSpinner}>
+                      <div className={styles.loading}></div>
+                    </div> : null
+                  }
                   <div className={styles.inputBox}>
                     <label htmlFor="name">Scope Name</label>
                     <InputText id="name" name="name" type="text" value={addScopeData.name} onChange={(e) => addScopeFieldsHandler(e.target.name, e.target.value, false)} />
@@ -589,8 +610,8 @@ const Team: NextPage = (props: any) => {
                       <Checkbox id="delete" name="delete" checked={addScopeData.access.delete} onChange={(e) => addScopeFieldsHandler("delete", !addScopeData.access.delete, true)} />
                     </div>
                   </div>
-                  <div className="p-mt-3 p-ml-auto">
-                    <button onClick={addScopeHandler} className={layoutStyles.customBluebtn + ' p-m-0'}>Add Scope</button>
+                  <div className="p-mt-3 p-mx-auto">
+                    <button onClick={addScopeHandler} className={layoutStyles.customBluebtn + ' p-m-auto'}>{editScopeIndex >= 0 ? "Save Edit" : "Add Scope"}</button>
                   </div>
                 </div>
               </div>

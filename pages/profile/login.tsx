@@ -8,6 +8,7 @@ import { removeCookies } from 'cookies-next';
 
 // Prime React Imports
 import { Password } from 'primereact/password';
+import { confirmDialog } from 'primereact/confirmdialog';
 
 // 3rd Party Imports
 import * as yup from 'yup';
@@ -16,7 +17,6 @@ import { ToastContainer } from "react-toastify";
 import toast from "../../components/Toast";
 import { withProtectSync } from "../../utils/protect"
 import DashboardLayout from '../../components/DashboardLayout';
-import { confirmDialog } from 'primereact/confirmdialog';
 
 // Style and Component Imports
 import layoutStyles from '../../styles/Home.module.scss';
@@ -76,12 +76,27 @@ const Login: NextPage = () => {
         return await toast({ type: "error", message: data.message });
       }
       await toast({ type: "success", message: "Password Changed Successful" });
-      return setEditProfile(false);
+      removeCookies("ValidUser")
+      window.localStorage.removeItem("authToken")
+      window.localStorage.removeItem("ValidUser")
+      window.localStorage.removeItem('loginUserdata');
+      
+      return router.push('/auth');
 
     } catch (err) {
       setFormSpinner(false);
       return await toast({ type: "error", message: err });
     }
+  }
+
+  const updatePasswordConfirm = (userData: any) => {
+    confirmDialog({
+      message: 'You will be logged out automatically after the password is reset',
+      header: 'Reset Password',
+      icon: 'pi pi-info-circle',
+      acceptClassName: layoutStyles.customRedBgbtn,
+      accept: () => updatePasswordSaveHandler(userData)
+    });
   }
 
   const deleteAccountHandler = async () => {
@@ -179,7 +194,7 @@ const Login: NextPage = () => {
                   values: Values,
                   { setSubmitting }: FormikHelpers<Values>
                 ) => {
-                  updatePasswordSaveHandler(JSON.stringify(values, null, 2));
+                  updatePasswordConfirm(JSON.stringify(values, null, 2));
                   setSubmitting(false);
                 }}
               >

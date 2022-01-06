@@ -84,6 +84,8 @@ const Dashboard: NextPage = () => {
   const [initialValues, setInitialValues] = useState<DynamicFields>()
   const [types, setTypes] = useState<DynamicFields>()
   const [columns, setColumns] = useState<TableColumns[]>([])
+  const [viewData, setViewData] = useState(false)
+  const [editData, setEditData] = useState(false)
 
   // Pagination States
   const [totalRecords, setTotalRecords] = useState(1);
@@ -109,7 +111,7 @@ const Dashboard: NextPage = () => {
         method: 'GET',
         headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
       });
-      if (data) {      
+      if (data) {
         if (!data.data.length && !data.data.registry) {
           setNoDataModal(true)
         }
@@ -195,7 +197,7 @@ const Dashboard: NextPage = () => {
     {
       label: 'Create New Contact',
       className: `${styles.createNewBtn}`,
-      command: () => { setCreateNewContactModal(true) }
+      command: () => { setEditData(false); setViewData(false); setCreateNewContactModal(true) }
     }
   ];
 
@@ -232,7 +234,7 @@ const Dashboard: NextPage = () => {
         return <div>
           <Field name={key}>
             {({ field }: any) => (
-              <textarea {...field} />
+              <textarea {...field} readOnly={viewData} />
             )}
           </Field>
           <ErrorMessage name={key}>
@@ -243,7 +245,7 @@ const Dashboard: NextPage = () => {
         return <div>
           <Field name={key}>
             {({ field }: any) => (
-              <Checkbox {...field} checked={field.value}></Checkbox>
+              <Checkbox {...field} checked={field.value} readOnly={viewData}></Checkbox>
             )}
           </Field>
           <ErrorMessage name={key}>
@@ -252,7 +254,7 @@ const Dashboard: NextPage = () => {
         </div>
       }
       return <div>
-        <Field type={types[key].toLowerCase()} name={key} />
+        <Field type={types[key].toLowerCase()} readOnly={viewData} name={key} />
         <ErrorMessage name={key}>
           {(msg) => <p className={styles.error}>{msg}</p>}
         </ErrorMessage>
@@ -373,7 +375,15 @@ const Dashboard: NextPage = () => {
     }
   }
 
-  const editContactFiledHandler = async (id: any) => {
+  const editContactFiledHandler = async (id: any, view: Boolean) => {
+
+    if (view) {
+      setEditData(false);
+      setViewData(true);
+    } else {
+      setViewData(false);
+      setEditData(true);
+    }
     let copyObj = [...contacts].slice().find(el => el.id == id);
     var checkId = Object.assign({}, copyObj);
     setEditContactRowId(id);
@@ -573,8 +583,8 @@ const Dashboard: NextPage = () => {
 
   const csvFileName = (value: any) => {
     if (value && value.file) {
-        // return "File Name:- " + value.file.name
-        return "File Name:- New Contacts.CSV"
+      // return "File Name:- " + value.file.name
+      return "File Name:- New Contacts.CSV"
     }
   }
 
@@ -619,6 +629,7 @@ const Dashboard: NextPage = () => {
                           })
                         }
                         <th>Actions</th>
+                        <th>View</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -634,7 +645,8 @@ const Dashboard: NextPage = () => {
                                       {
                                         key != "id" ? <td>{`${contacts[i][key]}`}</td> : null
                                       }
-                                      <td><button className={layoutStyles.blueTextBtn} onClick={() => editContactFiledHandler(contacts[i].id)}>Edit</button></td>
+                                      <td><button className={layoutStyles.blueTextBtn} onClick={() => editContactFiledHandler(contacts[i].id, false)}>Edit</button></td>
+                                      <td><button className={layoutStyles.blueTextBtn} onClick={() => editContactFiledHandler(contacts[i].id, true)}>View</button></td>
                                     </React.Fragment>
                                   }
                                   return <td key={"tableTd" + index + i}>{`${contacts[i][key]}`}</td>
@@ -659,27 +671,29 @@ const Dashboard: NextPage = () => {
             {/* Create-Contact-Modal */}
             <Dialog showHeader={false} onMaskClick={createContactDialogCloseHandler} className={styles.createNewContactCustomStyles} maskClassName={styles.dialogMask} position={'right'} visible={createNewContactModal} style={{ width: '500px', }} onHide={() => ''}>
               <div className={styles.createContactModal}>
-                <h5>Create new contact</h5>
+                <h5>{editData ? "Edit Contact" : (viewData ? "View Data" : "Create New Contact")}</h5>
                 {
                   initialValues && types ?
                     <Formik
-                      enableReinitialize
+                      enableReinitialize={!viewData}
                       initialValues={initialValues}
                       validate={(values) => {
                         let error: any = {};
-                        Object.keys(values).map(el => {
-                          if (types[el].toLowerCase() !== "checkbox") {
-                            if (types[el].toLowerCase() == "number") {
-                              var reg = /^\d+$/
-                              if (!reg.test(values[el]) || !values[el]) {
-                                error[el] = "Please enter number";
+                        if (!viewData) {
+                          Object.keys(values).map(el => {
+                            if (types[el].toLowerCase() !== "checkbox") {
+                              if (types[el].toLowerCase() == "number") {
+                                var reg = /^\d+$/
+                                if (!reg.test(values[el]) || !values[el]) {
+                                  error[el] = "Please enter number";
+                                }
+                              } else if (!values[el]) {
+                                error[el] = "Please enter value";
                               }
-                            } else if (!values[el]) {
-                              error[el] = "Please enter value";
                             }
-                          }
-                        })
-                        return error;
+                          })
+                          return error;
+                        }
                       }}
                       onSubmit={(
                         values: DynamicFields,
@@ -718,11 +732,13 @@ const Dashboard: NextPage = () => {
                           />
                           <div className="p-d-flex p-ai-center p-mt-4">
                             {
-                              contactDataUpdated ? <button type="button" className={layoutStyles.customBluebtn}>See original details</button> : null
+                              contactDataUpdated && !viewData ? <button type="button" className={layoutStyles.customBluebtn}>See original details</button> : null
                             }
                             <div className="p-ml-auto">
-                              <button type='submit' className={layoutStyles.customBlueBgbtn}>Save</button>
-                              <button type='button' onClick={emptyContactFiledHandler} className={layoutStyles.customDarkBgbtn}>Cancel</button>
+                              {
+                                !viewData ? <button type='submit' className={layoutStyles.customBlueBgbtn}>Save</button> : ''
+                              }
+                              <button type='button' onClick={emptyContactFiledHandler} className={layoutStyles.customDarkBgbtn}>{viewData ? "Close" : "Cancel"}</button>
                             </div>
                           </div>
                         </form>
@@ -945,12 +961,12 @@ const Dashboard: NextPage = () => {
                             <label
                               htmlFor="CSVFileUpload"
                               className="button">
-                                <FiUpload />
+                              <FiUpload />
                               Upload an image
                             </label>
-                            <p className={styles.fileName}>{ csvFileName(props.values) }</p>
+                            <p className={styles.fileName}>{csvFileName(props.values)}</p>
                             <input id="CSVFileUpload" name="file" type="file" accept=".csv" onChange={(e) => csvFileUploadHandler(e, props.setFieldValue)} className={styles.CSVFileUpload} />
-                            
+
                             <ErrorMessage name="file">
                               {(msg) => <p className={styles.error}>{msg}</p>}
                             </ErrorMessage>

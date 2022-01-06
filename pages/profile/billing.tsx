@@ -9,6 +9,7 @@ import { useRouter } from 'next/router';
 import { Dropdown } from 'primereact/dropdown';
 import { Dialog } from 'primereact/dialog';
 import { confirmDialog } from 'primereact/confirmdialog';
+import { Checkbox } from 'primereact/checkbox';
 
 // 3rd Party Imports
 import * as yup from 'yup';
@@ -34,11 +35,13 @@ import styles from '../../styles/profile.module.scss';
 import service from '../../helper/api/api';
 
 
+
 export interface CardFields {
   Card_name: string;
   card_number: string;
   cvv: string;
   expire_date: string;
+  is_primary: string;
 }
 
 export interface GetCardDetails {
@@ -50,6 +53,7 @@ export interface GetCardDetails {
   card_type: string;
   user_id: string;
   created_date: string;
+  is_primary: string
 }
 
 const Billing: NextPage = () => {
@@ -262,7 +266,7 @@ const Billing: NextPage = () => {
   const editCardHandler = (id: string) => {
     let editCardDetails = getCardDetails.find(el => el._id === id);
     if (editCardDetails) {
-      let createEditCard = { Card_name: editCardDetails.Card_name, card_number: formatCreditCard(editCardDetails.card_number), cvv: editCardDetails.cvv, expire_date: editCardDetails.expire_date }
+      let createEditCard = { Card_name: editCardDetails.Card_name, card_number: formatCreditCard(editCardDetails.card_number), cvv: editCardDetails.cvv, expire_date: editCardDetails.expire_date, is_primary: editCardDetails.is_primary }
       setCardFields(createEditCard);
       setEditId(id);
       setAddCardModal(true)
@@ -275,7 +279,8 @@ const Billing: NextPage = () => {
       Card_name: '',
       card_number: '',
       cvv: '',
-      expire_date: ''
+      expire_date: '',
+      is_primary: ''
     })
     setAddCardModal(false);
   }
@@ -287,7 +292,8 @@ const Billing: NextPage = () => {
       Card_name: '',
       card_number: '',
       cvv: '',
-      expire_date: ''
+      expire_date: '',
+      is_primary: ''
     })
   }
 
@@ -322,7 +328,7 @@ const Billing: NextPage = () => {
                 getCardDetails.length ?
                   getCardDetails.map((card, i) => {
                     return <div className={styles.methodCard} key={card._id}>
-                      <label htmlFor="">{card.Card_name} {i == 0 ? <span>Primary</span> : null}</label>
+                      <label htmlFor="">{card.Card_name} {card.is_primary == "Y" ? <span>Primary</span> : null}</label>
                       <div className={styles.cardDetails}>
                         <div className={styles.imgBox}>
                           <div className={styles.cardType}>
@@ -334,7 +340,9 @@ const Billing: NextPage = () => {
                           </div>
                         </div>
                         <div className={styles.btnGroup}>
-                          <button onClick={() => deleteConfirm(card._id)} className={styles.deleteBtn}>Delete</button>
+                          {
+                            card.is_primary != "Y" ? <button onClick={() => deleteConfirm(card._id)} className={styles.deleteBtn}>Delete</button> : ''
+                          }
                           <button onClick={() => editCardHandler(card._id)} className={styles.editBtn}>Edit</button>
                         </div>
                       </div>
@@ -388,8 +396,8 @@ const Billing: NextPage = () => {
               Card_name: cardFields ? cardFields.Card_name : 'asdas',
               card_number: cardFields ? cardFields.card_number : '',
               cvv: cardFields ? cardFields.cvv : '',
-              expire_date: cardFields ? cardFields.expire_date : ''
-
+              expire_date: cardFields ? cardFields.expire_date : '',
+              is_primary: cardFields ? cardFields.is_primary : 'N'
             }}
             validationSchema={validationSchema}
             onSubmit={(
@@ -450,6 +458,12 @@ const Billing: NextPage = () => {
                       <ErrorMessage name="cvv">
                         {(msg) => <p className={styles.error}>{msg}</p>}
                       </ErrorMessage>
+                    </div>
+                  </div>
+                  <div className={styles.inputBox}>
+                    <label htmlFor="is_primary">Make Primary</label>
+                    <div>
+                      <Checkbox inputId="is_primary" name="is_primary" checked={props.values.is_primary == "Y"} onChange={(e) => props.setFieldValue('is_primary', e.target.checked ? "Y" : "N")} />
                     </div>
                   </div>
                   <div className="p-d-flex p-ai-center p-mt-3">
