@@ -578,10 +578,12 @@ $lightBlue: #2236f1;
         .inputBox {
             display: flex;
             align-items: center;
-            margin-bottom: 15px;
+            margin-bottom: 22px;
             .error {
                 margin: 0px;
                 color: #ff0000;
+                position: absolute;
+                bottom: -18px;
             }
             label {
                 margin: 0px;
@@ -593,6 +595,7 @@ $lightBlue: #2236f1;
 
             > div {
                 width: 100%;
+                position: relative;
             }
 
             input {
@@ -609,8 +612,8 @@ $lightBlue: #2236f1;
             }
 
             svg {
-                width: 50px;
-                min-width: 50px;
+                width: 40px;
+                min-width: 40px;
                 height: auto;
                 margin-left: 10px;
                 display: flex;

@@ -43,7 +43,7 @@ const Header = () => {
             </div>
             <div className={styles.left_navlist}>
                 <Button onClick={() => routerPushHandler('/')} className="p-button-text" label="My Registry" />
-                <Button className="p-button-text" label="Tools" />
+                <Button onClick={() => routerPushHandler('/tools/csv-compare')} className="p-button-text" label="Tools" />
             </div>
             <div className={styles.right_list}>
                 <div className={styles.searchBox}>

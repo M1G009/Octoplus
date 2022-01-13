@@ -12,11 +12,19 @@ import { RadioButton } from 'primereact/radiobutton';
 import { Checkbox } from 'primereact/checkbox';
 import { Dialog } from 'primereact/dialog';
 import { FiUpload } from 'react-icons/fi';
+import { DataTable } from 'primereact/datatable';
+import { Column } from 'primereact/column';
 
 // 3rd Party Imports
 import * as yup from 'yup';
 import { AiOutlineSwap } from "react-icons/ai";
 import { ErrorMessage, Formik, FieldArray, Field, FormikHelpers } from 'formik';
+import { FaSearch } from "react-icons/fa";
+import { MdClose } from "react-icons/md";
+import { InputText } from 'primereact/inputtext';
+import { FiFilter } from "react-icons/fi";
+import { RiFilterOffFill } from "react-icons/ri";
+import { ToastContainer } from "react-toastify";
 import toast from "../components/Toast";
 import DragDrop from '../components/DragDrop'
 
@@ -86,16 +94,25 @@ const Dashboard: NextPage = () => {
   const [columns, setColumns] = useState<TableColumns[]>([])
   const [viewData, setViewData] = useState(false)
   const [editData, setEditData] = useState(false)
+  const [sortField, setSortField] = useState('')
+  const [sortOrder, setSortOrder] = useState<any>(1)
+  const [filterData, setFilterData] = useState(false);
+  const [checkFilter, setCheckFilter] = useState(false);
+  const [searchInput, setSearchInput] = useState('');
+  const [removeSearch, setRemoveSearch] = useState('');
 
-  // Pagination States
+  // Paginations and Filter States
   const [totalRecords, setTotalRecords] = useState(1);
   const [currentPage, setCurrentPage] = useState(1);
+  const [sortingField, setSortingField] = useState('');
+  const [filterFields, setFilterFields] = useState('');
+  const [searchField, setSearchField] = useState('');
   const [perPage, setPerPage] = useState(10);
   const [dataType, setDataType] = useState(["text", "email", "date", "number", "textarea", "checkbox"])
   const [contacts, setContacts] = useState<any[]>([]);
   const [replaceColumn, setReplaceColumn] = useState(true)
 
-  const fetchAllContact = async (page: number, limit: number) => {
+  const fetchAllContact = async (page: number, limit: number, filter: any, search: string, sort:any) => {
     try {
       let authToken = await window.localStorage.getItem('authToken');
 
@@ -106,8 +123,18 @@ const Dashboard: NextPage = () => {
         return router.push('/auth');
       }
       setCreateContactTableSpinner(true)
+      let query = `page=${page}&limit=${limit}`;
+      if (filter) {
+        query = query+`&filter=${filter}`;
+      }
+      if (search) {
+        query = query+`&search=${search}`;
+      }
+      if (sort) {
+        query = query+`&sort=${sort}`;
+      }
       const { data } = await service({
-        url: `https://octoplusapi.herokuapp.com/getregistry?page=${page}&limit=${limit}`,
+        url: `https://octoplusapi.herokuapp.com/getregistry?${query}`,
         method: 'GET',
         headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
       });
@@ -156,8 +183,8 @@ const Dashboard: NextPage = () => {
   }
 
   useEffect(() => {
-    fetchAllContact(currentPage, perPage);
-  }, [currentPage, perPage])
+    fetchAllContact(currentPage, perPage, filterFields, searchField, sortingField);
+  }, [currentPage, perPage, filterFields, searchField, sortingField])
 
   const validationSchema = yup.object().shape({
     column: yup.string().required('Please field name')
@@ -269,8 +296,8 @@ const Dashboard: NextPage = () => {
     })
     setEditContactRowId(null);
     setInitialValues(values);
+    setFilterData(false);
     setCreateNewContactModal(false);
-
   }
 
   const createNewContactHanler = async (getData: any) => {
@@ -285,31 +312,52 @@ const Dashboard: NextPage = () => {
       }
 
       setCreateContactSpinner(true)
-      if (editContactRowId) {
-        let editObj = Object.assign(JSON.parse(getData), { "row_id": editContactRowId });
-        await service({
-          url: `https://octoplusapi.herokuapp.com/edit_feild`,
-          method: 'POST',
-          data: editObj,
-          headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
-        });
+      if (filterData) {
+        let filterObj = JSON.parse(getData);
+        for (var propName in filterObj) {
+          let value;
+          if (typeof value == "string") {
+            value = filterObj[propName].trim(); 
+          } else {
+            value = filterObj[propName]; 
+          }
+          if (!value || filterObj[propName] == null || filterObj[propName] == undefined) {
+            delete filterObj[propName];
+          }
+        }
+        if (Object.keys(filterObj).length) {
+          setFilterFields(JSON.stringify(filterObj));
+          setCheckFilter(true);
+        }
       } else {
-        await service({
-          url: `https://octoplusapi.herokuapp.com/insert_registry`,
-          method: 'POST',
-          data: { insert: [JSON.parse(getData)] },
-          headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
-        });
+        if (editContactRowId) {
+          let editObj = Object.assign(JSON.parse(getData), { "row_id": editContactRowId });
+          await service({
+            url: `https://octoplusapi.herokuapp.com/edit_feild`,
+            method: 'POST',
+            data: editObj,
+            headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
+          });
+        } else {
+          await service({
+            url: `https://octoplusapi.herokuapp.com/insert_registry`,
+            method: 'POST',
+            data: { insert: [JSON.parse(getData)] },
+            headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
+          });
+        }
       }
-
+      
       setCreateContactSpinner(false)
       setCreateNewContactModal(false)
+      setFilterData(false);
       setEditContactRowId(null);
-      return await fetchAllContact(currentPage, perPage);
 
     } catch (err) {
       setCreateContactSpinner(false)
+      setCreateNewContactModal(false)
       setEditContactRowId(null);
+      setFilterData(false);
       return await toast({ type: "error", message: err });
     }
   }
@@ -334,7 +382,7 @@ const Dashboard: NextPage = () => {
       });
       setAddFiledSpinner(false)
       setAddNewFieldModal(false)
-      return await fetchAllContact(currentPage, perPage);
+      return await fetchAllContact(currentPage, perPage, filterFields, searchField, sortingField);
     } catch (err) {
       setAddFiledSpinner(false)
       await toast({ type: "error", message: err });
@@ -368,7 +416,7 @@ const Dashboard: NextPage = () => {
 
       setReplaceDataSpinner(false)
       setReplaceDataModal(false)
-      return await fetchAllContact(currentPage, perPage);
+      return await fetchAllContact(currentPage, perPage, filterFields, searchField, sortingField);
     } catch (err) {
       setReplaceDataSpinner(false)
       return await toast({ type: "error", message: err });
@@ -444,7 +492,7 @@ const Dashboard: NextPage = () => {
             headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
           });
           setEditColumnModalSpinner(false);
-          return await fetchAllContact(currentPage, perPage);
+          return await fetchAllContact(currentPage, perPage, filterFields, searchField, sortingField);
         }
       }
     } catch (err) {
@@ -493,7 +541,7 @@ const Dashboard: NextPage = () => {
       }
 
       setEditColumnModalSpinner(false);
-      return await fetchAllContact(currentPage, perPage);
+      return await fetchAllContact(currentPage, perPage, filterFields, searchField, sortingField);
     } catch (err) {
       setEditColumnModalSpinner(false)
       return await toast({ type: "error", message: err });
@@ -526,7 +574,7 @@ const Dashboard: NextPage = () => {
       setDeleteColumnName(null);
       setDeleteColumnModalSpinner(false)
       setDeleteColumnModal(false);
-      return await fetchAllContact(currentPage, perPage);
+      return await fetchAllContact(currentPage, perPage, filterFields, searchField, sortingField);
     } catch (err) {
       setDeleteColumnModalSpinner(true);
       setDeleteColumnModal(false);
@@ -571,9 +619,7 @@ const Dashboard: NextPage = () => {
   }
 
   const csvFileUploadHandler = (e: any, setFieldValue: any) => {
-    {
-      setFieldValue("file", e.currentTarget.files[0]);
-    }
+    setFieldValue("file", e.currentTarget.files[0]);
   }
 
   const CSVUploadSubmitHandler = (getData: any) => {
@@ -588,15 +634,58 @@ const Dashboard: NextPage = () => {
     }
   }
 
+  const idRegistryHandler = (rowData: any, field: any) => {
+    return field.rowIndex + 1
+  }
+
+  const editRegistryHandler = (rowData: any) => {
+    return <button className={layoutStyles.blueTextBtn} onClick={() => editContactFiledHandler(rowData.id, false)}>Edit</button>
+  }
+
+  const viewRegistryHandler = (rowData: any) => {
+    return <button className={layoutStyles.blueTextBtn} onClick={() => editContactFiledHandler(rowData.id, true)}>View</button>
+  }
+
+  const onSortHandler = async (e: any) => {
+    setSortField(e.sortField);
+    setSortOrder(e.sortOrder);
+    let sortObj;
+    if (e.sortOrder == 0) {
+      sortObj = '';
+      setSortingField('');
+    } else {
+      sortObj = {[e.sortField]: e.sortOrder};
+      setSortingField(JSON.stringify(sortObj));
+    }    
+  }
+
+  const clearFilterHandler = async () => {
+    setFilterFields('');
+    setCheckFilter(false);
+  }
+
   return (
     <DashboardLayout sidebar={false}>
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
       <div className={styles.topBar}>
         <h5>My Registry</h5>
         <div className={styles.btnGroup}>
-          <Menubar
+          {
+            contacts.length ? <Menubar
             model={items}
             className={styles.menubar}
-          />
+          /> : ''
+          }
         </div>
       </div>
       <div className={layoutStyles.box}>
@@ -604,6 +693,15 @@ const Dashboard: NextPage = () => {
           <div className={layoutStyles.head}>
             <h4>Table of Contact</h4>
             <div className={layoutStyles.editButtons}>
+              <div className={"p-inputgroup " + styles.searchFilter}>
+                <InputText placeholder="Search" value={searchInput} onChange={(e)=> setSearchInput(e.target.value)} />
+                {
+                  removeSearch && removeSearch == searchInput ? <button onClick={() => {setSearchField(''); setSearchInput(''); setRemoveSearch('')}}><MdClose /></button> : <button onClick={() => {setSearchField(JSON.stringify(searchInput)); setRemoveSearch(searchInput)}}><FaSearch /></button>
+                }
+              </div>
+              {
+                checkFilter ? <button onClick={clearFilterHandler} className={layoutStyles.blueBtn + " " + styles.filterBtn}>Clear <RiFilterOffFill /></button> : <button onClick={() => { setFilterData(true); setCreateNewContactModal(true) }} className={layoutStyles.blueBtn + " " + styles.filterBtn}>Filter <FiFilter /></button>
+              }
               <button onClick={() => setSettingDataModal(true)} className={layoutStyles.blueBtn}>Table Settings</button>
               <button onClick={() => setAddNewFieldModal(true)} className={layoutStyles.blueBgBtn}>Add New Field</button>
             </div>
@@ -617,47 +715,57 @@ const Dashboard: NextPage = () => {
               }
               {
                 contacts.length ?
-                  <table className={styles.contectTable}>
-                    <thead>
-                      <tr>
-                        <th>id</th>
-                        {
-                          Object.keys(contacts[0]).map(function (key, index) {
-                            if (key != 'id') {
-                              return <th key={"tableTh" + index}>{key}</th>
-                            }
-                          })
-                        }
-                        <th>Actions</th>
-                        <th>View</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {
-                        contacts.map((el, i) => {
-                          return <tr key={"contact" + i}>
-                            <td>{i + 1}</td>
-                            {
-                              Object.keys(el).map(function (key, index, array) {
-                                if (key != "id" || index == array.length - 1) {
-                                  if (index == array.length - 1) {
-                                    return <React.Fragment key={"tableTdLast" + index + i}>
-                                      {
-                                        key != "id" ? <td>{`${contacts[i][key]}`}</td> : null
-                                      }
-                                      <td><button className={layoutStyles.blueTextBtn} onClick={() => editContactFiledHandler(contacts[i].id, false)}>Edit</button></td>
-                                      <td><button className={layoutStyles.blueTextBtn} onClick={() => editContactFiledHandler(contacts[i].id, true)}>View</button></td>
-                                    </React.Fragment>
-                                  }
-                                  return <td key={"tableTd" + index + i}>{`${contacts[i][key]}`}</td>
-                                }
-                              })
-                            }
-                          </tr>
-                        })
-                      }
-                    </tbody>
-                  </table>
+                  <DataTable value={contacts} removableSort responsiveLayout="scroll" sortField={sortField} sortOrder={sortOrder} onSort={onSortHandler}>
+                    <Column header="Id" body={idRegistryHandler}></Column>
+                    {
+                      Object.keys(contacts[0]).map((el, i) => {
+                        return <Column key={"registrycolumn"+i} field={el} header={el} sortable></Column>
+                      })
+                    }
+                    <Column header="Edit" body={editRegistryHandler}></Column>
+                    <Column header="View" body={viewRegistryHandler}></Column>
+                  </DataTable>
+                  // <table className={styles.contectTable}>
+                  //   <thead>
+                  //     <tr>
+                  //       <th>id</th>
+                  //       {
+                  //         Object.keys(contacts[0]).map(function (key, index) {
+                  //           if (key != 'id') {
+                  //             return <th key={"tableTh" + index}>{key}</th>
+                  //           }
+                  //         })
+                  //       }
+                  //       <th>Actions</th>
+                  //       <th>View</th>
+                  //     </tr>
+                  //   </thead>
+                  //   <tbody>
+                  //     {
+                  //       contacts.map((el, i) => {
+                  //         return <tr key={"contact" + i}>
+                  //           <td>{i + 1}</td>
+                  //           {
+                  //             Object.keys(el).map(function (key, index, array) {
+                  //               if (key != "id" || index == array.length - 1) {
+                  //                 if (index == array.length - 1) {
+                  //                   return <React.Fragment key={"tableTdLast" + index + i}>
+                  //                     {
+                  //                       key != "id" ? <td>{`${contacts[i][key]}`}</td> : null
+                  //                     }
+                  //                     <td><button className={layoutStyles.blueTextBtn} onClick={() => editContactFiledHandler(contacts[i].id, false)}>Edit</button></td>
+                  //                     <td><button className={layoutStyles.blueTextBtn} onClick={() => editContactFiledHandler(contacts[i].id, true)}>View</button></td>
+                  //                   </React.Fragment>
+                  //                 }
+                  //                 return <td key={"tableTd" + index + i}>{`${contacts[i][key]}`}</td>
+                  //               }
+                  //             })
+                  //           }
+                  //         </tr>
+                  //       })
+                  //     }
+                  //   </tbody>
+                  // </table>
                   : <p className='p-text-center'>No data found</p>
               }
             </div>
@@ -671,7 +779,7 @@ const Dashboard: NextPage = () => {
             {/* Create-Contact-Modal */}
             <Dialog showHeader={false} onMaskClick={createContactDialogCloseHandler} className={styles.createNewContactCustomStyles} maskClassName={styles.dialogMask} position={'right'} visible={createNewContactModal} style={{ width: '500px', }} onHide={() => ''}>
               <div className={styles.createContactModal}>
-                <h5>{editData ? "Edit Contact" : (viewData ? "View Data" : "Create New Contact")}</h5>
+                <h5>{editData ? "Edit Contact" : (viewData ? "View Data" : (filterData ? "Filter Data" : "Create New Contact"))}</h5>
                 {
                   initialValues && types ?
                     <Formik
@@ -679,20 +787,24 @@ const Dashboard: NextPage = () => {
                       initialValues={initialValues}
                       validate={(values) => {
                         let error: any = {};
-                        if (!viewData) {
-                          Object.keys(values).map(el => {
-                            if (types[el].toLowerCase() !== "checkbox") {
-                              if (types[el].toLowerCase() == "number") {
-                                var reg = /^\d+$/
-                                if (!reg.test(values[el]) || !values[el]) {
-                                  error[el] = "Please enter number";
+                        if (filterData) {
+                          return
+                        } else {
+                          if (!viewData) {
+                            Object.keys(values).map(el => {
+                              if (types[el].toLowerCase() !== "checkbox") {
+                                if (types[el].toLowerCase() == "number") {
+                                  var reg = /^\d+$/
+                                  if (!reg.test(values[el]) || !values[el]) {
+                                    error[el] = "Please enter number";
+                                  }
+                                } else if (!values[el]) {
+                                  error[el] = "Please enter value";
                                 }
-                              } else if (!values[el]) {
-                                error[el] = "Please enter value";
                               }
-                            }
-                          })
-                          return error;
+                            })
+                            return error;
+                          }
                         }
                       }}
                       onSubmit={(
@@ -856,7 +968,6 @@ const Dashboard: NextPage = () => {
                               <label htmlFor="wholeregistry">Replace data on whole registry</label>
                             </div>
                           </div>
-
                           {
                             replaceColumn ? <div className={styles.inputBox}>
                               <Dropdown id="inviteRole" className={styles.selectBox} name="column" value={props.values.column} options={Object.keys(contacts[0])} onChange={(e: any) => props.setFieldValue('column', e.target.value)} />
@@ -987,7 +1098,7 @@ const Dashboard: NextPage = () => {
           </div>
         </div>
       </div>
-    </DashboardLayout>
+    </DashboardLayout >
   )
 }
 

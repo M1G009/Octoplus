@@ -33,6 +33,7 @@ const DragDrop = (props: any) => {
     let element = evt.currentTarget;
     element.classList.add(styles.dragged);
     evt.dataTransfer.setData("text/plain", evt.currentTarget.id);
+    // evt.dataTransfer.effectAllowed = "move";
   };
 
   const onDragEnd = (evt: any) => {
@@ -56,6 +57,8 @@ const DragDrop = (props: any) => {
   const onDragEnter = (evt: any) => {
     evt.preventDefault();
     let element = evt.currentTarget;
+    element.classList.add(styles.draggedOver);
+    // evt.dataTransfer.dropEffect = "move";
   };
 
   const onDragLeave = (evt: any) => {
@@ -65,10 +68,12 @@ const DragDrop = (props: any) => {
     if (newTarget && newTarget.parentNode === currentTarget || newTarget === currentTarget)
       return;
     let element = evt.currentTarget;
+    element.classList.remove(styles.draggedOver);
   };
 
   const onDragOver = (evt: any) => {
     evt.preventDefault();
+    // evt.dataTransfer.dropEffect = "move";
     if (dragged) {
       dragged.style.display = "none";
       if (over) {

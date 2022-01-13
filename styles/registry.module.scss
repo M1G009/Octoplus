@@ -123,41 +123,37 @@ $lightBlue: #2236f1;
     }
 }
 
-.pageNumbers,
-.leftArrowIc,
-.rightArrowIc {
-    box-shadow: none !important;
-    height: 30px !important;
-    width: 30px !important;
-    min-width: 30px !important;
-}
+.searchFilter{
+    width: auto;
+    input{
+        border-color: #edeff1 !important;
+        box-shadow: none !important;
+        padding: 5px;
+    }
 
-.curruntPageActive {
-    border: 1px solid $lightBlue !important;
-    color: $lightBlue !important;
-    border-radius: 2px !important;
-    background-color: transparent !important;
-    box-shadow: none !important;
-}
-
-.jumpInput {
-    box-shadow: none !important;
-}
-
-.pagePerDropdown {
-    border: 1px solid #d9d9d9;
-    padding: 0px 3px;
-    border-radius: 2px;
-}
-
-.pagePerDropdown {
-    box-shadow: none !important;
-    span {
-        padding: 3px;
+    button{
+        background-color: #e4e7fd;
+        color: #2236f1;
+        border: none;
+        font-size: 18px;
         display: flex;
         align-items: center;
-        font-size: 14px;
-        color: $darkBlue;
+        justify-content: center;
+        padding: 5px 8px;
+        cursor: pointer;
+
+        &:active{
+            background-color: #cdd2f7;
+        }
+    }
+}
+
+.filterBtn{
+    display: flex;
+    align-items: center;
+
+    svg{
+        margin-left: 5px;
     }
 }
 
