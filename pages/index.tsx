@@ -23,7 +23,7 @@ import { FaSearch } from "react-icons/fa";
 import { MdClose } from "react-icons/md";
 import { InputText } from 'primereact/inputtext';
 import { FiFilter } from "react-icons/fi";
-import { RiFilterOffFill } from "react-icons/ri";
+import { RiCloseLine } from "react-icons/ri";
 import { ToastContainer } from "react-toastify";
 import toast from "../components/Toast";
 import DragDrop from '../components/DragDrop'
@@ -663,6 +663,17 @@ const Dashboard: NextPage = () => {
     setCheckFilter(false);
   }
 
+  const updateFilterHandler = () => {
+    setFilterData(true);
+    setCreateNewContactModal(true);
+    let filterData = JSON.parse(filterFields);
+    let initialFields = {...initialValues};
+    Object.keys(filterData).map(el => {
+      initialFields[el] = filterData[el];
+    })
+    setInitialValues(initialFields)
+  }
+
   return (
     <DashboardLayout sidebar={false}>
       <ToastContainer
@@ -699,7 +710,13 @@ const Dashboard: NextPage = () => {
                 }
               </div>
               {
-                checkFilter ? <button onClick={clearFilterHandler} className={layoutStyles.blueBtn + " " + styles.filterBtn}>Clear <RiFilterOffFill /></button> : <button onClick={() => { setFilterData(true); setCreateNewContactModal(true) }} className={layoutStyles.blueBtn + " " + styles.filterBtn}>Filter <FiFilter /></button>
+                checkFilter ? 
+                <div className={'p-d-flex '+styles.filterBtnGroup}>
+                  <button onClick={updateFilterHandler} className={styles.filterBtn}>Update <FiFilter /></button>
+                  <button onClick={clearFilterHandler} className={styles.filterBtn}><RiCloseLine /></button>
+                </div>
+                : 
+                <button onClick={() => { setFilterData(true); setCreateNewContactModal(true) }} className={layoutStyles.blueBtn + " " + styles.filterBtn}>Filter <FiFilter /></button>
               }
               <button onClick={() => setSettingDataModal(true)} className={layoutStyles.blueBtn}>Table Settings</button>
               <button onClick={() => setAddNewFieldModal(true)} className={layoutStyles.blueBgBtn}>Add New Field</button>
