@@ -112,7 +112,7 @@ const Dashboard: NextPage = () => {
   const [contacts, setContacts] = useState<any[]>([]);
   const [replaceColumn, setReplaceColumn] = useState(true)
 
-  const fetchAllContact = async (page: number, limit: number, filter: any, search: string, sort:any) => {
+  const fetchAllContact = async (page: number, limit: number, filter: any, search: string, sort: any) => {
     try {
       let authToken = await window.localStorage.getItem('authToken');
 
@@ -125,13 +125,13 @@ const Dashboard: NextPage = () => {
       setCreateContactTableSpinner(true)
       let query = `page=${page}&limit=${limit}`;
       if (filter) {
-        query = query+`&filter=${filter}`;
+        query = query + `&filter=${filter}`;
       }
       if (search) {
-        query = query+`&search=${search}`;
+        query = query + `&search=${search}`;
       }
       if (sort) {
-        query = query+`&sort=${sort}`;
+        query = query + `&sort=${sort}`;
       }
       const { data } = await service({
         url: `https://octoplusapi.herokuapp.com/getregistry?${query}`,
@@ -317,9 +317,9 @@ const Dashboard: NextPage = () => {
         for (var propName in filterObj) {
           let value;
           if (typeof value == "string") {
-            value = filterObj[propName].trim(); 
+            value = filterObj[propName].trim();
           } else {
-            value = filterObj[propName]; 
+            value = filterObj[propName];
           }
           if (!value || filterObj[propName] == null || filterObj[propName] == undefined) {
             delete filterObj[propName];
@@ -347,7 +347,7 @@ const Dashboard: NextPage = () => {
           });
         }
       }
-      
+
       setCreateContactSpinner(false)
       setCreateNewContactModal(false)
       setFilterData(false);
@@ -639,11 +639,10 @@ const Dashboard: NextPage = () => {
   }
 
   const editRegistryHandler = (rowData: any) => {
-    return <button className={layoutStyles.blueTextBtn} onClick={() => editContactFiledHandler(rowData.id, false)}>Edit</button>
-  }
-
-  const viewRegistryHandler = (rowData: any) => {
-    return <button className={layoutStyles.blueTextBtn} onClick={() => editContactFiledHandler(rowData.id, true)}>View</button>
+    return (
+    <>
+      <button className={layoutStyles.blueTextBtn} onClick={() => editContactFiledHandler(rowData.id, false)}>Edit</button> <button className={layoutStyles.blueTextBtn} onClick={() => editContactFiledHandler(rowData.id, true)}>View</button> 
+    </>)
   }
 
   const onSortHandler = async (e: any) => {
@@ -654,9 +653,9 @@ const Dashboard: NextPage = () => {
       sortObj = '';
       setSortingField('');
     } else {
-      sortObj = {[e.sortField]: e.sortOrder};
+      sortObj = { [e.sortField]: e.sortOrder };
       setSortingField(JSON.stringify(sortObj));
-    }    
+    }
   }
 
   const clearFilterHandler = async () => {
@@ -682,9 +681,9 @@ const Dashboard: NextPage = () => {
         <div className={styles.btnGroup}>
           {
             contacts.length ? <Menubar
-            model={items}
-            className={styles.menubar}
-          /> : ''
+              model={items}
+              className={styles.menubar}
+            /> : ''
           }
         </div>
       </div>
@@ -694,9 +693,9 @@ const Dashboard: NextPage = () => {
             <h4>Table of Contact</h4>
             <div className={layoutStyles.editButtons}>
               <div className={"p-inputgroup " + styles.searchFilter}>
-                <InputText placeholder="Search" value={searchInput} onChange={(e)=> setSearchInput(e.target.value)} />
+                <InputText placeholder="Search" value={searchInput} onChange={(e) => setSearchInput(e.target.value)} />
                 {
-                  removeSearch && removeSearch == searchInput ? <button onClick={() => {setSearchField(''); setSearchInput(''); setRemoveSearch('')}}><MdClose /></button> : <button onClick={() => {setSearchField(JSON.stringify(searchInput)); setRemoveSearch(searchInput)}}><FaSearch /></button>
+                  removeSearch && removeSearch == searchInput ? <button onClick={() => { setSearchField(''); setSearchInput(''); setRemoveSearch('') }}><MdClose /></button> : <button onClick={() => { setSearchField(JSON.stringify(searchInput)); setRemoveSearch(searchInput) }}><FaSearch /></button>
                 }
               </div>
               {
@@ -719,11 +718,10 @@ const Dashboard: NextPage = () => {
                     <Column header="Id" body={idRegistryHandler}></Column>
                     {
                       Object.keys(contacts[0]).map((el, i) => {
-                        return <Column key={"registrycolumn"+i} field={el} header={el} sortable></Column>
+                        return <Column key={"registrycolumn" + i} field={el} header={el} sortable></Column>
                       })
                     }
-                    <Column header="Edit" body={editRegistryHandler}></Column>
-                    <Column header="View" body={viewRegistryHandler}></Column>
+                    <Column header="Actions" body={editRegistryHandler}></Column>
                   </DataTable>
                   // <table className={styles.contectTable}>
                   //   <thead>
