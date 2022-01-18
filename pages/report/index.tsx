@@ -15,6 +15,12 @@ import { ToastContainer } from "react-toastify";
 import { Line } from 'react-chartjs-2';
 import {
     Chart as ChartJS,
+    CategoryScale,
+    LinearScale,
+    PointElement,
+    LineElement,
+    Title,
+    Tooltip,
     Legend,
 } from 'chart.js';
 
@@ -28,6 +34,12 @@ import DashboardLayout from '../../components/DashboardLayout';
 // Interface/Helper Imports
 
 ChartJS.register(
+    CategoryScale,
+    LinearScale,
+    PointElement,
+    LineElement,
+    Title,
+    Tooltip,
     Legend
 );
 
