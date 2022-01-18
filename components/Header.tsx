@@ -1,7 +1,8 @@
+import { useEffect, useState } from 'react';
 import Image from 'next/image'
+import Link from 'next/link'
 import { Button } from 'primereact/button';
 import { InputText } from 'primereact/inputtext';
-import { useState } from 'react';
 import { FaSearch, FaRegQuestionCircle } from "react-icons/fa";
 import { Badge } from 'primereact/badge';
 import { useRouter } from 'next/router'
@@ -16,6 +17,15 @@ const Header = () => {
     const router = useRouter();
     const [searchText, setSearchText] = useState('');
     const [searchInput, setSearchInput] = useState(false);
+    const [userName, setUserName] = useState('');
+
+    useEffect(() => {
+        let userData = window.localStorage.getItem('loginUserdata');
+        if (userData) {
+            let parseData = JSON.parse(userData);
+            setUserName(parseData.username);
+          }
+    }, [])
 
     const logoutHandler = async () => {
         removeCookies("ValidUser")
@@ -42,8 +52,9 @@ const Header = () => {
                 </Button>
             </div>
             <div className={styles.left_navlist}>
-                <Button onClick={() => routerPushHandler('/')} className="p-button-text" label="My Registry" />
-                <Button onClick={() => routerPushHandler('/tools/csv-compare')} className="p-button-text" label="Tools" />
+                <Link href="/">My Registry</Link>
+                <Link href="/tools/csv-compare">Tools</Link>
+                <Link href="/report">Reports</Link>
             </div>
             <div className={styles.right_list}>
                 <div className={styles.searchBox}>
@@ -62,7 +73,9 @@ const Header = () => {
                         width={40}
                         height={40}
                     />
-                    <h6>Esther Howard</h6>
+                    {
+                        userName ? <h6>{userName}</h6> : ''
+                    }
                 </div>
                 <Button onClick={logoutHandler} className={"p-button-text " + styles.logoutBtn} >Logout</Button>
             </div>

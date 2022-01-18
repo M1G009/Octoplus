@@ -1,0 +1,64 @@
+.progressStates {
+    position: relative;
+    .progressStates {
+        display: none;
+        padding: 15px;
+        box-shadow: 0px 0px 15px #0000002e;
+        border-radius: 3px;
+        position: absolute;
+        width: 150px;
+        z-index: 10;
+        background-color: #ffffff;
+        bottom: 15px;
+        p {
+            margin: 0px;
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+
+            &:last-child {
+                margin: 0px;
+            }
+
+            &:before {
+                content: "";
+                width: 12px;
+                height: 12px;
+                display: block;
+                border-radius: 50%;
+                margin-right: 5px;
+            }
+
+            &:after {
+                border: solid;
+                border-color: #fff transparent;
+                border-width: 8px 9px 0 9px;
+                content: "";
+                left: 45%;
+                bottom: -5px;
+                position: absolute;
+            }
+
+            &.complate {
+                &:before {
+                    background-color: #1cc723;
+                }
+            }
+            &.progress {
+                &:before {
+                    background-color: #ffe700;
+                }
+            }
+            &.ignored {
+                &:before {
+                    background-color: #c1c7d0;
+                }
+            }
+        }
+    }
+    &:hover {
+        .progressStates {
+            display: block;
+        }
+    }
+}

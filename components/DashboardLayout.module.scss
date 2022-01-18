@@ -22,12 +22,13 @@ $lightBlue: #2236f1;
     }
 
     .left_navlist {
-        button {
+        a {
             padding: 0px;
-            margin: 5px;
+            margin: 10px;
             color: #fff;
             box-shadow: none !important;
             background-color: transparent !important;
+            transition: 0.4s;
 
             &:hover {
                 color: #2236f1;

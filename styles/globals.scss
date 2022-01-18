@@ -69,3 +69,19 @@ a:hover {
   border-color: #F12222 !important;
 }
 
+
+.customCheckBox{
+  .p-checkbox-box.p-highlight{
+    border-color: #2236f1 !important;
+    background: #2236f1 !important;
+  }
+  
+  .p-checkbox:not(.p-checkbox-disabled) .p-checkbox-box.p-focus {
+    box-shadow: none !important;
+    border-color: #2236f1 !important;
+  }
+  
+  .p-checkbox:not(.p-checkbox-disabled) .p-checkbox-box:hover{
+    border-color: #2236f1 !important;
+  }
+}

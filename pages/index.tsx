@@ -346,6 +346,7 @@ const Dashboard: NextPage = () => {
             headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
           });
         }
+        await fetchAllContact(currentPage, perPage, filterFields, searchField, sortingField);
       }
 
       setCreateContactSpinner(false)
@@ -735,6 +736,9 @@ const Dashboard: NextPage = () => {
                     <Column header="Id" body={idRegistryHandler}></Column>
                     {
                       Object.keys(contacts[0]).map((el, i) => {
+                        if(el === "id"){
+                          return false;
+                        }
                         return <Column key={"registrycolumn" + i} field={el} header={el} sortable></Column>
                       })
                     }
