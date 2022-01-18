@@ -129,10 +129,6 @@ const CsvCompare: NextPage = (props: any) => {
                     <div className={layoutStyles.head}>
                         <div className={'p-d-flex p-ai-center ' + styles.reportHead}>
                             <div className={styles.reportSelect}>
-                                <label htmlFor=""><IoGitCompareOutline /> Compare ID</label>
-                                <Dropdown id="compareId" className={styles.selectBox} name="column" value={1} options={compareIds} />
-                            </div>
-                            <div className={styles.reportSelect}>
                                 <label htmlFor=""><FiUser /> Assigne</label>
                                 <Dropdown id="compareId" className={styles.selectBox} name="column" value={1} options={compareIds} />
                             </div>
@@ -154,7 +150,6 @@ const CsvCompare: NextPage = (props: any) => {
                                 <table className={styles.comparisonTable}>
                                     <thead>
                                         <tr>
-                                            <th>Compare ID</th>
                                             <th>Assignee Name</th>
                                             <th>Total Contacts Assigned</th>
                                             <th>Total Contacts Fixed</th>
@@ -164,7 +159,6 @@ const CsvCompare: NextPage = (props: any) => {
                                     </thead>
                                     <tbody>
                                         <tr>
-                                            <td>1</td>
                                             <td>Suryansh</td>
                                             <td>20</td>
                                             <td>10 (50%)</td>
@@ -172,7 +166,6 @@ const CsvCompare: NextPage = (props: any) => {
                                             <td>0.5</td>
                                         </tr>
                                         <tr>
-                                            <td>1</td>
                                             <td>Suryansh</td>
                                             <td>20</td>
                                             <td>10 (50%)</td>
@@ -180,7 +173,6 @@ const CsvCompare: NextPage = (props: any) => {
                                             <td>0.5</td>
                                         </tr>
                                         <tr>
-                                            <td>1</td>
                                             <td>Suryansh</td>
                                             <td>20</td>
                                             <td>10 (50%)</td>

@@ -33,6 +33,11 @@ export interface NewCompareFields {
     csv_name: string
 }
 
+export interface AddNewFiled {
+    column: string;
+    dtype: string;
+}
+
 {/* add field button */ }
 const CsvCompare: NextPage = (props: any) => {
     const router = useRouter();
@@ -67,6 +72,8 @@ const CsvCompare: NextPage = (props: any) => {
     const [perPage, setPerPage] = useState(10);
     const [contacts, setContacts] = useState<any[]>([]);
     const [columnMappingModal, setColumnMappingModal] = useState(false)
+    const [addNewFieldModal, setAddNewFieldModal] = useState(true);
+    const [addFiledSpinner, setAddFiledSpinner] = useState(false);
 
     const newCompareSchema = yup.object().shape({
         compare_name: yup.string().required('Please enter Select data'),
@@ -77,6 +84,10 @@ const CsvCompare: NextPage = (props: any) => {
             );
         }),
         csv_name: yup.string().required('Please enter csv name')
+    });
+
+    const validationSchema = yup.object().shape({
+        column: yup.string().required('Please field name')
     });
 
     const currentPageHandler = (num: number) => {
@@ -110,6 +121,23 @@ const CsvCompare: NextPage = (props: any) => {
             //   return "File Name:- New Contacts.CSV"
         }
     }
+
+    const addNewFiledHandler = async (getData: any) => {
+        try {
+          let authToken = await window.localStorage.getItem('authToken');
+    
+          if (!authToken) {
+            window.localStorage.removeItem("authToken")
+            window.localStorage.removeItem("ValidUser")
+            window.localStorage.removeItem('loginUserdata');
+            return router.push('/auth');
+          }
+          console.log(getData);
+          
+        } catch (err) {
+          
+        }
+      }
 
     return (
         <DashboardLayout sidebar={false}>
@@ -336,7 +364,7 @@ const CsvCompare: NextPage = (props: any) => {
                                 }
                                 <tr>
                                     <td colSpan={4}>
-                                        <button type='button' className={layoutStyles.customBluebtn + " p-d-flex p-ai-center"}><FiPlus /> Add Field</button>
+                                        <button type='button' onClick={() => setAddNewFieldModal(true)} className={layoutStyles.customBluebtn + " p-d-flex p-ai-center"}><FiPlus /> Add Field</button>
                                     </td>
                                 </tr>
                             </tbody>
@@ -350,6 +378,58 @@ const CsvCompare: NextPage = (props: any) => {
                             </div>
                         </div>
                     </div>
+                </div>
+            </Dialog>
+
+            {/* Add New Field-Modal */}
+            <Dialog showHeader={false} contentClassName={styles.addNewFieldModalCustomStyles} maskClassName={styles.dialogMask} visible={addNewFieldModal} style={{ width: '500px', }} onHide={() => ''}>
+                <div className={styles.addNewFieldModal}>
+                    <h5>Add new field</h5>
+                    <Formik
+                        enableReinitialize
+                        initialValues={{
+                            column: '',
+                            dtype: 'text'
+                        }}
+                        validationSchema={validationSchema}
+                        onSubmit={(
+                            values: AddNewFiled,
+                            { setSubmitting }: FormikHelpers<AddNewFiled>
+                        ) => {
+                            addNewFiledHandler(JSON.stringify(values, null, 2));
+                            setSubmitting(false);
+                        }}
+                    >
+                        {props => (
+                            <form onSubmit={props.handleSubmit}>
+                                {
+                                    addFiledSpinner ? <div className={styles.formSpinner}>
+                                        <div className={styles.loading}></div>
+                                    </div> : null
+                                }
+                                <div className={styles.inputFields}>
+                                    <div className={styles.inputBox}>
+                                        <label htmlFor="column">Enter field name for new column</label>
+                                        <Field type="text" name="column" />
+                                        <ErrorMessage name="column">
+                                            {(msg) => <p className={styles.error}>{msg}</p>}
+                                        </ErrorMessage>
+                                    </div>
+
+                                    <div className={styles.inputBox}>
+                                        <label htmlFor="dataType">Select the data type</label>
+                                        <Dropdown id="inviteRole" className={styles.selectBox} name="dtype" value={props.values.dtype} options={dataType} onChange={(e: any) => props.setFieldValue('dtype', e.target.value)} />
+                                    </div>
+                                    <div className="p-d-flex p-ai-center p-mt-4">
+                                        <div className="p-m-auto">
+                                            <button type='submit' className={layoutStyles.customBlueBgbtn}>Save</button>
+                                            <button type='button' onClick={() => setAddNewFieldModal(false)} className={layoutStyles.customBluebtn}>Cancel</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        )}
+                    </Formik>
                 </div>
             </Dialog>
 
