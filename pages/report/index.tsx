@@ -6,6 +6,7 @@ import type { NextPage } from 'next'
 // Prime React Imports
 import { Dropdown } from 'primereact/dropdown';
 import { Calendar } from 'primereact/calendar';
+import { Dialog } from 'primereact/dialog';
 
 // 3rd Party Imports
 import { IoGitCompareOutline } from "react-icons/io5";
@@ -50,7 +51,7 @@ const CsvCompare: NextPage = (props: any) => {
     const [contacts, setContacts] = useState<any[]>([]);
     const [compareIds, setCompareIds] = useState([1, 2, 3, 4, 5, 6])
     const [rangeDate, setRangeDate] = useState<Date | Date[] | undefined>(undefined);
-    console.log(rangeDate)
+    const [exportReportModal, setExportReportModal] = useState(false);
 
     const currentPageHandler = (num: number) => {
         setCurrentPage(num);
@@ -138,7 +139,7 @@ const CsvCompare: NextPage = (props: any) => {
                         </div>
                         <div>
                             <Calendar id="navigatorstemplate" value={rangeDate} selectionMode="range" onChange={(e: any) => setRangeDate(e.value)} monthNavigator yearNavigator yearRange="2010:2030" monthNavigatorTemplate={monthNavigatorTemplate} yearNavigatorTemplate={yearNavigatorTemplate} showIcon />
-                            <button className={layoutStyles.customBlueBgbtn}>Export Report</button>
+                            <button className={layoutStyles.customBlueBgbtn} onClick={() => setExportReportModal(true)}>Export Report</button>
                         </div>
                     </div>
                     <div className={styles.comparisonTableBox}>
@@ -210,6 +211,25 @@ const CsvCompare: NextPage = (props: any) => {
                     </div>
                 </div>
             </div>
+
+            {/* Export Report Modal */}
+            <Dialog showHeader={false} contentClassName={styles.modelsCustomStyles} maskClassName={styles.dialogMask} visible={exportReportModal} style={{ width: '500px', }} onHide={() => ''}>
+                <div className={styles.replaceDataModal}>
+                    <h5>Export Report</h5>
+                    <div className={styles.contactDetails}>
+                        <div className={styles.textBox}>
+                            <p className='p-m-auto'>
+                                Choose for export type
+                            </p>
+                        </div>
+                        <div className='p-mt-4 p-text-center'>
+                            <button className={layoutStyles.customBluebtn} onClick={() => setExportReportModal(false)}>Export in PDF</button>
+                            <button className={layoutStyles.customBluebtn} onClick={() => setExportReportModal(false)}>Export in CSV</button>
+                        </div>
+                    </div>
+                </div>
+            </Dialog>
+
         </DashboardLayout>
     )
 }
