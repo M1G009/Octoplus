@@ -8,7 +8,7 @@ import { Badge } from 'primereact/badge';
 import { useRouter } from 'next/router'
 import { removeCookies } from 'cookies-next';
 
-import Logo from '../public/images/Logo.svg'
+import Logo from '../public/images/main_logo.svg'
 import User from '../public/images/user_img.png'
 
 import styles from './DashboardLayout.module.scss'
