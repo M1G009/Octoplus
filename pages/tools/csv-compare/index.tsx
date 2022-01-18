@@ -72,7 +72,7 @@ const CsvCompare: NextPage = (props: any) => {
     const [perPage, setPerPage] = useState(10);
     const [contacts, setContacts] = useState<any[]>([]);
     const [columnMappingModal, setColumnMappingModal] = useState(false)
-    const [addNewFieldModal, setAddNewFieldModal] = useState(true);
+    const [addNewFieldModal, setAddNewFieldModal] = useState(false);
     const [addFiledSpinner, setAddFiledSpinner] = useState(false);
 
     const newCompareSchema = yup.object().shape({
