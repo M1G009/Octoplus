@@ -125,8 +125,14 @@ const Dashboard: NextPage = () => {
       }
       setCreateContactTableSpinner(true)
       let query = `page=${page}&limit=${limit}`;
-      if (filter) {
-        query = query + `&filter=${JSON.stringify(filter)}`;
+      if (filter && Object.keys(filter).length) {
+        let checkString = filter;
+        for (const key in checkString) {
+          if(types && types[key] == "number"){
+            checkString[key] = checkString[key] * 1;
+          }
+        }
+        query = query + `&filter=${JSON.stringify(checkString)}`;
       }
       if (search) {
         query = query + `&search=${JSON.stringify(search)}`;
@@ -140,6 +146,7 @@ const Dashboard: NextPage = () => {
         method: 'GET',
         headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
       });
+      
       if (data) {
         if (!data.data.length && !data.data.registry) {
           setNoDataModal(true)
