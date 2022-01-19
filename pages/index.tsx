@@ -72,6 +72,7 @@ export interface CSVUpload {
 
 const Dashboard: NextPage = () => {
   const router = useRouter();
+  const { query } = router;
   const [noDataModal, setNoDataModal] = useState(false);
   const [noDataModalSpinner, setNoDataModalSpinner] = useState(false);
   const [addFiledSpinner, setAddFiledSpinner] = useState(false);
@@ -128,11 +129,12 @@ const Dashboard: NextPage = () => {
         query = query + `&filter=${filter}`;
       }
       if (search) {
-        query = query + `&search=${search}`;
+        query = query + `&search=${JSON.stringify(search)}`;
       }
       if (sort) {
         query = query + `&sort=${sort}`;
       }
+
       const { data } = await service({
         url: `https://octoplusapi.herokuapp.com/getregistry?${query}`,
         method: 'GET',
@@ -181,6 +183,46 @@ const Dashboard: NextPage = () => {
       return await toast({ type: "error", message: err });
     }
   }
+
+  useEffect(() => {
+    let filter: any = query.filter;
+    let search = query.search;
+    let sort: any = query.sort;
+    if (filter) {
+      setCheckFilter(true);
+      setFilterFields(filter);
+    } else {
+      setCheckFilter(false);
+      setFilterFields('')
+    }
+    if (search) {
+      setSearchField(`${search}`);
+      setSearchInput(`${search}`);
+      setRemoveSearch(`${search}`);
+    } else {
+      setSearchField('');
+      setSearchInput('');
+      setRemoveSearch('')
+    }
+    if (sort) {
+      let sortObj = JSON.parse(sort);
+      let key = Object.keys(sortObj)[0];
+      let value = sortObj[Object.keys(sortObj)[0]];
+      if (value == 1 || value == -1) {
+        setSortField(key);
+        setSortOrder(value);
+        setSortingField(sort);
+      } else {
+        setSortField('');
+        setSortOrder(0);
+        setSortingField('');
+      }
+    } else {
+      setSortField('');
+      setSortOrder(0);
+      setSortingField('');
+    }
+  }, [query])
 
   useEffect(() => {
     fetchAllContact(currentPage, perPage, filterFields, searchField, sortingField);
@@ -300,6 +342,36 @@ const Dashboard: NextPage = () => {
     setCreateNewContactModal(false);
   }
 
+  const isJson = (str: any) => {
+    try {
+        JSON.parse(str);
+    } catch (e) {
+        return false;
+    }
+    return true;
+}
+
+  const setRoutingQuery = (filter: any, search: any, sort: any) => {
+    let queryObj: any = { filter, search, sort }
+    for (const propName in queryObj) {
+      if (!queryObj[propName]) {
+        delete queryObj[propName];
+      } else {
+        if (propName == "filter" || propName == "sort") {
+          if (!isJson(queryObj[propName])) {
+            queryObj[propName] = JSON.stringify(queryObj[propName]);
+          }
+        }
+      }
+    }
+    console.log(queryObj);
+    
+    return router.push({
+      pathname: '/',
+      query: queryObj,
+    })
+  }
+
   const createNewContactHanler = async (getData: any) => {
     try {
       let authToken = await window.localStorage.getItem('authToken');
@@ -326,7 +398,8 @@ const Dashboard: NextPage = () => {
           }
         }
         if (Object.keys(filterObj).length) {
-          setFilterFields(JSON.stringify(filterObj));
+          setCheckFilter(true);
+          setRoutingQuery(filterObj, searchField, sortingField);
           setCheckFilter(true);
         }
       } else {
@@ -624,7 +697,6 @@ const Dashboard: NextPage = () => {
   }
 
   const CSVUploadSubmitHandler = (getData: any) => {
-    // console.log(getData);
     return router.push('/product');
   }
 
@@ -641,9 +713,9 @@ const Dashboard: NextPage = () => {
 
   const editRegistryHandler = (rowData: any) => {
     return (
-    <>
-      <button className={layoutStyles.blueTextBtn} onClick={() => editContactFiledHandler(rowData.id, false)}>Edit</button> <button className={layoutStyles.blueTextBtn} onClick={() => editContactFiledHandler(rowData.id, true)}>View</button> 
-    </>)
+      <>
+        <button className={layoutStyles.blueTextBtn} onClick={() => editContactFiledHandler(rowData.id, false)}>Edit</button> <button className={layoutStyles.blueTextBtn} onClick={() => editContactFiledHandler(rowData.id, true)}>View</button>
+      </>)
   }
 
   const onSortHandler = async (e: any) => {
@@ -651,24 +723,18 @@ const Dashboard: NextPage = () => {
     setSortOrder(e.sortOrder);
     let sortObj;
     if (e.sortOrder == 0) {
-      sortObj = '';
-      setSortingField('');
+      setRoutingQuery(filterFields, searchField, '');
     } else {
       sortObj = { [e.sortField]: e.sortOrder };
-      setSortingField(JSON.stringify(sortObj));
+      setRoutingQuery(filterFields, searchField, sortObj);
     }
-  }
-
-  const clearFilterHandler = async () => {
-    setFilterFields('');
-    setCheckFilter(false);
   }
 
   const updateFilterHandler = () => {
     setFilterData(true);
     setCreateNewContactModal(true);
     let filterData = JSON.parse(filterFields);
-    let initialFields = {...initialValues};
+    let initialFields = { ...initialValues };
     Object.keys(filterData).map(el => {
       initialFields[el] = filterData[el];
     })
@@ -707,17 +773,26 @@ const Dashboard: NextPage = () => {
               <div className={"p-inputgroup " + styles.searchFilter}>
                 <InputText placeholder="Search" value={searchInput} onChange={(e) => setSearchInput(e.target.value)} />
                 {
-                  removeSearch && removeSearch == searchInput ? <button onClick={() => { setSearchField(''); setSearchInput(''); setRemoveSearch('') }}><MdClose /></button> : <button onClick={() => { setSearchField(JSON.stringify(searchInput)); setRemoveSearch(searchInput) }}><FaSearch /></button>
+                  removeSearch && removeSearch == searchInput ?
+                    <button onClick={() => {
+                      setSearchInput(''); setRemoveSearch(''); 
+                      setRoutingQuery(filterFields, '', sortingField);
+                    }}><MdClose /></button>
+                    :
+                    <button onClick={() => {
+                      setRemoveSearch(searchInput);
+                      setRoutingQuery(filterFields, searchInput, sortingField);
+                    }}><FaSearch /></button>
                 }
               </div>
               {
-                checkFilter ? 
-                <div className={'p-d-flex '+styles.filterBtnGroup}>
-                  <button onClick={updateFilterHandler} className={styles.filterBtn}>Update <FiFilter /></button>
-                  <button onClick={clearFilterHandler} className={styles.filterBtn}><RiCloseLine /></button>
-                </div>
-                : 
-                <button onClick={() => { setFilterData(true); setCreateNewContactModal(true) }} className={layoutStyles.blueBtn + " " + styles.filterBtn}>Filter <FiFilter /></button>
+                checkFilter ?
+                  <div className={'p-d-flex ' + styles.filterBtnGroup}>
+                    <button onClick={updateFilterHandler} className={styles.filterBtn}>Update <FiFilter /></button>
+                    <button onClick={() => setRoutingQuery('', searchField, sortingField)} className={styles.filterBtn}><RiCloseLine /></button>
+                  </div>
+                  :
+                  <button onClick={() => { setFilterData(true); setCreateNewContactModal(true) }} className={layoutStyles.blueBtn + " " + styles.filterBtn}>Filter <FiFilter /></button>
               }
               <button onClick={() => setSettingDataModal(true)} className={layoutStyles.blueBtn}>Table Settings</button>
               <button onClick={() => setAddNewFieldModal(true)} className={layoutStyles.blueBgBtn}>Add New Field</button>
@@ -736,7 +811,7 @@ const Dashboard: NextPage = () => {
                     <Column header="Id" body={idRegistryHandler}></Column>
                     {
                       Object.keys(contacts[0]).map((el, i) => {
-                        if(el === "id"){
+                        if (el === "id") {
                           return false;
                         }
                         return <Column key={"registrycolumn" + i} field={el} header={el} sortable></Column>
