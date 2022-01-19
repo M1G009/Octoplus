@@ -39,6 +39,7 @@ import styles from '../styles/registry.module.scss'
 import service from '../helper/api/api';
 
 
+
 export interface AddNewFiled {
   column: string;
   dtype: string;
