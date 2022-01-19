@@ -105,7 +105,7 @@ const Dashboard: NextPage = () => {
   // Paginations and Filter States
   const [totalRecords, setTotalRecords] = useState(1);
   const [currentPage, setCurrentPage] = useState(1);
-  const [sortingField, setSortingField] = useState('');
+  const [sortingField, setSortingField] = useState<object | string>('');
   const [filterFields, setFilterFields] = useState('');
   const [searchField, setSearchField] = useState('');
   const [perPage, setPerPage] = useState(10);
@@ -126,13 +126,13 @@ const Dashboard: NextPage = () => {
       setCreateContactTableSpinner(true)
       let query = `page=${page}&limit=${limit}`;
       if (filter) {
-        query = query + `&filter=${filter}`;
+        query = query + `&filter=${JSON.stringify(filter)}`;
       }
       if (search) {
         query = query + `&search=${JSON.stringify(search)}`;
       }
       if (sort) {
-        query = query + `&sort=${sort}`;
+        query = query + `&sort=${JSON.stringify(sort)}`;
       }
 
       const { data } = await service({
@@ -185,10 +185,26 @@ const Dashboard: NextPage = () => {
   }
 
   useEffect(() => {
-    let filter: any = query.filter;
-    let search = query.search;
-    let sort: any = query.sort;
-    if (filter) {
+    fetchAllContact(currentPage, perPage, filterFields, searchField, sortingField);
+  }, [currentPage, perPage, filterFields, searchField, sortingField])
+
+  useEffect(() => {
+    let allQuery: any = query;
+    let filter: any = {};
+    let search: string = '';
+    let sort: any = {};
+
+    for (const key in allQuery) {
+      if(key == "search"){
+        search = allQuery[key];
+      } else if(key.startsWith("sort-")) {
+        let stringKey: any = key.split('sort-')[1];       
+        sort[stringKey] = allQuery[key];
+      } else {
+        filter[key] = allQuery[key];
+      }
+    }
+    if (Object.keys(filter).length) {
       setCheckFilter(true);
       setFilterFields(filter);
     } else {
@@ -204,14 +220,14 @@ const Dashboard: NextPage = () => {
       setSearchInput('');
       setRemoveSearch('')
     }
-    if (sort) {
-      let sortObj = JSON.parse(sort);
-      let key = Object.keys(sortObj)[0];
-      let value = sortObj[Object.keys(sortObj)[0]];
+    if (Object.keys(sort).length) {
+      let key: any = Object.keys(sort)[0];
+      let value: any = sort[Object.keys(sort)[0]] * 1;
+      let sortObj = {[key]: value}
       if (value == 1 || value == -1) {
         setSortField(key);
         setSortOrder(value);
-        setSortingField(sort);
+        setSortingField(sortObj);
       } else {
         setSortField('');
         setSortOrder(0);
@@ -223,10 +239,6 @@ const Dashboard: NextPage = () => {
       setSortingField('');
     }
   }, [query])
-
-  useEffect(() => {
-    fetchAllContact(currentPage, perPage, filterFields, searchField, sortingField);
-  }, [currentPage, perPage, filterFields, searchField, sortingField])
 
   const validationSchema = yup.object().shape({
     column: yup.string().required('Please field name')
@@ -342,30 +354,24 @@ const Dashboard: NextPage = () => {
     setCreateNewContactModal(false);
   }
 
-  const isJson = (str: any) => {
-    try {
-        JSON.parse(str);
-    } catch (e) {
-        return false;
-    }
-    return true;
-}
-
   const setRoutingQuery = (filter: any, search: any, sort: any) => {
-    let queryObj: any = { filter, search, sort }
+    let queryObj: any = {search};
+    for (const key in filter) {
+      if(filter[key]){
+        queryObj[key] = filter[key];
+      }
+    }
+    for (const key in sort) {
+      if(sort[key]){
+        queryObj[`sort-${key}`] = sort[key];
+      }
+    }
+    
     for (const propName in queryObj) {
       if (!queryObj[propName]) {
         delete queryObj[propName];
-      } else {
-        if (propName == "filter" || propName == "sort") {
-          if (!isJson(queryObj[propName])) {
-            queryObj[propName] = JSON.stringify(queryObj[propName]);
-          }
-        }
       }
     }
-    console.log(queryObj);
-    
     return router.push({
       pathname: '/',
       query: queryObj,
@@ -733,7 +739,7 @@ const Dashboard: NextPage = () => {
   const updateFilterHandler = () => {
     setFilterData(true);
     setCreateNewContactModal(true);
-    let filterData = JSON.parse(filterFields);
+    let filterData: any = filterFields;
     let initialFields = { ...initialValues };
     Object.keys(filterData).map(el => {
       initialFields[el] = filterData[el];
@@ -775,7 +781,7 @@ const Dashboard: NextPage = () => {
                 {
                   removeSearch && removeSearch == searchInput ?
                     <button onClick={() => {
-                      setSearchInput(''); setRemoveSearch(''); 
+                      setSearchInput(''); setRemoveSearch('');
                       setRoutingQuery(filterFields, '', sortingField);
                     }}><MdClose /></button>
                     :
