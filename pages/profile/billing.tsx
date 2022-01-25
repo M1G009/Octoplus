@@ -7,6 +7,7 @@ import { useRouter } from 'next/router';
 
 // Prime React Imports
 import { Dropdown } from 'primereact/dropdown';
+import { Calendar } from 'primereact/calendar';
 import { Dialog } from 'primereact/dialog';
 import { confirmDialog } from 'primereact/confirmdialog';
 import { Checkbox } from 'primereact/checkbox';
@@ -33,6 +34,7 @@ import styles from '../../styles/profile.module.scss';
 
 // Interface/Helper Imports
 import service from '../../helper/api/api';
+
 
 
 
@@ -65,6 +67,8 @@ const Billing: NextPage = () => {
   const [editId, setEditId] = useState('');
   const [cardFields, setCardFields] = useState<CardFields>()
   const [getCardDetails, setGetCardDetails] = useState<GetCardDetails[]>([])
+  const [invoiceDate, setInvoiceDate] = useState<Date | Date[] | undefined>(new Date());
+
 
   const monthsOptions = [
     { name: 'January' },
@@ -375,7 +379,7 @@ const Billing: NextPage = () => {
           <div className={layoutStyles.textBox + " p-d-flex p-jc-between"}>
             <div className={styles.invoiceBox}>
               <label htmlFor="DownloadInvoice">Download Invoice</label>
-              <Dropdown inputId="DownloadInvoice" value={selectMonth} options={monthsOptions} onChange={onMonthChange} className={styles.selectBox} placeholder="Select" optionLabel="name" />
+              <Calendar id="monthpicker" value={invoiceDate} onChange={(e) => setInvoiceDate(e.value)} view="month" dateFormat="mm/yy" yearNavigator yearRange="2010:2030" />
             </div>
             <button className={styles.downloadBtn}><RiDownload2Line />Download PDF</button>
           </div>
