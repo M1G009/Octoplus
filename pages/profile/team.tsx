@@ -17,6 +17,7 @@ import * as yup from 'yup';
 import { ErrorMessage, Formik, Field, FormikHelpers } from 'formik';
 import { BsCheck2Square, BsSquare } from "react-icons/bs";
 import { ToastContainer } from "react-toastify";
+import slugify from 'slugify'
 import toast from "../../components/Toast";
 
 // Style and Component Imports
@@ -89,6 +90,7 @@ const Team: NextPage = (props: any) => {
   const [invitePeopleModal, setInvitePeopleModal] = useState(false);
   const [createRoleName, setCreateRoleName] = useState('');
   const [selectRoleName, setSelectRoleName] = useState({ label: '', id: '' });
+  const [selectScopeName, setSelectScopeName] = useState(["Reports access", "Merge access", "CSV upload access", "Registry access"]);
   const [saveRoleBtn, setSaveRoleBtn] = useState(false);
   const [createRoleScopeData, setCreateRoleScopeData] = useState<ICreateRoleScopeData>(
     {
@@ -191,7 +193,12 @@ const Team: NextPage = (props: any) => {
 
   const addScopeHandler = () => {
     let newScope = { ...addScopeData };
-    const isEmpty = Object.values(addScopeData).some(el => el === '');
+    let slug = slugify(newScope['name'], { replacement: '-', remove: undefined, lower: true, strict: false, locale: 'vi', trim: true})
+    newScope['slug'] = slug;
+    
+    
+    const isEmpty = Object.values(newScope).some(el => el === '');
+
     if (!isEmpty) {
       let scopeOfRoleArray = createRoleScopeData.scopes.slice();
       if (editScopeIndex >= 0) {
@@ -376,10 +383,6 @@ const Team: NextPage = (props: any) => {
   const createNewDataInputHandler = (e: any) => {
     setCreateRoleName(e.target.value);
     setSelectRoleName({ label: '', id: '' });
-    setCreateRoleScopeData({
-      name: "",
-      scopes: []
-    })
   }
 
   const deleteRoleHandler = async () => {
@@ -586,11 +589,8 @@ const Team: NextPage = (props: any) => {
                   }
                   <div className={styles.inputBox}>
                     <label htmlFor="name">Scope Name</label>
-                    <InputText id="name" name="name" type="text" value={addScopeData.name} onChange={(e) => addScopeFieldsHandler(e.target.name, e.target.value, false)} />
-                  </div>
-                  <div className={styles.inputBox}>
-                    <label htmlFor="slug">Scope Slug</label>
-                    <InputText id="slug" name="slug" type="text" value={addScopeData.slug} onChange={(e) => addScopeFieldsHandler(e.target.name, e.target.value.toLocaleLowerCase(), false)} />
+                    {/* <InputText id="name" name="name" type="text" value={addScopeData.name} onChange={(e) => addScopeFieldsHandler(e.target.name, e.target.value, false)} /> */}
+                    <Dropdown className={styles.selectRoleDropdown} id="name" name='name' value={addScopeData.name} options={selectScopeName} onChange={(e) => addScopeFieldsHandler(e.target.name, e.target.value, false)} placeholder="Select a Scope" />
                   </div>
                   <div className={styles.radioButtons}>
                     <div className={styles.radioBox}>

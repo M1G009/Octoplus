@@ -21,6 +21,13 @@
             cursor: pointer;
         }
 
+        .notDrag{
+            opacity: 0;
+            &+div{
+                pointer-events: none;
+            }
+        }
+
         .deleteIcon {
             padding: 0px;
             font-size: 18px;

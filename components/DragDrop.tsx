@@ -110,7 +110,10 @@ const DragDrop = (props: any) => {
     if (over && dragged) {
       let from = Number(dragged.getAttribute('id'));
       let to = Number(over.getAttribute('id'));
-
+      if(to <= 2){
+        to = 3
+      }
+      console.log(from, to)
       var columnData = [...tasks];      
       columnData.splice(to, 0, columnData.splice(from, 1)[0]);
 
@@ -123,7 +126,6 @@ const DragDrop = (props: any) => {
         doc.id = index;
         return doc;
       })
-      console.log(columnData);
       
       hideShowColumnHandler(columnData);
       setColumns(columnData);
@@ -162,21 +164,29 @@ const DragDrop = (props: any) => {
             className={styles.inputWrapper}
             key={task.name}
             id={task.id}
-            draggable
+            draggable={task.name != "First Name" && task.name != "Last Name" && task.name != "Email Address" }
             onDragStart={e => onDragStart(e)}
             onDragEnd={e => onDragEnd(e)}
           >
-            <button className={styles.threeDot} ><BsThreeDotsVertical /></button>
+            {
+              task.name != "First Name" && task.name != "Last Name" && task.name != "Email Address"  ?
+              <button className={styles.threeDot} ><BsThreeDotsVertical /></button> : <button className={styles.threeDot+" "+styles.notDrag} ><BsThreeDotsVertical /></button>
+            }
             <div className={className(task.readonly)}>
               <InputText readOnly={task.readonly} value={task.editedName} placeholder="Keyword" onChange={(e) => setEditNameHandler(e.target.value, task.id)} />
               {
+                task.name != "First Name" && task.name != "Last Name" && task.name != "Email Address"  ?
                 task.readonly ?
                   <button className={styles.editIcon} onClick={() => editHandler(task.id)} ><BiEditAlt /></button>
                   :
                   <button className={styles.editIcon} onClick={() => saveColumnHandler(task.id)}><BsCheckLg /></button>
+                : ''
               }
             </div>
-            <button className={styles.deleteIcon} onClick={() => deleteColumnIdHandler(task.name)}><BsFillDashCircleFill /></button>
+            {
+              task.name != "First Name" && task.name != "Last Name" && task.name != "Email Address"  ?
+              <button className={styles.deleteIcon} onClick={() => deleteColumnIdHandler(task.name)}><BsFillDashCircleFill /></button> : ''
+            }
           </div>
         ))}
       </div>

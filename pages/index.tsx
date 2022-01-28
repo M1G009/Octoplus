@@ -111,6 +111,7 @@ const Dashboard: NextPage = () => {
   const [perPage, setPerPage] = useState(10);
   const [dataType, setDataType] = useState(["text", "email", "date", "number", "textarea", "checkbox"])
   const [contacts, setContacts] = useState<any[]>([]);
+  const [showFieldsData, setShowFieldsData] = useState<any>(null);
   const [replaceColumn, setReplaceColumn] = useState(true)
 
   const fetchAllContact = async (page: number, limit: number, filter: any, search: string, sort: any) => {
@@ -128,7 +129,7 @@ const Dashboard: NextPage = () => {
       if (filter && Object.keys(filter).length) {
         let checkString = filter;
         for (const key in checkString) {
-          if(types && types[key] == "number"){
+          if (types && types[key] == "number") {
             checkString[key] = checkString[key] * 1;
           }
         }
@@ -137,7 +138,7 @@ const Dashboard: NextPage = () => {
       if (search) {
         query = query + `&search=${JSON.stringify(search)}`;
       }
-      if (sort) {
+      if (Object.keys(sort).length) {
         query = query + `&sort=${JSON.stringify(sort)}`;
       }
 
@@ -146,7 +147,7 @@ const Dashboard: NextPage = () => {
         method: 'GET',
         headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
       });
-      
+
       if (data) {
         if (!data.data.length && !data.data.registry) {
           setNoDataModal(true)
@@ -182,6 +183,7 @@ const Dashboard: NextPage = () => {
         setColumns(columnArray);
         setTypes(data.data.dtypes);
         setContacts(data.data.registry);
+        setShowFieldsData(data.data.show)
         setTotalRecords(data.data.total_rows)
       }
       setCreateContactTableSpinner(false)
@@ -192,60 +194,70 @@ const Dashboard: NextPage = () => {
   }
 
   useEffect(() => {
-    fetchAllContact(currentPage, perPage, filterFields, searchField, sortingField);
-  }, [currentPage, perPage, filterFields, searchField, sortingField])
+    async function fetchAllContactData() {
+      if (window.location.href) {
+        if (query) {
+          let allQuery: any = query;
+          let filter: any = {};
+          let search: string = '';
+          let sort: any = {};
+          let sortObj: any = {};
 
-  useEffect(() => {
-    let allQuery: any = query;
-    let filter: any = {};
-    let search: string = '';
-    let sort: any = {};
-
-    for (const key in allQuery) {
-      if(key == "search"){
-        search = allQuery[key];
-      } else if(key.startsWith("sort-")) {
-        let stringKey: any = key.split('sort-')[1];       
-        sort[stringKey] = allQuery[key];
-      } else {
-        filter[key] = allQuery[key];
+          for (const key in allQuery) {
+            if (key == "search") {
+              search = allQuery[key];
+            } else if (key.startsWith("sort-")) {
+              let stringKey: any = key.split('sort-')[1];
+              sort[stringKey] = allQuery[key];
+            } else {
+              filter[key] = allQuery[key];
+            }
+          }
+          if (Object.keys(filter).length) {
+            setCheckFilter(true);
+            setFilterFields(filter);
+          } else {
+            setCheckFilter(false);
+            setFilterFields('')
+          }
+          if (search) {
+            setSearchField(`${search}`);
+            setSearchInput(`${search}`);
+            setRemoveSearch(`${search}`);
+          } else {
+            setSearchField('');
+            setSearchInput('');
+            setRemoveSearch('')
+          }
+          if (Object.keys(sort).length) {
+            let key: any = Object.keys(sort)[0];
+            let value: any = sort[Object.keys(sort)[0]] * 1;
+            sortObj = { [key]: value }
+            if (value == 1 || value == -1) {
+              setSortField(key);
+              setSortOrder(value);
+              setSortingField(sortObj);
+            } else {
+              setSortField('');
+              setSortOrder(0);
+              setSortingField('');
+            }
+          } else {
+            setSortField('');
+            setSortOrder(0);
+            setSortingField('');
+          }
+          console.log(filter, `${search}`, sortObj)
+          fetchAllContact(currentPage, perPage, filter, `${search}`, sortObj);
+        } else {
+          await fetchAllContact(currentPage, perPage, filterFields, searchField, sortingField);
+        }
       }
     }
-    if (Object.keys(filter).length) {
-      setCheckFilter(true);
-      setFilterFields(filter);
-    } else {
-      setCheckFilter(false);
-      setFilterFields('')
-    }
-    if (search) {
-      setSearchField(`${search}`);
-      setSearchInput(`${search}`);
-      setRemoveSearch(`${search}`);
-    } else {
-      setSearchField('');
-      setSearchInput('');
-      setRemoveSearch('')
-    }
-    if (Object.keys(sort).length) {
-      let key: any = Object.keys(sort)[0];
-      let value: any = sort[Object.keys(sort)[0]] * 1;
-      let sortObj = {[key]: value}
-      if (value == 1 || value == -1) {
-        setSortField(key);
-        setSortOrder(value);
-        setSortingField(sortObj);
-      } else {
-        setSortField('');
-        setSortOrder(0);
-        setSortingField('');
-      }
-    } else {
-      setSortField('');
-      setSortOrder(0);
-      setSortingField('');
-    }
-  }, [query])
+    fetchAllContactData();
+
+  }, [currentPage, perPage, query])
+
 
   const validationSchema = yup.object().shape({
     column: yup.string().required('Please field name')
@@ -351,7 +363,7 @@ const Dashboard: NextPage = () => {
   }
 
   const emptyContactFiledHandler = () => {
-    let values = { ...initialValues };
+    let values = { ...showFieldsData };
     Object.keys(values).map(key => {
       values[key] = '';
     })
@@ -362,18 +374,18 @@ const Dashboard: NextPage = () => {
   }
 
   const setRoutingQuery = (filter: any, search: any, sort: any) => {
-    let queryObj: any = {search};
+    let queryObj: any = { search };
     for (const key in filter) {
-      if(filter[key]){
+      if (filter[key]) {
         queryObj[key] = filter[key];
       }
     }
     for (const key in sort) {
-      if(sort[key]){
+      if (sort[key]) {
         queryObj[`sort-${key}`] = sort[key];
       }
     }
-    
+
     for (const propName in queryObj) {
       if (!queryObj[propName]) {
         delete queryObj[propName];
@@ -416,23 +428,32 @@ const Dashboard: NextPage = () => {
           setCheckFilter(true);
         }
       } else {
-        if (editContactRowId) {
-          let editObj = Object.assign(JSON.parse(getData), { "row_id": editContactRowId });
-          await service({
-            url: `https://octoplusapi.herokuapp.com/edit_feild`,
-            method: 'POST',
-            data: editObj,
-            headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
-          });
-        } else {
-          await service({
-            url: `https://octoplusapi.herokuapp.com/insert_registry`,
-            method: 'POST',
-            data: { insert: [JSON.parse(getData)] },
-            headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
-          });
+        let parseData = JSON.parse(getData);
+        Object.keys(parseData).map(el => {
+          if (parseData[el].trim() == "") {
+            delete parseData[el];
+          }
+        })
+
+        if (Object.keys(parseData).length) {
+          if (editContactRowId) {
+            let editObj = Object.assign(parseData, { "row_id": editContactRowId });
+            await service({
+              url: `https://octoplusapi.herokuapp.com/edit_feild`,
+              method: 'POST',
+              data: editObj,
+              headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
+            });
+          } else {
+            await service({
+              url: `https://octoplusapi.herokuapp.com/insert_registry`,
+              method: 'POST',
+              data: { insert: [parseData] },
+              headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
+            });
+          }
+          await fetchAllContact(currentPage, perPage, filterFields, searchField, sortingField);
         }
-        await fetchAllContact(currentPage, perPage, filterFields, searchField, sortingField);
       }
 
       setCreateContactSpinner(false)
@@ -695,7 +716,9 @@ const Dashboard: NextPage = () => {
 
   const columnDeleteDialogCloseHandler = (e: any) => {
     if (e.target.classList.contains("p-dialog-mask")) {
-      deleteColumnHandler();
+      setDeleteColumnName(null);
+      setDeleteFromDatabase(false);
+      setDeleteColumnModal(false)
     }
   }
 
@@ -728,6 +751,19 @@ const Dashboard: NextPage = () => {
     return (
       <>
         <button className={layoutStyles.blueTextBtn} onClick={() => editContactFiledHandler(rowData.id, false)}>Edit</button> <button className={layoutStyles.blueTextBtn} onClick={() => editContactFiledHandler(rowData.id, true)}>View</button>
+      </>)
+  }
+
+  const editRegistryTextHandler = (rowData: any, el: any) => {
+    return (
+      <>
+        {
+          (!rowData[el] || rowData[el] === "null" || rowData[el] === "Null") ? " "
+            :
+            <>
+              <p className={styles.tableTdData}>{`${rowData[el]}`}</p> <span>{`${rowData[el]}`}</span>
+            </>
+        }
       </>)
   }
 
@@ -819,60 +855,19 @@ const Dashboard: NextPage = () => {
                 </div> : null
               }
               {
-                contacts.length ?
-                  <DataTable value={contacts} removableSort responsiveLayout="scroll" sortField={sortField} sortOrder={sortOrder} onSort={onSortHandler}>
+                contacts.length && showFieldsData ?
+                  <DataTable className='registryDataTable' value={contacts} removableSort responsiveLayout="scroll" sortField={sortField} sortOrder={sortOrder} onSort={onSortHandler}>
                     <Column header="Id" body={idRegistryHandler}></Column>
                     {
-                      Object.keys(contacts[0]).map((el, i) => {
+                      Object.keys(showFieldsData).map((el, i) => {
                         if (el === "id") {
                           return false;
                         }
-                        return <Column key={"registrycolumn" + i} field={el} header={el} sortable></Column>
+                        return <Column key={"registrycolumn" + i} field={el} header={el} body={(e) => editRegistryTextHandler(e, el)} sortable></Column>
                       })
                     }
                     <Column header="Actions" body={editRegistryHandler}></Column>
                   </DataTable>
-                  // <table className={styles.contectTable}>
-                  //   <thead>
-                  //     <tr>
-                  //       <th>id</th>
-                  //       {
-                  //         Object.keys(contacts[0]).map(function (key, index) {
-                  //           if (key != 'id') {
-                  //             return <th key={"tableTh" + index}>{key}</th>
-                  //           }
-                  //         })
-                  //       }
-                  //       <th>Actions</th>
-                  //       <th>View</th>
-                  //     </tr>
-                  //   </thead>
-                  //   <tbody>
-                  //     {
-                  //       contacts.map((el, i) => {
-                  //         return <tr key={"contact" + i}>
-                  //           <td>{i + 1}</td>
-                  //           {
-                  //             Object.keys(el).map(function (key, index, array) {
-                  //               if (key != "id" || index == array.length - 1) {
-                  //                 if (index == array.length - 1) {
-                  //                   return <React.Fragment key={"tableTdLast" + index + i}>
-                  //                     {
-                  //                       key != "id" ? <td>{`${contacts[i][key]}`}</td> : null
-                  //                     }
-                  //                     <td><button className={layoutStyles.blueTextBtn} onClick={() => editContactFiledHandler(contacts[i].id, false)}>Edit</button></td>
-                  //                     <td><button className={layoutStyles.blueTextBtn} onClick={() => editContactFiledHandler(contacts[i].id, true)}>View</button></td>
-                  //                   </React.Fragment>
-                  //                 }
-                  //                 return <td key={"tableTd" + index + i}>{`${contacts[i][key]}`}</td>
-                  //               }
-                  //             })
-                  //           }
-                  //         </tr>
-                  //       })
-                  //     }
-                  //   </tbody>
-                  // </table>
                   : <p className='p-text-center'>No data found</p>
               }
             </div>
@@ -899,14 +894,14 @@ const Dashboard: NextPage = () => {
                         } else {
                           if (!viewData) {
                             Object.keys(values).map(el => {
-                              if (types[el].toLowerCase() !== "checkbox") {
-                                if (types[el].toLowerCase() == "number") {
-                                  var reg = /^\d+$/
-                                  if (!reg.test(values[el]) || !values[el]) {
-                                    error[el] = "Please enter number";
+                              if (el == "First Name" || el == "Last Name" || el == "Email Address") {
+                                if (!values[el]) {
+                                  error[el] = "Please enter valid value";
+                                } else if (el == "Email Address") {
+                                  var emailPattern = /^\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,3}$/;
+                                  if (!emailPattern.test(values[el])) {
+                                    error[el] = "Please enter valid email";
                                   }
-                                } else if (!values[el]) {
-                                  error[el] = "Please enter value";
                                 }
                               }
                             })

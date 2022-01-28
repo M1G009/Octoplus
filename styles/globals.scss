@@ -55,33 +55,81 @@ a:hover {
   border-color: #2236f1 !important;
 }
 
-.p-deleteCheckbox .p-checkbox-box.p-highlight{
-  border-color: #F12222 !important;
-  background: #F12222 !important;
+.p-deleteCheckbox .p-checkbox-box.p-highlight {
+  border-color: #f12222 !important;
+  background: #f12222 !important;
 }
 
 .p-deleteCheckbox.p-checkbox:not(.p-checkbox-disabled) .p-checkbox-box.p-focus {
   box-shadow: none !important;
-  border-color: #F12222 !important;
+  border-color: #f12222 !important;
 }
 
-.p-deleteCheckbox.p-checkbox:not(.p-checkbox-disabled) .p-checkbox-box:hover{
-  border-color: #F12222 !important;
+.p-deleteCheckbox.p-checkbox:not(.p-checkbox-disabled) .p-checkbox-box:hover {
+  border-color: #f12222 !important;
 }
 
-
-.customCheckBox{
-  .p-checkbox-box.p-highlight{
+.customCheckBox {
+  .p-checkbox-box.p-highlight {
     border-color: #2236f1 !important;
     background: #2236f1 !important;
   }
-  
+
   .p-checkbox:not(.p-checkbox-disabled) .p-checkbox-box.p-focus {
     box-shadow: none !important;
     border-color: #2236f1 !important;
   }
-  
-  .p-checkbox:not(.p-checkbox-disabled) .p-checkbox-box:hover{
+
+  .p-checkbox:not(.p-checkbox-disabled) .p-checkbox-box:hover {
     border-color: #2236f1 !important;
+  }
+}
+
+.registryDataTable {
+  .p-datatable-thead > tr > th:not(:first-child) {
+    min-width: 150px;
+    max-width: 200px;
+  }
+
+  .p-datatable-thead > tr > th {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .p-datatable-tbody > tr > td {
+    padding: 0.8rem !important;
+    position: relative;
+  }
+
+  .p-datatable-tbody > tr > td p {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    position: relative;
+    margin: 0px;
+  }
+
+  .p-datatable-tbody > tr > td p + span {
+    display: none;
+    padding: 5px;
+    font-size: 14px;
+    box-shadow: 0px 0px 15px #0000002e;
+    border-radius: 3px;
+    position: absolute;
+    width: 150px;
+    z-index: 10;
+    background-color: #ffffff;
+    bottom: 30px;
+    word-break: break-word;
+  }
+
+  .p-datatable-tbody > tr > td p:hover + span {
+    display: block;
+  }
+
+  .p-datatable-tbody > tr > td:not(:first-child) {
+    min-width: 150px;
+    max-width: 200px;
   }
 }
