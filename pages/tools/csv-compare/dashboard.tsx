@@ -460,14 +460,16 @@ const CsvCompare: NextPage = (props: any) => {
                 window.localStorage.removeItem('loginUserdata');
                 return router.push('/auth');
             }
-            
+            console.log(JSON.stringify({ "registry": registryEntriesCopy, "csv": csvEntries, "csv_id": csvId, "registry_id": registryId, "merge": mergeEntries}));
+            console.log({ "registry": registryEntriesCopy, "csv": csvEntries, "csv_id": csvId, "registry_id": registryId, "merge": mergeEntries});
             const { data } = await service({
                 url: `https://octoplusapi.herokuapp.com/merge`,
                 method: 'POST',
                 data: JSON.stringify({ "registry": registryEntriesCopy, "csv": csvEntries, "csv_id": csvId, "registry_id": registryId, "merge": mergeEntries}),
                 headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
             });
-
+            console.log(data);
+            
             setSaveContactModal(false)
             setSubActiveColumnValue('');
             await fetchAllColumnsRecord(csvId)
@@ -507,7 +509,6 @@ const CsvCompare: NextPage = (props: any) => {
                                                     <p><span className={styles.deblicateData}>({el.duplicate} duplicates)</span><span>•</span><span className={styles.unique}>({el.unique} are unique)</span></p>
                                                 </button>
                                             }
-
                                             if (el.is_active) {
                                                 return <button key={"mainColumns" + i} className={styles.columnText + " " + styles.active} onClick={() => mainColumnActiveHandler(el.name)}>
                                                     <h6>{el.name}</h6>
@@ -526,7 +527,7 @@ const CsvCompare: NextPage = (props: any) => {
                             </div>
                             <div className={styles.singleColumnBox}>
                                 <div className={"p-inputgroup " + styles.searchInput}>
-                                    <InputText placeholder="Search sub column...." value={searchVal} onChange={(e) => setSearchVal(e.target.value)} />
+                                    <InputText placeholder="Search..." value={searchVal} onChange={(e) => setSearchVal(e.target.value)} />
                                     <Button icon="pi pi-search" />
                                 </div>
                                 <div className={styles.searchContentBox}>
@@ -644,13 +645,13 @@ const CsvCompare: NextPage = (props: any) => {
                                                                 </div>
                                                             </div>
                                                         })
-                                                        : "No registry data found"
+                                                        : <p className='p-p-2 p-m-0'>No CSV data found</p>
                                                 }
                                             </div> : ''
                                     }
                                 </div>
                                 <div className="p-mt-3 p-text-right">
-                                    {/* <button type='button' className={layoutStyles.customDarkBgbtn}>Ignore</button> */}
+                                    <button type='button' className={layoutStyles.customDarkBgbtn}>Ignore</button>
                                     <button type='button' onClick={() => setSaveContactModal(true)} className={layoutStyles.customBlueBgbtn}>Merge</button>
                                 </div>
                             </div>

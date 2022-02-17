@@ -211,6 +211,23 @@ $lightBlue: #2236f1;
             .selectBox {
                 width: 100%;
             }
+
+            .dragBtn {
+                padding: 0;
+                background-color: transparent;
+                border: none;
+                color: #a5adba;
+                font-size: 20px;
+                margin-right: 5px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+
+                path{
+                    stroke: #a5adba;
+                }
+            }
         }
 
         &:last-child {
@@ -366,16 +383,16 @@ $lightBlue: #2236f1;
                 }
             }
 
-            &:disabled{
+            &:disabled {
                 background-color: transparent !important;
-                color: #C1C7D0 !important;
+                color: #c1c7d0 !important;
                 h6 {
-                    color: #C1C7D0 !important;
+                    color: #c1c7d0 !important;
                 }
 
-                p{
-                    span{
-                        color: #C1C7D0 !important;
+                p {
+                    span {
+                        color: #c1c7d0 !important;
                     }
                 }
             }
@@ -503,7 +520,7 @@ $lightBlue: #2236f1;
                         font-size: 14px;
                     }
 
-                    input{
+                    input {
                         border: none;
                         background: #c9c9c9;
                         padding: 5px 10px;

@@ -57,10 +57,6 @@ export interface compareData {
     is_active: string
 }
 
-export interface DynamicFields {
-    [key: string]: string
-}
-
 {/* add field button */ }
 const CsvCompare: NextPage = (props: any) => {
     const router = useRouter();
@@ -91,7 +87,7 @@ const CsvCompare: NextPage = (props: any) => {
             type: "text",
         }
     ])
-    const [mappingRegistryColumn, setMappingRegistryColumn] = useState<DynamicFields>()
+    const [mappingRegistryColumn, setMappingRegistryColumn] = useState([])
     const [mappingRegistryColumnIndex, setMappingRegistryColumnIndex] = useState<any>([])
     const [mappingCsvColumn, setMappingCsvColumn] = useState<any>([])
     const [csvId, setCsvId] = useState('')
@@ -228,21 +224,24 @@ const CsvCompare: NextPage = (props: any) => {
                 data: JSON.stringify({ csv_id }),
                 headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
             });
+            console.log(res.data);
+            
             if (res.data) {
-                let registryColumns = { ...res.data.data[0].registry[0].dtypes };
-                let csvColumns = { ...res.data.data[0].csv[0].dtypes };
-                let csvColumnsArray: any = Object.keys(csvColumns);
-                if (Object.keys(registryColumns).length > Object.keys(csvColumns).length) {
-                    let diff = Object.keys(registryColumns).length - Object.keys(csvColumns).length;
+                let dataTypes: any = {id:"object",first_name:"text",price:"number"};
+                let registryColumns: any = [ ...res.data.data[0].registry ];
+                let csvData = [ ...res.data.data[0].csv ];
+                let csvColumnsArray: any = csvData;
+                if (registryColumns.length > csvData.length) {
+                    let diff = registryColumns.length - csvData.length;
                     for (let i = 0; i < diff; i++) {
                         csvColumnsArray.push(null);
                     }
                 }
-
+                
                 setMappingRegistryColumn(registryColumns)
-                setMappingRegistryColumnIndex(Object.keys(registryColumns))
+                setMappingRegistryColumnIndex(registryColumns)
                 setMappingCsvColumn(csvColumnsArray)
-                setDataType(Object.values(registryColumns))
+                setDataType(dataTypes)
                 setNewCompareDataSpinner(false);
                 setColumnMappingModal(true);
             } else {
@@ -395,9 +394,11 @@ const CsvCompare: NextPage = (props: any) => {
                     data: { "csv_id": csvId, "columns": selectedRegistryColumns, "dtypes": mappingRegistryColumn, "is_active":"Y"},
                     headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
                 });
-
+                
                 await fetchAllCompareRecord(currentPage, perPage);
                 setColumnMappingModal(false)
+                return router.push(`/tools/csv-compare/dashboard?id=${csvId}`);
+
             }
 
         } catch (err) {
@@ -604,11 +605,11 @@ const CsvCompare: NextPage = (props: any) => {
                                 }
                             </div>
                             <div className={styles.columnsData}>
-                                <span className={styles.columnItem}>CSV Column</span>
-
+                                <span className={styles.columnItem}>Regitry Column</span>
+                                {console.log(mappingRegistryColumnIndex)}
                                 {
                                     mappingRegistryColumnIndex ?
-                                        <DragSwap mappingRegistryColumn={mappingRegistryColumnIndex} setMapppingTabledata={setMappingRegistryColumnIndex} className={styles.columnItem} classNameIgnore={styles.columnItem + " " + styles.columnItemIgnore} />
+                                        <DragSwap mappingRegistryColumn={mappingRegistryColumnIndex} setMapppingTabledata={setMappingRegistryColumnIndex} dragBtn={styles.dragBtn} className={styles.columnItem} classNameIgnore={styles.columnItem + " " + styles.columnItemIgnore} />
                                         : ''
                                 }
                             </div>
@@ -626,12 +627,12 @@ const CsvCompare: NextPage = (props: any) => {
                             </div> */}
                         </div>
                         <div className='p-mt-3'>
-                            <button type='button' onClick={() => setAddNewFieldModal(true)} className={layoutStyles.customBluebtn + " p-d-flex p-ai-center"}><FiPlus /> Add Field</button>
+                            <button type='button' onClick={() => setAddNewFieldModal(true)} className={layoutStyles.customBluebtn + " p-d-flex p-ai-center p-ml-auto"}><FiPlus /> Add Field</button>
                         </div>
 
                         <div className="p-d-flex p-ai-center p-mt-4">
                             <div className="p-m-auto">
-                                <button type='button' onClick={() => setColumnMappingModal(false)} className={layoutStyles.customBluebtn}>Cancel</button>
+                                <button type='button' onClick={() =>{ setColumnMappingModal(false); setNewCompareModal(false)}} className={layoutStyles.customBluebtn}>Cancel</button>
                                 <button type='button' onClick={() => startMappingHandler()} className={layoutStyles.customBlueBgbtn}>Start Comparing</button>
                             </div>
                         </div>

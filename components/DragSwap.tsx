@@ -1,5 +1,7 @@
 import React, { useState } from 'react'
 
+import { GrDrag } from "react-icons/gr";
+
 const Box = (props: any) => {
     return (
         props.box ?
@@ -10,6 +12,7 @@ const Box = (props: any) => {
                 onDragOver={props.onDragOver({ id: props.id })}
                 onDrop={props.onDrop({ id: props.id })}
             >
+                <button className={props.dragBtn}><GrDrag /></button>
                 {props.box}
             </span>
             :
@@ -93,6 +96,7 @@ const DragSwap = (props: any) => {
                     onDragOver={handleDragOver}
                     onDrop={handleDrop}
                     className={props.className}
+                    dragBtn={props.dragBtn}
                     classNameIgnore={props.classNameIgnore}
                 />
             ));
