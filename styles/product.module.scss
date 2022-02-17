@@ -168,6 +168,67 @@ $lightBlue: #2236f1;
     }
 }
 
+.columnMappingBox {
+    display: flex;
+    .columnsData {
+        display: flex;
+        flex-direction: column;
+        width: 50%;
+
+        .columnItem {
+            display: flex;
+            align-items: center;
+            padding: 10px 8px;
+            font-weight: 500;
+            font-size: 14px;
+            color: #344563;
+            position: relative;
+            text-align: left;
+            text-transform: capitalize;
+            height: 50px;
+            font-weight: 500;
+            font-size: 14px;
+            color: #2236f1;
+            border-bottom: 1px solid #0000000f;
+            &:first-child {
+                background: #f4f5f7;
+                color: #344563;
+                height: 40px;
+                border-bottom: none;
+                position: relative;
+
+                &:after {
+                    content: "";
+                    position: absolute;
+                    top: calc(50% - 10px);
+                    height: 20px;
+                    right: -1px;
+                    width: 2px;
+                    background-color: #dfe1e6;
+                }
+            }
+
+            .selectBox {
+                width: 100%;
+            }
+        }
+
+        &:last-child {
+            .columnItem {
+                &:first-child {
+                    &::after {
+                        display: none;
+                    }
+                }
+            }
+        }
+
+        .columnItemIgnore {
+            color: #8993a4;
+        }
+    }
+}
+
 .columnMappingTable {
     border-collapse: collapse;
     width: 100%;
@@ -251,9 +312,15 @@ $lightBlue: #2236f1;
         width: 25%;
         border-radius: 12px;
         padding: 12px;
+        max-height: 460px;
+        overflow: auto;
 
         .columnText {
             padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+            background-color: transparent;
             border-radius: 4px;
             border-right: 4px solid transparent;
 
@@ -262,6 +329,7 @@ $lightBlue: #2236f1;
                 font-size: 14px;
                 color: #091e42;
                 margin: 0px 0px 5px;
+                text-align: left;
             }
 
             p {
@@ -289,6 +357,28 @@ $lightBlue: #2236f1;
                     color: #2236f1;
                 }
             }
+
+            &:hover {
+                background: rgba(34, 54, 241, 0.12);
+                // border-right: 4px solid #1890ff;
+                h6 {
+                    color: #2236f1;
+                }
+            }
+
+            &:disabled{
+                background-color: transparent !important;
+                color: #C1C7D0 !important;
+                h6 {
+                    color: #C1C7D0 !important;
+                }
+
+                p{
+                    span{
+                        color: #C1C7D0 !important;
+                    }
+                }
+            }
         }
     }
 
@@ -312,6 +402,10 @@ $lightBlue: #2236f1;
             margin-top: 15px;
             .columnText {
                 padding: 10px 20px;
+                background-color: transparent;
+                border: none;
+                width: 100%;
+                cursor: pointer;
                 border-radius: 4px;
                 border-right: 4px solid transparent;
 
@@ -320,6 +414,7 @@ $lightBlue: #2236f1;
                     font-size: 14px;
                     color: #091e42;
                     margin: 0px 0px 5px;
+                    text-align: left;
                 }
 
                 p {
@@ -331,6 +426,15 @@ $lightBlue: #2236f1;
                 &.active {
                     background: rgba(34, 54, 241, 0.12);
                     border-right: 4px solid #1890ff;
+                    h6 {
+                        color: #2236f1;
+                        font-weight: 500;
+                    }
+                }
+
+                &:hover {
+                    background: rgba(34, 54, 241, 0.12);
+                    // border-right: 4px solid #1890ff;
                     h6 {
                         color: #2236f1;
                         font-weight: 500;
@@ -399,6 +503,13 @@ $lightBlue: #2236f1;
                         font-size: 14px;
                     }
 
+                    input{
+                        border: none;
+                        background: #c9c9c9;
+                        padding: 5px 10px;
+                        border-radius: 5px;
+                    }
+
                     &.registryDataBox {
                         .numberText {
                             color: #1cc723;
@@ -417,6 +528,8 @@ $lightBlue: #2236f1;
 }
 
 .contactFixingModal {
+    max-height: 450px;
+    overflow: auto;
     .inputBox {
         label {
             margin-bottom: 10px;
@@ -502,6 +615,41 @@ $lightBlue: #2236f1;
                     color: #ff0000;
                 }
             }
+        }
+    }
+}
+
+.formSpinner {
+    position: absolute;
+    inset: 0px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #ffffff87;
+    z-index: 999;
+
+    .loading {
+        height: 0;
+        width: 0;
+        padding: 15px;
+        border: 6px solid #293cf1;
+        border-right-color: #0000;
+        border-radius: 22px;
+        -webkit-animation: rotate 1s infinite linear;
+        animation: rotate 1s infinite linear;
+    }
+
+    @-webkit-keyframes rotate {
+        100% {
+            -webkit-transform: rotate(360deg);
+            transform: rotate(360deg);
+        }
+    }
+
+    @keyframes rotate {
+        100% {
+            -webkit-transform: rotate(360deg);
+            transform: rotate(360deg);
         }
     }
 }

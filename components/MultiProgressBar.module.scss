@@ -1,5 +1,8 @@
-.progressStates {
+.progressStatesBar {
     position: relative;
+    background-color: #2236f114;
+    border-radius: 50px;
+
     .progressStates {
         display: none;
         padding: 15px;

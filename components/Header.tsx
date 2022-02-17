@@ -54,7 +54,7 @@ const Header = () => {
             <div className={styles.left_navlist}>
                 <Link href="/">My Registry</Link>
                 <Link href="/tools/csv-compare">Tools</Link>
-                <Link href="/report">Reports</Link>
+                {/* <Link href="/report">Reports</Link> */}
             </div>
             <div className={styles.right_list}>
                 <div className={styles.searchBox}>

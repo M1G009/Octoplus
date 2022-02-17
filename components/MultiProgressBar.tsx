@@ -1,21 +1,16 @@
 import MultiProgress from "react-multi-progress";
-import { Tooltip } from 'primereact/tooltip';
-import { Button } from "primereact/button";
 import styles from './MultiProgressBar.module.scss'
 
-const MultiProgressBar = ({complete, progress, ignored}: any) => {
-
-    // let complete = 1500;
-    // let progress = 500;
-    // let ignored = 20;
+const MultiProgressBar = ({ complete, progress, ignored }: any) => {
     let totalValue = complete + progress + ignored;
     let complateValue = (complete * 100) / totalValue;
     let progressValue = (progress * 100) / totalValue;
     let ignoredValue = 100 - (complateValue + progressValue);
 
     return (
-        <div className={styles.progressStates}>
+        <div className={styles.progressStatesBar}>
             <MultiProgress
+                backgroundColor="#2236f11a"
                 transitionTime={1.2}
                 elements={[
                     {

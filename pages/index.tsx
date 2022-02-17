@@ -196,6 +196,8 @@ const Dashboard: NextPage = () => {
   useEffect(() => {
     async function fetchAllContactData() {
       if (window.location.href) {
+        // const urlSearchParams = new URLSearchParams(window.location.search);
+        // const queryObj = Object.fromEntries(urlSearchParams.entries())
         if (query) {
           let allQuery: any = query;
           let filter: any = {};

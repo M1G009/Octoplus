@@ -1,7 +1,8 @@
 // React Module Imports
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 // Next Module Imports
 import type { NextPage } from 'next'
+import { useRouter } from 'next/router'
 
 // Prime React Imports
 import { Dropdown } from 'primereact/dropdown';
@@ -23,6 +24,7 @@ import {
     Tooltip,
     Legend,
 } from 'chart.js';
+import toast from "../../components/Toast";
 
 // Style and Component Imports
 import CustomPagination from '../../components/CustomPagination'
@@ -32,6 +34,7 @@ import { withProtectSync } from "../../utils/protect"
 import DashboardLayout from '../../components/DashboardLayout';
 
 // Interface/Helper Imports
+import service from '../../helper/api/api';
 
 ChartJS.register(
     CategoryScale,
@@ -43,15 +46,75 @@ ChartJS.register(
     Legend
 );
 
+export interface assignRows {
+    username: string;
+    total: number;
+    fix: number;
+    Perc_Com: string;
+    compare_name: string;
+}
+
 const CsvCompare: NextPage = (props: any) => {
+    const router = useRouter();
     // Pagination States
     const [totalRecords, setTotalRecords] = useState(1);
     const [currentPage, setCurrentPage] = useState(1);
     const [perPage, setPerPage] = useState(10);
     const [contacts, setContacts] = useState<any[]>([]);
-    const [compareIds, setCompareIds] = useState([1, 2, 3, 4, 5, 6])
-    const [rangeDate, setRangeDate] = useState<Date | Date[] | undefined>(undefined);
+    const [assigneeIds, setAssigneeIds] = useState([1, 2, 3, 4, 5, 6])
+    const [assigneeCurrent, setAssigneeCurrent] = useState(1)
+    const [rangeDate, setRangeDate] = useState<Date[] | undefined>([]);
     const [exportReportModal, setExportReportModal] = useState(false);
+    const [csvId, setCsvId] = useState('')
+    const [assignData, setAssignData] = useState<assignRows[]>()
+
+    const fetchAllCompareRecord = async (csv_id: string) => {
+        try {
+            let authToken = await window.localStorage.getItem('authToken');
+
+            if (!authToken) {
+                window.localStorage.removeItem("authToken")
+                window.localStorage.removeItem("ValidUser")
+                window.localStorage.removeItem('loginUserdata');
+                return router.push('/auth');
+            }
+            console.log(csv_id);
+
+            const { data } = await service({
+                url: `https://octoplusapi.herokuapp.com/pregressreportGET`,
+                method: 'POST',
+                data: JSON.stringify({ csv_id }),
+                headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
+            });
+
+
+            setAssignData(data.data[0].date);
+
+
+        } catch (err) {
+            return await toast({ type: "error", message: err });
+        }
+    }
+
+    useEffect(() => {
+        async function checkQuery() {
+            if (window.location.href) {
+                const urlSearchParams = new URLSearchParams(window.location.search)
+                let id = urlSearchParams.get('id')
+                // console.log(Object.fromEntries(urlSearchParams.entries()));
+
+                if (!id) return router.push('/tools/csv-compare');
+                setCsvId(id);
+                await fetchAllCompareRecord(id);
+                // if (id) {
+                //     setCsvId(id)
+                //     await fetchAllColumnsRecord(id)
+                // }
+            }
+        }
+        checkQuery();
+
+    }, [])
 
     const currentPageHandler = (num: number) => {
         setCurrentPage(num);
@@ -129,12 +192,12 @@ const CsvCompare: NextPage = (props: any) => {
                     <div className={layoutStyles.head}>
                         <div className={'p-d-flex p-ai-center ' + styles.reportHead}>
                             <div className={styles.reportSelect}>
-                                <label htmlFor=""><FiUser /> Assigne</label>
-                                <Dropdown id="compareId" className={styles.selectBox} name="column" value={1} options={compareIds} />
+                                <label htmlFor=""><FiUser /> Assignee</label>
+                                <Dropdown id="compareId" className={styles.selectBox} name="column" value={assigneeCurrent} options={assigneeIds} onChange={(e) => setAssigneeCurrent(e.target.value)} />
                             </div>
                         </div>
                         <div>
-                            <Calendar id="navigatorstemplate" value={rangeDate} selectionMode="range" onChange={(e: any) => setRangeDate(e.value)} monthNavigator yearNavigator yearRange="2010:2030" monthNavigatorTemplate={monthNavigatorTemplate} yearNavigatorTemplate={yearNavigatorTemplate} showIcon />
+                            <Calendar dateFormat="dd/mm/yy" id="navigatorstemplate" value={rangeDate} selectionMode="range" onChange={(e: any) => setRangeDate(e.value)} monthNavigator yearNavigator yearRange="2010:2030" monthNavigatorTemplate={monthNavigatorTemplate} yearNavigatorTemplate={yearNavigatorTemplate} showIcon />
                             <button className={layoutStyles.customBlueBgbtn} onClick={() => setExportReportModal(true)}>Export Report</button>
                         </div>
                     </div>
@@ -158,7 +221,18 @@ const CsvCompare: NextPage = (props: any) => {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr>
+                                        {
+                                            assignData?.map((el, i) => {
+                                                return <tr key={"asssignData" + i}>
+                                                    <td>{el.username}</td>
+                                                    <td>{el.total}</td>
+                                                    <td>{el.fix} ({el.Perc_Com}%)</td>
+                                                    <td>{el.username}</td>
+                                                    <td>{el.username}</td>
+                                                </tr>
+                                            })
+                                        }
+                                        {/* <tr>
                                             <td>Suryansh</td>
                                             <td>20</td>
                                             <td>10 (50%)</td>
@@ -178,7 +252,7 @@ const CsvCompare: NextPage = (props: any) => {
                                             <td>10 (50%)</td>
                                             <td>5</td>
                                             <td>0.5</td>
-                                        </tr>
+                                        </tr> */}
                                     </tbody>
                                 </table>
                                 // : <p className='p-text-center'>No data found</p>
@@ -192,16 +266,20 @@ const CsvCompare: NextPage = (props: any) => {
                         }
                     </div>
                 </div>
-                <div className={layoutStyles.headContentBox + " p-mb-5"}>
-                    <div className={layoutStyles.head}>
-                        <h4>Performance Chart</h4>
-                    </div>
-                    <div className={styles.comparisonTableBox}>
-                        <div className='p-p-4'>
-                            <Line options={options} data={data} />
+                {
+                    rangeDate && rangeDate.length ?
+                        <div className={layoutStyles.headContentBox + " p-mb-5"}>
+                            <div className={layoutStyles.head}>
+                                <h4>Performance Chart</h4>
+                            </div>
+                            <div className={styles.comparisonTableBox}>
+                                <div className='p-p-4'>
+                                    <Line options={options} data={data} />
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </div>
+                        : null
+                }
             </div>
 
             {/* Export Report Modal */}

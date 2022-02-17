@@ -21,7 +21,7 @@ $lightBlue: #2236f1;
         font-size: 20px;
         display: flex;
         align-items: center;
-        svg{
+        svg {
             margin-right: 5px;
         }
     }
@@ -118,7 +118,7 @@ $lightBlue: #2236f1;
     }
 }
 
-.blueTextBtn{
+.blueTextBtn {
     background: transparent;
     color: $lightBlue;
     border-radius: 4px;
@@ -196,5 +196,25 @@ $lightBlue: #2236f1;
 
     &:hover {
         background-color: #f12222 !important;
+    }
+}
+
+.customRedFontbtn {
+    background-color: transparent;
+    color: #f12222;
+    border-radius: 4px;
+    border: none;
+    padding: 0px;
+    font-size: 16px;
+    font-weight: 500;
+    margin: 0px 10px;
+    cursor: pointer;
+
+    &:disabled {
+        opacity: 0.85;
+    }
+
+    span {
+        padding-top: 2px;
     }
 }
