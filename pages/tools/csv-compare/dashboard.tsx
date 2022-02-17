@@ -376,14 +376,13 @@ const CsvCompare: NextPage = (props: any) => {
             }
             setAssignFilterModalSpinner(true)
             const { data } = await service({
-                url: `https://octoplusapi.herokuapp.com/assigning`,
-                method: 'POST',
-                data: JSON.stringify({ csvId, "filter": getData}),
+                url: `https://octoplusapi.herokuapp.com/assigning?csv_id=${csvId}&filter=${JSON.stringify(getData)}`,
+                method: 'GET',
                 headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
             });
+            await fetchAllColumnsRecord(csvId)
             setAssignFilterModalSpinner(false)
             setAssignContactFixingModal(false)
-
         } catch (err) {
             setAssignFilterModalSpinner(false)
             return await toast({ type: "error", message: err });

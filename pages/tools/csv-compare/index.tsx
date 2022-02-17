@@ -379,9 +379,6 @@ const CsvCompare: NextPage = (props: any) => {
                 window.localStorage.removeItem('loginUserdata');
                 return router.push('/auth');
             }
-
-            // mappingCsvColumn
-
             
             if (mappingRegistryColumnIndex) {
                 let selectedRegistryColumns: any[] = [];
