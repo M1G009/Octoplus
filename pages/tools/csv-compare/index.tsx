@@ -44,7 +44,7 @@ export interface AddNewFiled {
 }
 
 export interface WorkProgress {
-    complate: number;
+    complete: number;
     progress: number;
     ignored: number;
 }
@@ -63,6 +63,7 @@ const CsvCompare: NextPage = (props: any) => {
     const { query } = router;
     const [compareCsvTableSpinner, setCompareCsvTableSpinner] = useState(false)
     const [newCompareModal, setNewCompareModal] = useState(false);
+    const [columnMappingModalSpinner, setColumnMappingModalSpinner] = useState(false);
     const [newCompareDataSpinner, setNewCompareDataSpinner] = useState(false)
     const [dataType, setDataType] = useState([])
     const [mappingTableData, setMapppingTabledata] = useState([
@@ -135,31 +136,6 @@ const CsvCompare: NextPage = (props: any) => {
                 headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
             });
 
-            // const res = await service({
-            //     url: `https://octoplusapi.herokuapp.com/columnmapGET`,
-            //     method: 'POST',
-            //     data: JSON.stringify({ csv_id: "620c6f98625a31d79f3fdd76" }),
-            //     headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
-            // });
-
-            // if (res.data) {
-            //     let registryColumns = { ...res.data.data[0].registry[0].dtypes };
-            //     let csvColumns = { ...res.data.data[0].csv[0].dtypes };
-            //     let csvColumnsArray: any = Object.keys(csvColumns);
-            //     if (Object.keys(registryColumns).length > Object.keys(csvColumns).length) {
-            //         let diff = Object.keys(registryColumns).length - Object.keys(csvColumns).length;
-            //         for (let i = 0; i < diff; i++) {
-            //             csvColumnsArray.push(null);
-            //         }
-            //     }
-            //     setCsvId("620c6f98625a31d79f3fdd76");
-            //     setMappingRegistryColumn(registryColumns)
-            //     setMappingCsvColumn(csvColumnsArray)
-            //     setDataType(Object.values(registryColumns))
-            // } else {
-            //     setNewCompareDataSpinner(false);
-            // }
-
             if (!data.data.length) {
                 setCompareData([])
                 setTotalRecords(0);
@@ -217,19 +193,20 @@ const CsvCompare: NextPage = (props: any) => {
                 window.localStorage.removeItem('loginUserdata');
                 return router.push('/auth');
             }
-
+            setColumnMappingModalSpinner(true)
+            console.log("csv_id", csv_id);
+            
             const res = await service({
                 url: `https://octoplusapi.herokuapp.com/columnmapGET`,
                 method: 'POST',
                 data: JSON.stringify({ csv_id }),
                 headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
             });
-            console.log(res.data);
-            
+
             if (res.data) {
-                let dataTypes: any = {id:"object",first_name:"text",price:"number"};
-                let registryColumns: any = [ ...res.data.data[0].registry ];
-                let csvData = [ ...res.data.data[0].csv ];
+                let dataTypes: any = { id: "object", first_name: "text", price: "number" };
+                let registryColumns: any = [...res.data.data[0].registry];
+                let csvData = [...res.data.data[0].csv];
                 let csvColumnsArray: any = csvData;
                 if (registryColumns.length > csvData.length) {
                     let diff = registryColumns.length - csvData.length;
@@ -237,18 +214,20 @@ const CsvCompare: NextPage = (props: any) => {
                         csvColumnsArray.push(null);
                     }
                 }
-                
+
                 setMappingRegistryColumn(registryColumns)
                 setMappingRegistryColumnIndex(registryColumns)
                 setMappingCsvColumn(csvColumnsArray)
                 setDataType(dataTypes)
-                setNewCompareDataSpinner(false);
+                setColumnMappingModalSpinner(false);
                 setColumnMappingModal(true);
             } else {
-                setNewCompareDataSpinner(false);
+                setColumnMappingModalSpinner(false);
             }
         } catch (err) {
-            setNewCompareDataSpinner(false);
+            // console.log("err", err);
+            setColumnMappingModalSpinner(false);
+            return await toast({ type: "error", message: err });
         }
     }
 
@@ -278,10 +257,11 @@ const CsvCompare: NextPage = (props: any) => {
 
             if (data.data.length) {
                 setCsvId(data.data[0]._id);
+                setColumnMappingModal(true);
                 await columnMappingGet(data.data[0]._id)
             } else {
                 setNewCompareDataSpinner(false);
-
+                throw new Error("Data not found");
             }
         } catch (err) {
             setNewCompareDataSpinner(false);
@@ -339,8 +319,7 @@ const CsvCompare: NextPage = (props: any) => {
             await fetchAllCompareRecord(currentPage, perPage);
 
         } catch (err) {
-            console.log(err);
-
+            return await toast({ type: "error", message: err });
         }
     }
 
@@ -378,31 +357,29 @@ const CsvCompare: NextPage = (props: any) => {
                 window.localStorage.removeItem('loginUserdata');
                 return router.push('/auth');
             }
-            
+
             if (mappingRegistryColumnIndex) {
                 let selectedRegistryColumns: any[] = [];
                 mappingCsvColumn.map((el: any, i: number) => {
-                    console.log(mappingRegistryColumnIndex[i]);
-                    if(el){
+                    if (el) {
                         selectedRegistryColumns.push(mappingRegistryColumnIndex[i]);
                     }
                 })
-                
+
                 const { data } = await service({
                     url: `https://octoplusapi.herokuapp.com/columnmapPOST`,
                     method: 'POST',
-                    data: { "csv_id": csvId, "columns": selectedRegistryColumns, "dtypes": mappingRegistryColumn, "is_active":"Y"},
+                    data: { "csv_id": csvId, "columns": selectedRegistryColumns, "dtypes": mappingRegistryColumn, "is_active": "Y" },
                     headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
                 });
-                
+
                 await fetchAllCompareRecord(currentPage, perPage);
                 setColumnMappingModal(false)
                 return router.push(`/tools/csv-compare/dashboard?id=${csvId}`);
-
             }
 
-        } catch (err) {
-            console.log(err);
+        } catch (err) {           
+            return await toast({ type: "error", message: err });
         }
     }
 
@@ -458,7 +435,7 @@ const CsvCompare: NextPage = (props: any) => {
                                                     return <tr key={"compareTable" + i}>
                                                         <td>{el.compare_name}</td>
                                                         <td>{el.csv_name}</td>
-                                                        <td><MultiProgressBar complete={el.work_progress.complate} progress={el.work_progress.progress} ignored={el.work_progress.ignored} /></td>
+                                                        <td><MultiProgressBar complete={el.work_progress.complete} progress={el.work_progress.progress} ignored={el.work_progress.ignored} /></td>
                                                         <td>
                                                             <div className='p-d-flex'>
                                                                 {
@@ -578,22 +555,16 @@ const CsvCompare: NextPage = (props: any) => {
             {/* Column Mapping Modal */}
             <Dialog showHeader={false} contentClassName={styles.modelsCustomStyles} maskClassName={styles.dialogMask} visible={columnMappingModal} style={{ width: '500px', }} onHide={() => ''}>
                 <div className={styles.replaceDataModal}>
+                    {
+                        columnMappingModalSpinner ? <div className={styles.formSpinner}>
+                            <div className={styles.loading}></div>
+                        </div> : null
+                    }
                     <h5>Column Mapping (Match the Registry columns with CSV)</h5>
                     <div className={styles.inputFields}>
 
                         <div className={styles.columnMappingBox}>
-                            {/* 
-                                <div className={styles.columnsData}>
-                                    <span className={styles.columnItem}>Registry Column</span>
-                                    {
-                                        mappingRegistryColumn ?
-                                            Object.keys(mappingRegistryColumn).map((el, i) => {
-                                                return <span key={"registryColumn" + i} className={styles.columnItem}>{el}</span>
-                                            })
-                                            : ''
-                                    }
-                                </div>
-                            */}
+
                             <div className={styles.columnsData}>
                                 <span className={styles.columnItem}>CSV Column</span>
                                 {
@@ -606,25 +577,12 @@ const CsvCompare: NextPage = (props: any) => {
                             </div>
                             <div className={styles.columnsData}>
                                 <span className={styles.columnItem}>Regitry Column</span>
-                                {console.log(mappingRegistryColumnIndex)}
                                 {
                                     mappingRegistryColumnIndex ?
                                         <DragSwap mappingRegistryColumn={mappingRegistryColumnIndex} setMapppingTabledata={setMappingRegistryColumnIndex} dragBtn={styles.dragBtn} className={styles.columnItem} classNameIgnore={styles.columnItem + " " + styles.columnItemIgnore} />
                                         : ''
                                 }
                             </div>
-                            {/* <div className={styles.columnsData}>
-                                <span className={styles.columnItem}>Data Type</span>
-                                {
-                                    mappingRegistryColumn ?
-                                        Object.keys(mappingRegistryColumn).map((el, i) => {
-                                            return <span key={"TypesOfColumn" + i} className={styles.columnItem}>
-                                                <Dropdown id="inviteRole" className={styles.selectBox} name="dtype" value={mappingRegistryColumn[el]} options={dataType} onChange={(e) => setRegistryColumnTypeHandler(e, i)} />
-                                            </span>
-                                        })
-                                        : ''
-                                }
-                            </div> */}
                         </div>
                         <div className='p-mt-3'>
                             <button type='button' onClick={() => setAddNewFieldModal(true)} className={layoutStyles.customBluebtn + " p-d-flex p-ai-center p-ml-auto"}><FiPlus /> Add Field</button>
@@ -632,7 +590,7 @@ const CsvCompare: NextPage = (props: any) => {
 
                         <div className="p-d-flex p-ai-center p-mt-4">
                             <div className="p-m-auto">
-                                <button type='button' onClick={() =>{ setColumnMappingModal(false); setNewCompareModal(false)}} className={layoutStyles.customBluebtn}>Cancel</button>
+                                <button type='button' onClick={() => { setColumnMappingModal(false); setNewCompareModal(false) }} className={layoutStyles.customBluebtn}>Cancel</button>
                                 <button type='button' onClick={() => startMappingHandler()} className={layoutStyles.customBlueBgbtn}>Start Comparing</button>
                             </div>
                         </div>

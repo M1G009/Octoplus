@@ -241,6 +241,7 @@ const CsvCompare: NextPage = (props: any) => {
                 return router.push('/auth');
             }
             setDashBoardSpinner(true);
+
             const { data } = await service({
                 url: `https://octoplusapi.herokuapp.com/csvdash2`,
                 method: 'POST',
@@ -397,8 +398,8 @@ const CsvCompare: NextPage = (props: any) => {
 
     const mainColumnActiveHandler = async (name: string) => {
         if (name != activeColumn) {
-            let slug = slugify(name, { replacement: '-', remove: undefined, lower: true, strict: false, locale: 'vi', trim: true });
-            await fetchSubColumnsRecord(slug, csvId)
+            // let slug = slugify(name, { replacement: '-', remove: undefined, lower: true, strict: false, locale: 'vi', trim: true });
+            await fetchSubColumnsRecord(name, csvId)
             let copyMainColumns: any = [...mainColumns].map((el: any) => {
                 if (el.name == name) {
                     let copyEl = { ...el };
