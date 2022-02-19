@@ -54,6 +54,12 @@ export interface assignRows {
     compare_name: string;
 }
 
+export interface chartData {
+    username: [string];
+    dates: [string];
+    data: [number];
+}
+
 const CsvCompare: NextPage = (props: any) => {
     const router = useRouter();
     // Pagination States
@@ -61,15 +67,28 @@ const CsvCompare: NextPage = (props: any) => {
     const [currentPage, setCurrentPage] = useState(1);
     const [perPage, setPerPage] = useState(10);
     const [contacts, setContacts] = useState<any[]>([]);
-    const [assigneeIds, setAssigneeIds] = useState([1, 2, 3, 4, 5, 6])
-    const [assigneeCurrent, setAssigneeCurrent] = useState(1)
-    const [rangeDate, setRangeDate] = useState<Date[] | undefined>([]);
-    const [exportReportModal, setExportReportModal] = useState(false);
-    const [csvId, setCsvId] = useState('')
-    const [assignData, setAssignData] = useState<assignRows[]>()
+    const [assigneeIds, setAssigneeIds] = useState([])
+    const [assigneeCurrent, setAssigneeCurrent] = useState('')
 
-    const fetchAllCompareRecord = async (csv_id: string) => {
-        try {
+    let currentNewDate = new Date();
+    let prevNewDate = new Date();
+    prevNewDate.setDate(prevNewDate.getDate() - 7)
+
+    const [rangeDate, setRangeDate] = useState<Date[] | undefined>([prevNewDate, currentNewDate]);
+    const [exportReportModal, setExportReportModal] = useState(false);
+    const [assignData, setAssignData] = useState<assignRows[]>()
+    const [graphBox, setGraphBox] = useState(false)
+    const [chartData, setChartData] = useState<chartData[]>([])
+
+    const convert = (str: any) => {
+        var date = new Date(str),
+            mnth = ("0" + (date.getMonth() + 1)).slice(-2),
+            day = ("0" + date.getDate()).slice(-2);
+        return [date.getFullYear(), mnth, day].join("-");
+    }
+
+    useEffect(() => {
+        async function withDate() {
             let authToken = await window.localStorage.getItem('authToken');
 
             if (!authToken) {
@@ -78,43 +97,41 @@ const CsvCompare: NextPage = (props: any) => {
                 window.localStorage.removeItem('loginUserdata');
                 return router.push('/auth');
             }
-            console.log(csv_id);
 
+            let startDate;
+            let endDate;
+
+            if(rangeDate && rangeDate[0] && rangeDate[1]){
+                startDate = convert(rangeDate[0]);
+                endDate = convert(rangeDate[1])
+            } else {
+                let currentDate = new Date();
+                startDate = convert(currentDate);
+                currentDate.setDate(currentDate.getDate() - 7)
+                endDate = convert(currentDate);
+            }
+
+            let query;
+            if (assigneeCurrent) {
+                query = {start: startDate, end: endDate, assignee: assigneeCurrent }
+            } else {
+                query = {start: startDate, end: endDate }
+            }
+            
             const { data } = await service({
-                url: `https://octoplusapi.herokuapp.com/pregressreportGET`,
+                url: `https://octoplusapi.herokuapp.com/detailreportGET`,
                 method: 'POST',
-                data: JSON.stringify({ csv_id }),
+                data: JSON.stringify(query),
                 headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
             });
 
-
-            setAssignData(data.data[0].date);
-
-
-        } catch (err) {
-            return await toast({ type: "error", message: err });
+            setChartData(data.data[0].chart);
+            setAssigneeIds(data.data[0].username)
+            setAssignData(data.data[0].data)
+            setGraphBox(true);
         }
-    }
-
-    useEffect(() => {
-        async function checkQuery() {
-            if (window.location.href) {
-                const urlSearchParams = new URLSearchParams(window.location.search)
-                let id = urlSearchParams.get('id')
-                // console.log(Object.fromEntries(urlSearchParams.entries()));
-
-                if (!id) return router.push('/tools/csv-compare');
-                setCsvId(id);
-                await fetchAllCompareRecord(id);
-                // if (id) {
-                //     setCsvId(id)
-                //     await fetchAllColumnsRecord(id)
-                // }
-            }
-        }
-        checkQuery();
-
-    }, [])
+        withDate();
+    }, [rangeDate, assigneeCurrent])
 
     const currentPageHandler = (num: number) => {
         setCurrentPage(num);
@@ -139,24 +156,33 @@ const CsvCompare: NextPage = (props: any) => {
         }
     };
 
-    const labels = ['$100', '$200', '$300', '$400', '$500', '$600', '$700'];
+    const getRandomColor = () => {
+        var letters = '0123456789ABCDEF';
+        var color = '#';
+        for (var i = 0; i < 6; i++) {
+            color += letters[Math.floor(Math.random() * 16)];
+        }
+        return color;
+    }
+
+    const dataSetBuilder = (data: any) => {
+        let dataArray: any = [];
+        let color = getRandomColor();
+        data.map((el: any) => {
+            return dataArray.push({ label: el.username[0], data: el.data, borderColor: color, backgroundColor: color })
+        })
+
+        return dataArray
+    }
+
+    let labels: any[] = [];
+    if (chartData.length) {
+        labels = chartData[0].dates;
+    }
 
     const data = {
         labels,
-        datasets: [
-            {
-                label: 'Andrew',
-                data: labels.map(() => Math.floor(Math.random() * 100)),
-                borderColor: '#FFE700',
-                backgroundColor: '#FFE700',
-            },
-            {
-                label: 'Joe',
-                data: labels.map(() => Math.floor(Math.random() * 100)),
-                borderColor: '#2CD9C5',
-                backgroundColor: '#2CD9C5',
-            },
-        ],
+        datasets: dataSetBuilder(chartData)
     };
 
     const monthNavigatorTemplate = (e: any) => {
@@ -267,7 +293,7 @@ const CsvCompare: NextPage = (props: any) => {
                     </div>
                 </div>
                 {
-                    rangeDate && rangeDate.length ?
+                    graphBox && rangeDate && rangeDate[0] && rangeDate[1] ?
                         <div className={layoutStyles.headContentBox + " p-mb-5"}>
                             <div className={layoutStyles.head}>
                                 <h4>Performance Chart</h4>

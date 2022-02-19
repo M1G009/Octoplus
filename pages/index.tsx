@@ -249,7 +249,6 @@ const Dashboard: NextPage = () => {
             setSortOrder(0);
             setSortingField('');
           }
-          console.log(filter, `${search}`, sortObj)
           fetchAllContact(currentPage, perPage, filter, `${search}`, sortObj);
         } else {
           await fetchAllContact(currentPage, perPage, filterFields, searchField, sortingField);
@@ -484,7 +483,7 @@ const Dashboard: NextPage = () => {
       }
 
       setAddFiledSpinner(true)
-      await service({
+      let { data } = await service({
         url: `https://octoplusapi.herokuapp.com/add_feild`,
         method: 'POST',
         data: getData,
@@ -1177,7 +1176,7 @@ const Dashboard: NextPage = () => {
                               htmlFor="CSVFileUpload"
                               className="button">
                               <FiUpload />
-                              Upload an image
+                              Upload an CSV
                             </label>
                             <p className={styles.fileName}>{csvFileName(props.values)}</p>
                             <input id="CSVFileUpload" name="file" type="file" accept=".csv" onChange={(e) => csvFileUploadHandler(e, props.setFieldValue)} className={styles.CSVFileUpload} />

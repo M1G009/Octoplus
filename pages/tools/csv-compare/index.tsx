@@ -12,7 +12,7 @@ import { Dropdown } from 'primereact/dropdown';
 import * as yup from 'yup';
 import { AiOutlineSwap } from "react-icons/ai";
 import { MdCompare } from "react-icons/md";
-import { FaRegEye, FaRegTrashAlt } from "react-icons/fa";
+import { FaRegEye, FaRegTrashAlt, FaMinus, FaPlus } from "react-icons/fa";
 import { ErrorMessage, Formik, FieldArray, Field, FormikHelpers } from 'formik';
 import { ToastContainer } from "react-toastify";
 import { FiUpload, FiPlus } from 'react-icons/fi';
@@ -65,7 +65,7 @@ const CsvCompare: NextPage = (props: any) => {
     const [newCompareModal, setNewCompareModal] = useState(false);
     const [columnMappingModalSpinner, setColumnMappingModalSpinner] = useState(false);
     const [newCompareDataSpinner, setNewCompareDataSpinner] = useState(false)
-    const [dataType, setDataType] = useState([])
+    const [dataType, setDataType] = useState(["text", "email", "date", "number", "textarea", "checkbox"])
     const [mappingTableData, setMapppingTabledata] = useState([
         {
             registry: "Name",
@@ -88,7 +88,7 @@ const CsvCompare: NextPage = (props: any) => {
             type: "text",
         }
     ])
-    const [mappingRegistryColumn, setMappingRegistryColumn] = useState([])
+    const [mappingRegistryColumnDtype, setMappingRegistryColumnDtype] = useState([])
     const [mappingRegistryColumnIndex, setMappingRegistryColumnIndex] = useState<any>([])
     const [mappingCsvColumn, setMappingCsvColumn] = useState<any>([])
     const [csvId, setCsvId] = useState('')
@@ -194,7 +194,6 @@ const CsvCompare: NextPage = (props: any) => {
                 return router.push('/auth');
             }
             setColumnMappingModalSpinner(true)
-            console.log("csv_id", csv_id);
             
             const res = await service({
                 url: `https://octoplusapi.herokuapp.com/columnmapGET`,
@@ -202,11 +201,12 @@ const CsvCompare: NextPage = (props: any) => {
                 data: JSON.stringify({ csv_id }),
                 headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
             });
-
+            
             if (res.data) {
-                let dataTypes: any = { id: "object", first_name: "text", price: "number" };
-                let registryColumns: any = [...res.data.data[0].registry];
-                let csvData = [...res.data.data[0].csv];
+                let dataTypes: any = { ...res.data.data[0][0].dtypes };
+                
+                let registryColumns: any = [...res.data.data[0][0].registry];
+                let csvData = [...res.data.data[0][1].csv];
                 let csvColumnsArray: any = csvData;
                 if (registryColumns.length > csvData.length) {
                     let diff = registryColumns.length - csvData.length;
@@ -215,17 +215,20 @@ const CsvCompare: NextPage = (props: any) => {
                     }
                 }
 
-                setMappingRegistryColumn(registryColumns)
+                csvColumnsArray.map((el: any, i: number) => {
+                    if(el){
+                        return csvColumnsArray[i] = {name: el, active: true};
+                    }
+                })                
+                setMappingRegistryColumnDtype(dataTypes)
                 setMappingRegistryColumnIndex(registryColumns)
                 setMappingCsvColumn(csvColumnsArray)
-                setDataType(dataTypes)
                 setColumnMappingModalSpinner(false);
                 setColumnMappingModal(true);
             } else {
                 setColumnMappingModalSpinner(false);
             }
         } catch (err) {
-            // console.log("err", err);
             setColumnMappingModalSpinner(false);
             return await toast({ type: "error", message: err });
         }
@@ -240,7 +243,7 @@ const CsvCompare: NextPage = (props: any) => {
                 window.localStorage.removeItem("ValidUser")
                 window.localStorage.removeItem('loginUserdata');
                 return router.push('/auth');
-            }
+            }  
 
             let newCompareForm = new FormData();
             newCompareForm.append('compare_name', getData.compare_name);
@@ -248,13 +251,19 @@ const CsvCompare: NextPage = (props: any) => {
             newCompareForm.append('csv_name', getData.csv_name);
 
             setNewCompareDataSpinner(true);
+            
             const { data } = await service({
                 url: `https://octoplusapi.herokuapp.com/create_csv`,
                 method: 'POST',
                 data: newCompareForm,
                 headers: { 'Content-Type': 'multipart/form-data', 'Authorization': JSON.parse(authToken) }
             });
-
+            
+            if(data.status == "400"){
+                setNewCompareDataSpinner(false);
+                return await toast({ type: "error", message: data.message });
+            }
+            
             if (data.data.length) {
                 setCsvId(data.data[0]._id);
                 setColumnMappingModal(true);
@@ -264,7 +273,8 @@ const CsvCompare: NextPage = (props: any) => {
                 throw new Error("Data not found");
             }
         } catch (err) {
-            setNewCompareDataSpinner(false);
+            setNewCompareDataSpinner(false);            
+            return await toast({ type: "error", message: err });
         }
     }
 
@@ -308,17 +318,18 @@ const CsvCompare: NextPage = (props: any) => {
                 window.localStorage.removeItem('loginUserdata');
                 return router.push('/auth');
             }
-
+            setCompareCsvTableSpinner(true)
             const { data } = await service({
                 url: `https://octoplusapi.herokuapp.com/delete_csv`,
                 method: 'POST',
                 data: { "csv_id": id },
                 headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
             });
-
+            setCompareCsvTableSpinner(false)
             await fetchAllCompareRecord(currentPage, perPage);
 
         } catch (err) {
+            setCompareCsvTableSpinner(false)
             return await toast({ type: "error", message: err });
         }
     }
@@ -357,30 +368,40 @@ const CsvCompare: NextPage = (props: any) => {
                 window.localStorage.removeItem('loginUserdata');
                 return router.push('/auth');
             }
-
+            setColumnMappingModalSpinner(true);
             if (mappingRegistryColumnIndex) {
-                let selectedRegistryColumns: any[] = [];
+                let mainMappingColumns: any[] = [];
                 mappingCsvColumn.map((el: any, i: number) => {
-                    if (el) {
-                        selectedRegistryColumns.push(mappingRegistryColumnIndex[i]);
+                    if (el && el.active) {
+                        mainMappingColumns.push({registry_column: mappingRegistryColumnIndex[i], csv_column: el.name});
                     }
                 })
-
+                
                 const { data } = await service({
                     url: `https://octoplusapi.herokuapp.com/columnmapPOST`,
                     method: 'POST',
-                    data: { "csv_id": csvId, "columns": selectedRegistryColumns, "dtypes": mappingRegistryColumn, "is_active": "Y" },
+                    data: JSON.stringify({ "csv_id": csvId, "columns": mainMappingColumns, "is_active": "Y" }),
                     headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
                 });
 
                 await fetchAllCompareRecord(currentPage, perPage);
                 setColumnMappingModal(false)
+                setColumnMappingModalSpinner(false);
                 return router.push(`/tools/csv-compare/dashboard?id=${csvId}`);
             }
 
-        } catch (err) {           
+        } catch (err) {       
+            setColumnMappingModalSpinner(false);    
             return await toast({ type: "error", message: err });
         }
+    }
+
+    const csvColumnActiveHandler = (index: number, active: boolean) => {
+        let copyArray = [...mappingCsvColumn];
+
+        copyArray[index] = {...copyArray[index], active};
+
+        setMappingCsvColumn(copyArray);
     }
 
     return (
@@ -418,7 +439,6 @@ const CsvCompare: NextPage = (props: any) => {
                                 </div> : null
                             }
                             {
-                                // contacts.length ?
                                 <table className={styles.comparisonTable}>
                                     <thead>
                                         <tr>
@@ -440,7 +460,7 @@ const CsvCompare: NextPage = (props: any) => {
                                                             <div className='p-d-flex'>
                                                                 {
                                                                     el.is_active == "Y" ?
-                                                                        <button className={layoutStyles.blueTextBtn + " p-d-flex p-ai-center"} onClick={() => router.push(`/report?id=${el._id}`)}><FaRegEye className='p-mr-1' /> <span>Reports</span></button>
+                                                                        <button className={layoutStyles.blueTextBtn + " p-d-flex p-ai-center"} onClick={() => router.push(`/csvreport?id=${el._id}`)}><FaRegEye className='p-mr-1' /> <span>Reports</span></button>
                                                                         :
                                                                         null
                                                                 }
@@ -570,7 +590,19 @@ const CsvCompare: NextPage = (props: any) => {
                                 {
                                     mappingCsvColumn ?
                                         mappingCsvColumn.map((el: any, i: number) => {
-                                            return <span key={"registryColumn" + i} className={styles.columnItem}>{el}</span>
+                                            if(el){
+                                                return <span key={"registryColumn" + i} className={styles.columnItem + ` ${el.active ? '' : styles.active}`}>
+                                                    {
+                                                        !el.active ?
+                                                        <button className={styles.activeBtn} onClick={() => csvColumnActiveHandler(i, true)}><FaPlus /></button>
+                                                        :
+                                                        <button className={styles.activeBtnRed} onClick={() => csvColumnActiveHandler(i, false)}><FaMinus /></button>
+                                                    }
+                                                    {el.name}
+                                                    </span>
+                                            } else {
+                                                return <span key={"registryColumn" + i} className={styles.columnItem}>{el}</span>
+                                            }
                                         })
                                         : ''
                                 }

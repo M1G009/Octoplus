@@ -133,3 +133,33 @@ a:hover {
     max-width: 200px;
   }
 }
+
+.customDashboardRadio{
+  .p-radiobutton-box.p-highlight{
+    border-color: #2236f1 !important;
+    background: #ffffff !important;
+  }
+  .p-radiobutton .p-radiobutton-box .p-radiobutton-icon{
+    background-color: #2236f1 !important;
+  }
+
+  .duplicatesColumnId{
+    p{
+      color: red;
+    }
+  }
+
+  .uniqueRegistryColumn{
+    p{
+      color: #1CC723;
+    }
+  }
+
+  // .duplicateBtn .p-radiobutton-box{
+  //   border-color: #e60000 !important;
+  // }
+  
+  // .duplicateBtn .p-radiobutton-box .p-radiobutton-icon{
+  //   background-color: #e60000 !important;
+  // }
+}

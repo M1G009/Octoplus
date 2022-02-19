@@ -5,7 +5,6 @@ export function validateInputs(name: string, number: string, date: string, cvv: 
   const nameValidation = typeof name === "string" ? true : false;
   const expValidation = valid.expirationDate(date).isValid;
   const cvvValidation = valid.cvv(cvv).isValid;
-    console.log(valid.number(parseInt(number.replace(/ /g,''))));
     
   if (numberValidation && nameValidation && expValidation && cvvValidation) {
     return true;

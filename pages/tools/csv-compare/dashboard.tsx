@@ -9,12 +9,12 @@ import slugify from 'slugify'
 import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
-import { Checkbox } from 'primereact/checkbox';
 import { RadioButton } from 'primereact/radiobutton';
 import { Dropdown } from 'primereact/dropdown';
+import { confirmDialog } from 'primereact/confirmdialog';
 
 // 3rd Party Imports
-import * as yup from 'yup';
+import { ToastContainer } from "react-toastify";
 import { FaRegEdit, FaRegSave } from "react-icons/fa";
 import { ErrorMessage, Formik, FieldArray, Field, FormikHelpers } from 'formik';
 import { BsExclamationCircleFill } from "react-icons/bs";
@@ -28,7 +28,6 @@ import DashboardLayout from '../../../components/DashboardLayout';
 
 // Interface/Helper Imports
 import service from '../../../helper/api/api';
-import { object } from 'yup/lib/locale';
 
 export interface contactFixingFields {
     country: string,
@@ -77,125 +76,12 @@ const CsvCompare: NextPage = (props: any) => {
     const [dashBoardSpinner, setDashBoardSpinner] = useState(false);
     const [editFieldStatus, setEditFieldStatus] = useState(false);
     const [registryId, setRegistryId] = useState('');
-    const [searchVal, setSearchVal] = useState('')
-    const [assignFiltersData, setAssignFiltersData] = useState<DynamicFields>({
-        "id": [
-            1,
-            2,
-            3,
-            4,
-            5,
-            6,
-            7,
-            8,
-            9,
-            10,
-            11,
-            12,
-            13,
-            14,
-            15,
-            16,
-            17,
-            18,
-            19,
-            20,
-            21,
-            22,
-            23,
-            24,
-            25,
-            26,
-            27,
-            28,
-            29,
-            30,
-            31
-        ],
-        "First Name": [
-            "a",
-            "ab",
-            "abc"
-        ],
-        "Last Name": [
-            0.0
-        ],
-        "Email Address": [
-            "a@gmail.com",
-            "ab@gmail.com",
-            "abc@gmail.com"
-        ],
-        "Married": [
-            "FALSE",
-            "TRUE",
-            "0"
-        ],
-        "Pincode": [
-            385004.0,
-            0.0,
-            385007.0,
-            221007.0,
-            7234101.0,
-            433.0
-        ],
-        "Middle name": [
-            "tst",
-            0,
-            "hello",
-            "Kr",
-            "maria",
-            "0"
-        ],
-        "last": [
-            0,
-            "helloing 0",
-            "0",
-            "Perone",
-            "Jaiswal"
-        ],
-        "Price": [
-            50.0,
-            100.0,
-            40.0,
-            10.0,
-            5000.0,
-            100000.0,
-            0.0,
-            1230000.0,
-            1.0
-        ],
-        "pet name": [
-            0,
-            "OScar",
-            "0"
-        ],
-        "users": [
-            {
-                "username": "Suryanshtest2",
-                "user_id": "61c0a0df7fbfa877fb2340aa"
-            }
-        ]
-    })
-    const [initialAssignFiltersData, setInitialAssignFiltersData] = useState<DynamicFields>({
-        "id": 1,
-        "First Name": "a",
-        "Last Name": 0.0,
-        "Email Address": "a@gmail.com",
-        "Married": "FALSE",
-        "Pincode": 385004.0,
-        "Middle name": "tst",
-        "last": "Perone",
-        "Price": 50.0,
-        "pet name": 0
-    })
+    const [searchVal, setSearchVal] = useState('');
+    const [assignFiltersData, setAssignFiltersData] = useState<DynamicFields>({})
+    const [initialAssignFiltersData, setInitialAssignFiltersData] = useState<DynamicFields>({})
     const [assignFilterModalSpinner, setAssignFilterModalSpinner] = useState(false);
-
-    const contactFixingSchema = yup.object().shape({
-        compare_name: yup.string().required('Please enter Select data'),
-        registry: yup.string().required('Please enter Change to'),
-        csv_file: yup.string().required('Please upload CSV file'),
-        csv_name: yup.string().required('Please enter csv name')
-    });
+    const [assignContactModalSpinner, setAssignContactModalSpinner] = useState(false);
+    const [mergeCheck, setMergeCheck] = useState(false);
 
 
     const fetchSubColumnDataRecord = async (columnName: any, columnValue: any, csv_id: any) => {
@@ -230,7 +116,7 @@ const CsvCompare: NextPage = (props: any) => {
         }
     }
 
-    const fetchSubColumnsRecord = async (columnName: any, csv_id: any) => {
+    const fetchSubColumnsRecord = async (columnName: any, csv_id: any, ignore = false) => {
         try {
             let authToken = await window.localStorage.getItem('authToken');
 
@@ -248,9 +134,11 @@ const CsvCompare: NextPage = (props: any) => {
                 data: JSON.stringify({ "column": columnName, csv_id }),
                 headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
             });
+            console.log("ab::", subActiveColumnValue);
+
             if (data.data.length) {
                 let activeVal = '';
-                
+
                 let newArray = data.data.map((obj: any, i: number) => {
                     if (!subActiveColumnValue.value) {
                         if (i == 0) {
@@ -261,21 +149,17 @@ const CsvCompare: NextPage = (props: any) => {
                             return { ...obj, "active": false }
                         }
                     } else {
-                        if (obj.value == subActiveColumnValue.value) {
+                        if (obj.value == subActiveColumnValue.value && !ignore) {
                             activeVal = obj.value;
                             setSubActiveColumnValue(obj)
                             return { ...obj, "active": true }
                         } else {
-                            if (i == 0) {
-                                activeVal = obj.value;
-                                return { ...obj, "active": true }
-                            }
                             return { ...obj, "active": false }
                         }
                     }
                 })
                 setSubColumns(newArray);
-                if(activeVal){
+                if (activeVal) {
                     await fetchSubColumnDataRecord(columnName, activeVal, csv_id)
                 }
                 setDashBoardSpinner(false);
@@ -291,7 +175,7 @@ const CsvCompare: NextPage = (props: any) => {
         }
     }
 
-    const fetchAllColumnsRecord = async (csv_id: any) => {
+    const fetchAllColumnsRecord = async (csv_id: any, ignore = false) => {
         try {
             let authToken = await window.localStorage.getItem('authToken');
 
@@ -308,6 +192,12 @@ const CsvCompare: NextPage = (props: any) => {
                 data: JSON.stringify({ csv_id }),
                 headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
             });
+
+            if (data.status == "400") {
+                setDashBoardSpinner(false);
+                return await toast({ type: "error", message: data.message });
+            }
+
             if (data.data.length) {
                 let allData = data.data[0];
 
@@ -330,9 +220,14 @@ const CsvCompare: NextPage = (props: any) => {
                     }
 
                 })
+
                 setMainColumns(newArray);
                 setCurrentColumn(newArray[0].name)
-                await fetchSubColumnsRecord(newArray[0].name, csv_id)
+                if (ignore) {
+                    await fetchSubColumnsRecord(newArray[0].name, csv_id, true)
+                } else {
+                    await fetchSubColumnsRecord(newArray[0].name, csv_id)
+                }
                 setDashBoardSpinner(false);
             } else {
                 setDashBoardSpinner(false);
@@ -345,7 +240,6 @@ const CsvCompare: NextPage = (props: any) => {
             return await toast({ type: "error", message: err });
         }
     }
-
 
 
     useEffect(() => {
@@ -376,8 +270,16 @@ const CsvCompare: NextPage = (props: any) => {
                 return router.push('/auth');
             }
             setAssignFilterModalSpinner(true)
+            let getDataCopy = { ...getData };
+
+            Object.keys(getDataCopy).map(el => {
+                if (!getDataCopy[el]) {
+                    delete getDataCopy[el];
+                }
+            })
+
             const { data } = await service({
-                url: `https://octoplusapi.herokuapp.com/assigning?csv_id=${csvId}&filter=${JSON.stringify(getData)}`,
+                url: `https://octoplusapi.herokuapp.com/assigning?csv_id=${csvId}&filter=${JSON.stringify(getDataCopy)}`,
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
             });
@@ -419,8 +321,8 @@ const CsvCompare: NextPage = (props: any) => {
 
     const subColumnActiveHandler = async (value: string) => {
         if (value != activeColumn) {
-            let slug = slugify(activeColumn, { replacement: '-', remove: undefined, lower: true, strict: false, locale: 'vi', trim: true });
-            await fetchSubColumnDataRecord(slug, value, csvId)
+            // let slug = slugify(activeColumn, { replacement: '-', remove: undefined, lower: true, strict: false, locale: 'vi', trim: true });
+            await fetchSubColumnDataRecord(activeColumn, value, csvId)
             let copySubColumns: any = [...subColumns].map((el: any) => {
                 if (el.value == value) {
                     let copyEl = { ...el };
@@ -447,8 +349,49 @@ const CsvCompare: NextPage = (props: any) => {
         setRegistryEntries(copyarray);
     }
 
-    const assignContactModalHandler = () => {
-        setAssignContactFixingModal(true)
+    const assignContactModalHandler = async () => {
+        try {
+            setAssignContactFixingModal(true);
+
+            let authToken = await window.localStorage.getItem('authToken');
+
+            if (!authToken) {
+                window.localStorage.removeItem("authToken")
+                window.localStorage.removeItem("ValidUser")
+                window.localStorage.removeItem('loginUserdata');
+                return router.push('/auth');
+            }
+            setAssignContactModalSpinner(true)
+            const { data } = await service({
+                url: `https://octoplusapi.herokuapp.com/GETfilters`,
+                method: 'POST',
+                data: JSON.stringify({ csv_id: csvId }),
+                headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
+            });
+            let copyObj = { ...data.data[0] };
+            copyObj['users'].map((el: any, i: number) => copyObj['users'][i] = el.user_id)
+            let newObj: any = {};
+
+            // Object.keys(copyObj).map((el: any, i:number) => {
+            //     copyObj[el].map((list: any, index: number) => {
+            //         // console.log("::", el, copyObj[el]);
+            //     })
+            // })
+
+            Object.keys(copyObj).map(el => {
+                if (copyObj[el][0]) {
+                    return newObj[el] = copyObj[el][0]
+                }
+            })
+
+            setAssignFiltersData(data.data[0]);
+            setInitialAssignFiltersData(newObj);
+            setAssignContactModalSpinner(false)
+
+        } catch (err) {
+            setAssignContactModalSpinner(false)
+            return await toast({ type: "error", message: err });
+        }
     }
 
     const mergeColumnHandler = async () => {
@@ -461,28 +404,53 @@ const CsvCompare: NextPage = (props: any) => {
                 window.localStorage.removeItem('loginUserdata');
                 return router.push('/auth');
             }
-            console.log(JSON.stringify({ "registry": registryEntriesCopy, "csv": csvEntries, "csv_id": csvId, "registry_id": registryId, "merge": mergeEntries}));
-            console.log({ "registry": registryEntriesCopy, "csv": csvEntries, "csv_id": csvId, "registry_id": registryId, "merge": mergeEntries});
+            let query;
+            if (mergeCheck) {
+                query = { "registry": registryEntriesCopy, "csv": csvEntries, "csv_id": csvId, "registry_id": registryId, "merge": mergeEntries }
+            } else {
+                query = { "registry": registryEntriesCopy, "csv": csvEntries, "csv_id": csvId, "registry_id": registryId, "ignored": mergeEntries }
+            }
+            console.log("query", JSON.stringify(query));
+
             const { data } = await service({
                 url: `https://octoplusapi.herokuapp.com/merge`,
                 method: 'POST',
-                data: JSON.stringify({ "registry": registryEntriesCopy, "csv": csvEntries, "csv_id": csvId, "registry_id": registryId, "merge": mergeEntries}),
+                data: JSON.stringify(query),
                 headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
             });
-            console.log(data);
-            
-            setSaveContactModal(false)
             setSubActiveColumnValue('');
-            await fetchAllColumnsRecord(csvId)
-
-        } catch (error) {
             setSaveContactModal(false)
-            console.log(error);
+            await fetchAllColumnsRecord(csvId, true)
+
+        } catch (err) {
+            setSaveContactModal(false)
+            return await toast({ type: "error", message: err });
         }
+    }
+
+    const ignoreMappingDialogHandler = async () => {
+        confirmDialog({
+            message: 'Are you sure you want to ignore?',
+            header: 'Ignore Confirmation',
+            icon: 'pi pi-exclamation-triangle',
+            acceptClassName: 'p-button-danger',
+            accept: () => mergeColumnHandler()
+        });
     }
 
     return (
         <DashboardLayout sidebar={false}>
+            <ToastContainer
+                position="top-right"
+                autoClose={3000}
+                hideProgressBar={false}
+                newestOnTop={false}
+                closeOnClick
+                rtl={false}
+                pauseOnFocusLoss
+                draggable
+                pauseOnHover
+            />
             <div className={layoutStyles.topBar}>
                 <div className='p-d-flex p-ai-center p-jc-between'>
                     <div>
@@ -504,7 +472,7 @@ const CsvCompare: NextPage = (props: any) => {
                                 {
                                     mainColumns.length ?
                                         mainColumns.map((el, i) => {
-                                            if (el.unique == 0 && el.duplicate == 0) {
+                                            if (el.duplicate == 0) {
                                                 return <button key={"mainColumns" + i} className={styles.columnText} disabled>
                                                     <h6>{el.name}</h6>
                                                     <p><span className={styles.deblicateData}>({el.duplicate} duplicates)</span><span>•</span><span className={styles.unique}>({el.unique} are unique)</span></p>
@@ -535,8 +503,8 @@ const CsvCompare: NextPage = (props: any) => {
                                     {
                                         subColumns.length ?
                                             subColumns.filter((el) => {
-                                                if(searchVal){
-                                                    return el.value == searchVal
+                                                if (searchVal) {
+                                                    return el.value.toLowerCase().includes(searchVal);
                                                 } else {
                                                     return true;
                                                 }
@@ -578,26 +546,33 @@ const CsvCompare: NextPage = (props: any) => {
                                                         Registry Database
                                                     </h6>
                                                 </div>
-                                                <div className={styles.dataBox + " " + styles.registryDataBox}>
+                                                <div className={styles.dataBox + " customDashboardRadio " + styles.registryDataBox}>
                                                     <div className='p-mx-3'>
-                                                        {                                                            
-                                                            registryEntries.length ?
+                                                        {
+                                                            registryEntries.length && subActiveColumnValue && subActiveColumnValue.value ?
                                                                 registryEntries.map((obj, i) => {
                                                                     let keys: any = Object.keys(obj);
                                                                     return keys.map((el: string, index: number) => {
-                                                                        if (currentColumn == el) {
-                                                                            return <div key={"csvdata" + index} className='p-d-flex p-ai-center p-mb-2'>
-                                                                                <RadioButton className='p-mr-1' value={obj[el]} name={el} checked={obj[el] == mergeEntries[el]} disabled={true} />
+                                                                        if (activeColumn == el) {
+                                                                            return <div key={"csvdata" + i} className='p-d-flex p-ai-center p-mb-2 uniqueRegistryColumn'>
+                                                                                <RadioButton className='p-mr-1' value={obj[el]} name={el} checked={obj[el] == mergeEntries[el]}  onChange={(e) => mergeColumnCheckHandler(e.target.value, e.target.name)} />
                                                                                 <label htmlFor="">{el}</label>
-                                                                                <p>{obj[el]}</p>
+                                                                                <p>{obj[el] == "null" ? '' : obj[el]}</p>
                                                                             </div>
                                                                         }
+                                                                        // if (currentColumn == el) {
+                                                                        //     return <div key={"csvdata" + index} className='p-d-flex p-ai-center p-mb-2'>
+                                                                        //         <RadioButton className='p-mr-1' value={obj[el]} name={el} checked={obj[el] == mergeEntries[el]} disabled={true} />
+                                                                        //         <label htmlFor="">{el}</label>
+                                                                        //         <p>{obj[el] == "null" ? '' : obj[el]}</p>
+                                                                        //     </div>
+                                                                        // }
                                                                         return <div key={"registrydata" + index} className='p-d-flex p-ai-center p-mb-2'>
                                                                             <RadioButton className='p-mr-1' value={obj[el]} name={el} checked={obj[el] == mergeEntries[el]} onChange={(e) => mergeColumnCheckHandler(e.target.value, e.target.name)} />
                                                                             <label htmlFor="">{el}</label>
                                                                             {
                                                                                 !editFieldStatus ?
-                                                                                    <p>{obj[el]}</p>
+                                                                                    <p>{obj[el] == "null" ? '' : obj[el]}</p>
                                                                                     :
                                                                                     <input type="text" name={el} value={obj[el]} onChange={(e) => registryColumnEditHandler(el, e.target.value, i)} />
                                                                             }
@@ -608,10 +583,12 @@ const CsvCompare: NextPage = (props: any) => {
                                                         }
                                                     </div>
                                                     {
-                                                        !editFieldStatus ?
-                                                            <button className={layoutStyles.blueTextBtn + " p-ml-auto p-as-start p-d-flex"} onClick={() => setEditFieldStatus(true)}><FaRegEdit className='p-mr-1' />Edit</button>
-                                                            :
-                                                            <button className={layoutStyles.blueTextBtn + " p-ml-auto p-as-start p-d-flex"} onClick={() => setEditFieldStatus(false)}><FaRegSave className='p-mr-1' />Save</button>
+                                                        subActiveColumnValue && subActiveColumnValue.value ?
+                                                            !editFieldStatus ?
+                                                                <button className={layoutStyles.blueTextBtn + " p-ml-auto p-as-start p-d-flex"} onClick={() => setEditFieldStatus(true)}><FaRegEdit className='p-mr-1' />Edit</button>
+                                                                :
+                                                                <button className={layoutStyles.blueTextBtn + " p-ml-auto p-as-start p-d-flex"} onClick={() => setEditFieldStatus(false)}><FaRegSave className='p-mr-1' />Save</button>
+                                                            : ""
                                                     }
                                                 </div>
                                                 <div className={styles.titleText}>
@@ -619,41 +596,62 @@ const CsvCompare: NextPage = (props: any) => {
                                                         CSV File Data
                                                     </h6>
                                                 </div>
-                                                {
-                                                    csvEntries.length ?
-                                                        csvEntries.map((obj, i) => {
-                                                            let keys: any = Object.keys(obj);
-                                                            return <div key={"csvdatas" + i} className={styles.dataBox + " " + styles.csvDataBox}>
-                                                                <div className='p-mx-3'>
+                                                {/* <div className='p-d-flex p-ai-center p-mb-2'>
+                                                    <RadioButton className={'p-mr-1 duplicateBtn'} value="kduasdjkasd" name="kduasdjkasd" checked={false} disabled={true} />
+                                                    <label htmlFor="">kduasdjkasd</label>
+                                                    <p>kduasdjkasd</p>
+                                                </div> */}
+                                                <div className={styles.dataBox + " customDashboardRadio " + styles.csvDataBox}>
+                                                    {
+                                                        csvEntries.length && subActiveColumnValue && subActiveColumnValue.value ?
+                                                            csvEntries.map((obj, i) => {
+                                                                let keys: any = Object.keys(obj);
+                                                                return <div className='p-mx-3' key={"csvdatas" + i}>
                                                                     {
                                                                         keys.map((el: any, i: number) => {
-                                                                            if(obj[el] != registryEntries[0][el] && obj[el]){
-                                                                                if (currentColumn == el) {
-                                                                                    return <div key={"csvdata" + i} className='p-d-flex p-ai-center p-mb-2'>
-                                                                                        <RadioButton className='p-mr-1' value={obj[el]} name={el} checked={obj[el] == mergeEntries[el]} disabled={true} />
-                                                                                        <label htmlFor="">{el}</label>
-                                                                                        <p>{obj[el]}</p>
-                                                                                    </div>
-                                                                                }
+                                                                            if (obj[el] != registryEntries[0][el] && obj[el]) {
+                                                                                // if (currentColumn == el) {
+                                                                                //     return <div key={"csvdata" + i} className='p-d-flex p-ai-center p-mb-2'>
+                                                                                //         <RadioButton className='p-mr-1' value={obj[el]} name={el} checked={obj[el] == mergeEntries[el]} />
+                                                                                //         <label htmlFor="">{el}</label>
+                                                                                //         <p>{obj[el]}</p>
+                                                                                //     </div>
+                                                                                // }
                                                                                 return <div key={"csvdata" + i} className='p-d-flex p-ai-center p-mb-2'>
                                                                                     <RadioButton className='p-mr-1' value={obj[el]} name={el} checked={obj[el] == mergeEntries[el]} onChange={(e) => mergeColumnCheckHandler(e.target.value, e.target.name)} />
                                                                                     <label htmlFor="">{el}</label>
                                                                                     <p>{obj[el]}</p>
                                                                                 </div>
                                                                             }
+                                                                            else {
+                                                                                if (activeColumn == el) {
+                                                                                    return <div key={"csvdata" + i} className='p-d-flex p-ai-center p-mb-2 duplicatesColumnId'>
+                                                                                        <RadioButton className='p-mr-1' value={obj[el]} name={el} checked={obj[el] == mergeEntries[el]} disabled={true} />
+                                                                                        <label htmlFor="">{el}</label>
+                                                                                        <p>{obj[el]}</p>
+                                                                                    </div>
+                                                                                } else {
+                                                                                    return <div key={"csvdata" + i} className='p-d-flex p-ai-center p-mb-2'>
+                                                                                        <RadioButton className={'p-mr-1 duplicateBtn'} value={obj[el]} name={el} checked={obj[el] == mergeEntries[el]} disabled={true} />
+                                                                                        <label htmlFor="">{el}</label>
+                                                                                        <p>{obj[el]}</p>
+                                                                                    </div>
+                                                                                }
+
+                                                                            }
                                                                         })
                                                                     }
                                                                 </div>
-                                                            </div>
-                                                        })
-                                                        : <p className='p-p-2 p-m-0'>No CSV data found</p>
-                                                }
+                                                            })
+                                                            : <p>No CSV data found</p>
+                                                    }
+                                                </div>
                                             </div> : ''
                                     }
                                 </div>
                                 <div className="p-mt-3 p-text-right">
-                                    <button type='button' className={layoutStyles.customDarkBgbtn}>Ignore</button>
-                                    <button type='button' onClick={() => setSaveContactModal(true)} className={layoutStyles.customBlueBgbtn}>Merge</button>
+                                    <button type='button' className={layoutStyles.customDarkBgbtn} onClick={() => { setMergeCheck(false); ignoreMappingDialogHandler() }} >Ignore</button>
+                                    <button type='button' onClick={() => { setMergeCheck(true); setSaveContactModal(true) }} className={layoutStyles.customBlueBgbtn}>Merge</button>
                                 </div>
                             </div>
                         </div>
@@ -664,6 +662,11 @@ const CsvCompare: NextPage = (props: any) => {
             {/* Assign Contact Fixing-Modal */}
             <Dialog showHeader={false} contentClassName={styles.modelsCustomStyles} maskClassName={styles.dialogMask} visible={assignContactFixingModal} style={{ width: '500px', }} onHide={() => ''}>
                 <div className={styles.replaceDataModal}>
+                    {
+                        assignContactModalSpinner ? <div className={styles.formSpinner}>
+                            <div className={styles.loading}></div>
+                        </div> : null
+                    }
                     <h5>Assign Contact Fixing</h5>
                     <Formik
                         enableReinitialize={true}
@@ -689,9 +692,6 @@ const CsvCompare: NextPage = (props: any) => {
                                             }
                                             {
                                                 Object.keys(props.values).map(function (key, index) {
-                                                    if (key == "users") {
-                                                        return false
-                                                    }
                                                     return <div className={styles.inputBox} key={"assignFilterModal" + index}>
                                                         <label htmlFor={key}>{key}</label>
                                                         <Dropdown id={key} className={styles.selectBox} name={key} value={props.values[key]} options={assignFiltersData[key]} onChange={(e: any) => props.setFieldValue(key, e.target.value)} />

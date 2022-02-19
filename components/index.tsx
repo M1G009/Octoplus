@@ -128,8 +128,6 @@ const DragDrop = (props: any) => {
         doc.id = index;
         return doc;
       })
-      console.log(columnData);
-      
       hideShowColumnHandler(columnData);
       setColumns(columnData);
     }

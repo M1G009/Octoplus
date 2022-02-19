@@ -1012,6 +1012,9 @@ const Signup: NextPage = () => {
                 setErrorMessage(data.message)
                 return setAuthSpinner(false);
             }
+            if (!data.data[0].token) {
+                return router.push('/auth');
+            }
             let setUser = Date.now() + userData.email;
             window.localStorage.setItem('loginUserdata', JSON.stringify(data.data[0]));
             window.localStorage.setItem('authToken', JSON.stringify(data.data[0].token));
