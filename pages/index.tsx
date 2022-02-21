@@ -265,8 +265,8 @@ const Dashboard: NextPage = () => {
   });
 
   const replaceValueSchema = yup.object().shape({
-    replace_from: yup.string().required('Please enter Select data'),
-    replace_to: yup.string().required('Please enter Change to'),
+    replace_from: yup.string().trim().required('Please enter Select data'),
+    replace_to: yup.string().trim().required('Please enter Change to'),
     column: yup.string()
   });
 
@@ -439,12 +439,13 @@ const Dashboard: NextPage = () => {
         if (Object.keys(parseData).length) {
           if (editContactRowId) {
             let editObj = Object.assign(parseData, { "row_id": editContactRowId });
-            await service({
+            const {data} = await service({
               url: `https://octoplusapi.herokuapp.com/edit_feild`,
               method: 'POST',
               data: editObj,
               headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
             });
+            
           } else {
             await service({
               url: `https://octoplusapi.herokuapp.com/insert_registry`,
@@ -749,6 +750,7 @@ const Dashboard: NextPage = () => {
   }
 
   const editRegistryHandler = (rowData: any) => {
+    
     return (
       <>
         <button className={layoutStyles.blueTextBtn} onClick={() => editContactFiledHandler(rowData.id, false)}>Edit</button> <button className={layoutStyles.blueTextBtn} onClick={() => editContactFiledHandler(rowData.id, true)}>View</button>

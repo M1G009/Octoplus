@@ -88,6 +88,7 @@ const Team: NextPage = (props: any) => {
   const [formSpinner, setFormSpinner] = useState(false);
   const [createRole, setCreateRole] = useState(false);
   const [invitePeopleModal, setInvitePeopleModal] = useState(false);
+  const [teamMemberSpinner, setTeamMemberSpinner] = useState(false);
   const [createRoleName, setCreateRoleName] = useState('');
   const [selectRoleName, setSelectRoleName] = useState({ label: '', id: '' });
   const [selectScopeName, setSelectScopeName] = useState(["Reports access", "Merge access", "CSV upload access", "Registry access"]);
@@ -162,7 +163,8 @@ const Team: NextPage = (props: any) => {
         method: 'GET',
         headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
       });
-
+      console.log(data.data);
+      
       if (!data.data.length) {
         return setTeamMember([]);
       }
@@ -193,10 +195,10 @@ const Team: NextPage = (props: any) => {
 
   const addScopeHandler = () => {
     let newScope = { ...addScopeData };
-    let slug = slugify(newScope['name'], { replacement: '-', remove: undefined, lower: true, strict: false, locale: 'vi', trim: true})
+    let slug = slugify(newScope['name'], { replacement: '-', remove: undefined, lower: true, strict: false, locale: 'vi', trim: true })
     newScope['slug'] = slug;
-    
-    
+
+
     const isEmpty = Object.values(newScope).some(el => el === '');
 
     if (!isEmpty) {
@@ -472,7 +474,9 @@ const Team: NextPage = (props: any) => {
           window.localStorage.removeItem('loginUserdata');
           return router.push('/auth');
         }
-
+        setTeamMemberSpinner(true)
+        console.log(createUpdateRoleObj);
+        
         await service({
           url: `${process.env.API_BASE_URL}/roleupdate`,
           method: 'POST',
@@ -483,8 +487,10 @@ const Team: NextPage = (props: any) => {
         toast({ type: "success", message: "Role update successful" });
         await getTeamMembers();
         await fetchAllRoles();
+        setTeamMemberSpinner(false)
       }
     } catch (err) {
+      setTeamMemberSpinner(false)
       return toast({ type: "error", message: err });
     }
   }
@@ -510,6 +516,11 @@ const Team: NextPage = (props: any) => {
         {
           !createRole ?
             <div className={layoutStyles.headContentBox}>
+              {
+                teamMemberSpinner ? <div className={styles.formSpinner}>
+                  <div className={styles.loading}></div>
+                </div> : null
+              }
               <div className={layoutStyles.head}>
                 <h4>Team Members <span>({teamMember.length})</span></h4>
                 <div className={layoutStyles.editButtons}>

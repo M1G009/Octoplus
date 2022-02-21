@@ -34,6 +34,7 @@ const ToastMessage = ({ type, message }: any) => {
       pauseOnHover: true,
       draggable: true,
       progress: undefined,
+      style: {zIndex: 99999}
     });
   } else if (type == "error") {
     return toast.error(message, {
@@ -44,6 +45,7 @@ const ToastMessage = ({ type, message }: any) => {
       pauseOnHover: true,
       draggable: true,
       progress: undefined,
+      style: {zIndex: 99999}
     });
   }
 }

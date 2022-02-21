@@ -410,7 +410,6 @@ const CsvCompare: NextPage = (props: any) => {
             } else {
                 query = { "registry": registryEntriesCopy, "csv": csvEntries, "csv_id": csvId, "registry_id": registryId, "ignored": mergeEntries }
             }
-            console.log("query", JSON.stringify(query));
 
             const { data } = await service({
                 url: `https://octoplusapi.herokuapp.com/merge`,

@@ -10,7 +10,6 @@ import { Calendar } from 'primereact/calendar';
 import { Dialog } from 'primereact/dialog';
 
 // 3rd Party Imports
-import { IoGitCompareOutline } from "react-icons/io5";
 import { FiArrowLeft, FiUser } from "react-icons/fi";
 import { ToastContainer } from "react-toastify";
 import { Line } from 'react-chartjs-2';
@@ -52,6 +51,8 @@ export interface assignRows {
     fix: number;
     Perc_Com: string;
     compare_name: string;
+    avg: string;
+    fix_range: string;
 }
 
 export interface chartData {
@@ -89,46 +90,50 @@ const CsvCompare: NextPage = (props: any) => {
 
     useEffect(() => {
         async function withDate() {
-            let authToken = await window.localStorage.getItem('authToken');
+            try {
+                let authToken = await window.localStorage.getItem('authToken');
 
-            if (!authToken) {
-                window.localStorage.removeItem("authToken")
-                window.localStorage.removeItem("ValidUser")
-                window.localStorage.removeItem('loginUserdata');
-                return router.push('/auth');
+                if (!authToken) {
+                    window.localStorage.removeItem("authToken")
+                    window.localStorage.removeItem("ValidUser")
+                    window.localStorage.removeItem('loginUserdata');
+                    return router.push('/auth');
+                }
+
+                let startDate;
+                let endDate;
+
+                if (rangeDate && rangeDate[0] && rangeDate[1]) {
+                    startDate = convert(rangeDate[0]);
+                    endDate = convert(rangeDate[1])
+                } else {
+                    let currentDate = new Date();
+                    startDate = convert(currentDate);
+                    currentDate.setDate(currentDate.getDate() - 7)
+                    endDate = convert(currentDate);
+                }
+
+                let query;
+                if (assigneeCurrent) {
+                    query = { start: startDate, end: endDate, assignee: assigneeCurrent }
+                } else {
+                    query = { start: startDate, end: endDate }
+                }
+
+                const { data } = await service({
+                    url: `https://octoplusapi.herokuapp.com/detailreportGET`,
+                    method: 'POST',
+                    data: JSON.stringify(query),
+                    headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
+                });
+                
+                setChartData(data.data[0].chart);
+                setAssigneeIds(data.data[0].username)
+                setAssignData(data.data[0].data)
+                setGraphBox(true);
+            } catch (err) {
+                return await toast({ type: "error", message: err });
             }
-
-            let startDate;
-            let endDate;
-
-            if(rangeDate && rangeDate[0] && rangeDate[1]){
-                startDate = convert(rangeDate[0]);
-                endDate = convert(rangeDate[1])
-            } else {
-                let currentDate = new Date();
-                startDate = convert(currentDate);
-                currentDate.setDate(currentDate.getDate() - 7)
-                endDate = convert(currentDate);
-            }
-
-            let query;
-            if (assigneeCurrent) {
-                query = {start: startDate, end: endDate, assignee: assigneeCurrent }
-            } else {
-                query = {start: startDate, end: endDate }
-            }
-            
-            const { data } = await service({
-                url: `https://octoplusapi.herokuapp.com/detailreportGET`,
-                method: 'POST',
-                data: JSON.stringify(query),
-                headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
-            });
-
-            setChartData(data.data[0].chart);
-            setAssigneeIds(data.data[0].username)
-            setAssignData(data.data[0].data)
-            setGraphBox(true);
         }
         withDate();
     }, [rangeDate, assigneeCurrent])
@@ -167,8 +172,8 @@ const CsvCompare: NextPage = (props: any) => {
 
     const dataSetBuilder = (data: any) => {
         let dataArray: any = [];
-        let color = getRandomColor();
         data.map((el: any) => {
+            let color = getRandomColor();
             return dataArray.push({ label: el.username[0], data: el.data, borderColor: color, backgroundColor: color })
         })
 
@@ -209,7 +214,7 @@ const CsvCompare: NextPage = (props: any) => {
             <div className={layoutStyles.topBar}>
                 <div className='p-d-flex p-ai-center p-jc-between'>
                     <div>
-                        <h5><FiArrowLeft /> Report Selection</h5>
+                        <h5 className={styles.backBar}><button className={styles.backBtn} onClick={() => router.back()}><FiArrowLeft /></button> Report Selection</h5>
                     </div>
                 </div>
             </div>
@@ -253,8 +258,8 @@ const CsvCompare: NextPage = (props: any) => {
                                                     <td>{el.username}</td>
                                                     <td>{el.total}</td>
                                                     <td>{el.fix} ({el.Perc_Com}%)</td>
-                                                    <td>{el.username}</td>
-                                                    <td>{el.username}</td>
+                                                    <td>{el.fix_range}</td>
+                                                    <td>{el.avg}</td>
                                                 </tr>
                                             })
                                         }

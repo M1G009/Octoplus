@@ -92,6 +92,7 @@ const CsvCompare: NextPage = (props: any) => {
     const [mappingRegistryColumnIndex, setMappingRegistryColumnIndex] = useState<any>([])
     const [mappingCsvColumn, setMappingCsvColumn] = useState<any>([])
     const [csvId, setCsvId] = useState('')
+    const [csvUploadError, setCsvUploadError] = useState<any>('')
 
     // Pagination States
     const [compareData, setCompareData] = useState<compareData[]>([])
@@ -194,17 +195,16 @@ const CsvCompare: NextPage = (props: any) => {
                 return router.push('/auth');
             }
             setColumnMappingModalSpinner(true)
-            
+
             const res = await service({
                 url: `https://octoplusapi.herokuapp.com/columnmapGET`,
                 method: 'POST',
                 data: JSON.stringify({ csv_id }),
                 headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
             });
-            
             if (res.data) {
                 let dataTypes: any = { ...res.data.data[0][0].dtypes };
-                
+
                 let registryColumns: any = [...res.data.data[0][0].registry];
                 let csvData = [...res.data.data[0][1].csv];
                 let csvColumnsArray: any = csvData;
@@ -216,10 +216,11 @@ const CsvCompare: NextPage = (props: any) => {
                 }
 
                 csvColumnsArray.map((el: any, i: number) => {
-                    if(el){
-                        return csvColumnsArray[i] = {name: el, active: true};
+                    if (el) {
+                        return csvColumnsArray[i] = { name: el, active: true };
                     }
-                })                
+                })
+                
                 setMappingRegistryColumnDtype(dataTypes)
                 setMappingRegistryColumnIndex(registryColumns)
                 setMappingCsvColumn(csvColumnsArray)
@@ -243,7 +244,7 @@ const CsvCompare: NextPage = (props: any) => {
                 window.localStorage.removeItem("ValidUser")
                 window.localStorage.removeItem('loginUserdata');
                 return router.push('/auth');
-            }  
+            }
 
             let newCompareForm = new FormData();
             newCompareForm.append('compare_name', getData.compare_name);
@@ -251,19 +252,21 @@ const CsvCompare: NextPage = (props: any) => {
             newCompareForm.append('csv_name', getData.csv_name);
 
             setNewCompareDataSpinner(true);
-            
+
             const { data } = await service({
                 url: `https://octoplusapi.herokuapp.com/create_csv`,
                 method: 'POST',
                 data: newCompareForm,
                 headers: { 'Content-Type': 'multipart/form-data', 'Authorization': JSON.parse(authToken) }
             });
-            
-            if(data.status == "400"){
+
+            if (data.status == "400") {
                 setNewCompareDataSpinner(false);
+                setCsvUploadError(data.message);
+                setTimeout(() => setCsvUploadError(''), 3000)
                 return await toast({ type: "error", message: data.message });
             }
-            
+
             if (data.data.length) {
                 setCsvId(data.data[0]._id);
                 setColumnMappingModal(true);
@@ -273,7 +276,10 @@ const CsvCompare: NextPage = (props: any) => {
                 throw new Error("Data not found");
             }
         } catch (err) {
-            setNewCompareDataSpinner(false);            
+            setNewCompareDataSpinner(false);
+
+            setCsvUploadError(err);
+            setTimeout(() => setCsvUploadError(''), 3000)
             return await toast({ type: "error", message: err });
         }
     }
@@ -348,6 +354,7 @@ const CsvCompare: NextPage = (props: any) => {
         if (is_active == "Y") {
             return router.push(`/tools/csv-compare/dashboard?id=${id}`);
         }
+        
         setCsvId(id);
         await columnMappingGet(id);
         setColumnMappingModal(true);
@@ -373,10 +380,10 @@ const CsvCompare: NextPage = (props: any) => {
                 let mainMappingColumns: any[] = [];
                 mappingCsvColumn.map((el: any, i: number) => {
                     if (el && el.active) {
-                        mainMappingColumns.push({registry_column: mappingRegistryColumnIndex[i], csv_column: el.name});
+                        mainMappingColumns.push({ registry_column: mappingRegistryColumnIndex[i], csv_column: el.name });
                     }
                 })
-                
+
                 const { data } = await service({
                     url: `https://octoplusapi.herokuapp.com/columnmapPOST`,
                     method: 'POST',
@@ -390,8 +397,8 @@ const CsvCompare: NextPage = (props: any) => {
                 return router.push(`/tools/csv-compare/dashboard?id=${csvId}`);
             }
 
-        } catch (err) {       
-            setColumnMappingModalSpinner(false);    
+        } catch (err) {
+            setColumnMappingModalSpinner(false);
             return await toast({ type: "error", message: err });
         }
     }
@@ -399,7 +406,7 @@ const CsvCompare: NextPage = (props: any) => {
     const csvColumnActiveHandler = (index: number, active: boolean) => {
         let copyArray = [...mappingCsvColumn];
 
-        copyArray[index] = {...copyArray[index], active};
+        copyArray[index] = { ...copyArray[index], active };
 
         setMappingCsvColumn(copyArray);
     }
@@ -558,6 +565,12 @@ const CsvCompare: NextPage = (props: any) => {
                                             </div>
                                         </div>
                                     </div>
+                                    {
+                                        csvUploadError ?
+                                            <p className={styles.csvUploadError}>{csvUploadError}</p>
+                                            : ""
+                                        }
+                                        {/* <p className='error'>csvUploadError</p> */}
 
                                     <div className="p-d-flex p-ai-center p-mt-4">
                                         <div className="p-m-auto">
@@ -590,16 +603,16 @@ const CsvCompare: NextPage = (props: any) => {
                                 {
                                     mappingCsvColumn ?
                                         mappingCsvColumn.map((el: any, i: number) => {
-                                            if(el){
+                                            if (el) {
                                                 return <span key={"registryColumn" + i} className={styles.columnItem + ` ${el.active ? '' : styles.active}`}>
                                                     {
                                                         !el.active ?
-                                                        <button className={styles.activeBtn} onClick={() => csvColumnActiveHandler(i, true)}><FaPlus /></button>
-                                                        :
-                                                        <button className={styles.activeBtnRed} onClick={() => csvColumnActiveHandler(i, false)}><FaMinus /></button>
+                                                            <button className={styles.activeBtn} onClick={() => csvColumnActiveHandler(i, true)}><FaPlus /></button>
+                                                            :
+                                                            <button className={styles.activeBtnRed} onClick={() => csvColumnActiveHandler(i, false)}><FaMinus /></button>
                                                     }
                                                     {el.name}
-                                                    </span>
+                                                </span>
                                             } else {
                                                 return <span key={"registryColumn" + i} className={styles.columnItem}>{el}</span>
                                             }

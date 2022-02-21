@@ -212,7 +212,7 @@ $lightBlue: #2236f1;
                 width: 100%;
             }
 
-            &.active{
+            &.active {
                 color: #a5adba;
                 text-decoration: line-through;
             }
@@ -232,7 +232,7 @@ $lightBlue: #2236f1;
                 cursor: pointer;
             }
 
-            .activeBtnRed{
+            .activeBtnRed {
                 color: #f12222;
             }
 
@@ -685,4 +685,21 @@ $lightBlue: #2236f1;
             transform: rotate(360deg);
         }
     }
+}
+
+.backBar {
+    .backBtn {
+        cursor: pointer;
+        background-color: transparent;
+        border: none;
+        padding: 0px;
+        font-size: 25px;
+        display: flex;
+        align-items: center;
+    }
+}
+
+.csvUploadError{
+    margin: 0px;
+    color: #ff0000;
 }

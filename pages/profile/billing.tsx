@@ -100,7 +100,8 @@ const Billing: NextPage = () => {
         method: 'GET',
         headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
       });
-
+      console.log(data.data);
+      
       return setGetCardDetails(data.data)
     } catch (err) {
       return toast({ type: "error", message: err });

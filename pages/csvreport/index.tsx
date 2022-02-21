@@ -6,24 +6,10 @@ import { useRouter } from 'next/router'
 
 // Prime React Imports
 import { Dropdown } from 'primereact/dropdown';
-import { Calendar } from 'primereact/calendar';
-import { Dialog } from 'primereact/dialog';
 
 // 3rd Party Imports
-import { IoGitCompareOutline } from "react-icons/io5";
 import { FiArrowLeft, FiUser } from "react-icons/fi";
 import { ToastContainer } from "react-toastify";
-import { Line } from 'react-chartjs-2';
-import {
-    Chart as ChartJS,
-    CategoryScale,
-    LinearScale,
-    PointElement,
-    LineElement,
-    Title,
-    Tooltip,
-    Legend,
-} from 'chart.js';
 import toast from "../../components/Toast";
 
 // Style and Component Imports
@@ -35,16 +21,6 @@ import DashboardLayout from '../../components/DashboardLayout';
 
 // Interface/Helper Imports
 import service from '../../helper/api/api';
-
-ChartJS.register(
-    CategoryScale,
-    LinearScale,
-    PointElement,
-    LineElement,
-    Title,
-    Tooltip,
-    Legend
-);
 
 export interface assignRows {
     username: string;
@@ -146,7 +122,7 @@ const CsvCompare: NextPage = (props: any) => {
             <div className={layoutStyles.topBar}>
                 <div className='p-d-flex p-ai-center p-jc-between'>
                     <div>
-                        <h5><FiArrowLeft /> Progress Details</h5>
+                        <h5 className={styles.backBar}><button className={styles.backBtn} onClick={() => router.back()}><FiArrowLeft /></button> Progress Details</h5>
                     </div>
                 </div>
             </div>
