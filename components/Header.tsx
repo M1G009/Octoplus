@@ -8,7 +8,7 @@ import { Badge } from 'primereact/badge';
 import { useRouter } from 'next/router'
 import { removeCookies } from 'cookies-next';
 
-import Logo from '../public/images/main_logo.svg'
+import Logo from '../public/images/main_logo.png'
 import User from '../public/images/user_img.png'
 
 import styles from './DashboardLayout.module.scss'
@@ -46,8 +46,8 @@ const Header = () => {
                     <Image
                         src={Logo}
                         alt="Octoplus"
-                        width={117}
-                        height={29}
+                        width={128}
+                        height={27}
                     />
                 </Button>
             </div>

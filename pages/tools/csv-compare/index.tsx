@@ -1,5 +1,6 @@
 // React Module Imports
 import React, { useEffect, useState } from 'react'
+
 // Next Module Imports
 import type { NextPage } from 'next'
 import { useRouter } from 'next/router'
@@ -12,13 +13,14 @@ import { Dropdown } from 'primereact/dropdown';
 import * as yup from 'yup';
 import { AiOutlineSwap } from "react-icons/ai";
 import { MdCompare } from "react-icons/md";
-import { FaRegEye, FaRegTrashAlt, FaMinus, FaPlus } from "react-icons/fa";
+import { FaRegEye, FaRegTrashAlt } from "react-icons/fa";
 import { ErrorMessage, Formik, FieldArray, Field, FormikHelpers } from 'formik';
 import { ToastContainer } from "react-toastify";
 import { FiUpload, FiPlus } from 'react-icons/fi';
 import { confirmDialog } from 'primereact/confirmdialog';
 import toast from "../../../components/Toast";
 import DragSwap from '../../../components/DragSwap'
+import DragSwapActive from '../../../components/DragSwapActive'
 
 // Style and Component Imports
 import CustomPagination from '../../../components/CustomPagination'
@@ -220,7 +222,7 @@ const CsvCompare: NextPage = (props: any) => {
                         return csvColumnsArray[i] = { name: el, active: true };
                     }
                 })
-                
+
                 setMappingRegistryColumnDtype(dataTypes)
                 setMappingRegistryColumnIndex(registryColumns)
                 setMappingCsvColumn(csvColumnsArray)
@@ -354,7 +356,7 @@ const CsvCompare: NextPage = (props: any) => {
         if (is_active == "Y") {
             return router.push(`/tools/csv-compare/dashboard?id=${id}`);
         }
-        
+
         setCsvId(id);
         await columnMappingGet(id);
         setColumnMappingModal(true);
@@ -379,11 +381,11 @@ const CsvCompare: NextPage = (props: any) => {
             if (mappingRegistryColumnIndex) {
                 let mainMappingColumns: any[] = [];
                 mappingCsvColumn.map((el: any, i: number) => {
-                    if (el && el.active) {
+                    if (el && el.active && mappingRegistryColumnIndex[i]) {
                         mainMappingColumns.push({ registry_column: mappingRegistryColumnIndex[i], csv_column: el.name });
                     }
                 })
-
+                
                 const { data } = await service({
                     url: `https://octoplusapi.herokuapp.com/columnmapPOST`,
                     method: 'POST',
@@ -569,8 +571,8 @@ const CsvCompare: NextPage = (props: any) => {
                                         csvUploadError ?
                                             <p className={styles.csvUploadError}>{csvUploadError}</p>
                                             : ""
-                                        }
-                                        {/* <p className='error'>csvUploadError</p> */}
+                                    }
+                                    {/* <p className='error'>csvUploadError</p> */}
 
                                     <div className="p-d-flex p-ai-center p-mt-4">
                                         <div className="p-m-auto">
@@ -600,28 +602,17 @@ const CsvCompare: NextPage = (props: any) => {
 
                             <div className={styles.columnsData}>
                                 <span className={styles.columnItem}>CSV Column</span>
+                                {/* {console.log(mappingCsvColumn)} */}
                                 {
                                     mappingCsvColumn ?
-                                        mappingCsvColumn.map((el: any, i: number) => {
-                                            if (el) {
-                                                return <span key={"registryColumn" + i} className={styles.columnItem + ` ${el.active ? '' : styles.active}`}>
-                                                    {
-                                                        !el.active ?
-                                                            <button className={styles.activeBtn} onClick={() => csvColumnActiveHandler(i, true)}><FaPlus /></button>
-                                                            :
-                                                            <button className={styles.activeBtnRed} onClick={() => csvColumnActiveHandler(i, false)}><FaMinus /></button>
-                                                    }
-                                                    {el.name}
-                                                </span>
-                                            } else {
-                                                return <span key={"registryColumn" + i} className={styles.columnItem}>{el}</span>
-                                            }
-                                        })
+                                        <DragSwapActive mappingCsvColumn={mappingCsvColumn} setMapppingTabledata={setMappingCsvColumn} dragBtn={styles.dragBtn} className={styles.columnItem} classNameIgnore={styles.columnItem + " " + styles.columnItemIgnore}
+                                        active={styles.active} activeBtn={styles.activeBtn} activeBtnRed={styles.activeBtnRed} csvColumnActiveHandler={csvColumnActiveHandler} />
                                         : ''
                                 }
                             </div>
                             <div className={styles.columnsData}>
-                                <span className={styles.columnItem}>Regitry Column</span>
+                                <span className={styles.columnItem}>Registry Column</span>
+                                {/* {console.log(mappingRegistryColumnIndex)} */}
                                 {
                                     mappingRegistryColumnIndex ?
                                         <DragSwap mappingRegistryColumn={mappingRegistryColumnIndex} setMapppingTabledata={setMappingRegistryColumnIndex} dragBtn={styles.dragBtn} className={styles.columnItem} classNameIgnore={styles.columnItem + " " + styles.columnItemIgnore} />
