@@ -430,31 +430,32 @@ const Dashboard: NextPage = () => {
         }
       } else {
         let parseData = JSON.parse(getData);
-        Object.keys(parseData).map(el => {
-          if (parseData[el].trim() == "") {
-            delete parseData[el];
-          }
-        })
 
         if (Object.keys(parseData).length) {
           if (editContactRowId) {
             let editObj = Object.assign(parseData, { "row_id": editContactRowId });
-            const {data} = await service({
+            const { data } = await service({
               url: `https://octoplusapi.herokuapp.com/edit_feild`,
               method: 'POST',
               data: editObj,
               headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
             });
-            
+            await fetchAllContact(currentPage, perPage, filterFields, searchField, sortingField);
           } else {
-            await service({
+            Object.keys(parseData).map(el => {
+              if (parseData[el].trim() == "") {
+                delete parseData[el];
+              }
+            })
+            const { data } = await service({
               url: `https://octoplusapi.herokuapp.com/insert_registry`,
               method: 'POST',
               data: { insert: [parseData] },
               headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
             });
+            setRoutingQuery(filterFields, '', sortingField);
+            await fetchAllContact(currentPage, perPage, filterFields, '', sortingField);
           }
-          await fetchAllContact(currentPage, perPage, filterFields, searchField, sortingField);
         }
       }
 
@@ -490,6 +491,7 @@ const Dashboard: NextPage = () => {
         data: getData,
         headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
       });
+
       setAddFiledSpinner(false)
       setAddNewFieldModal(false)
       return await fetchAllContact(currentPage, perPage, filterFields, searchField, sortingField);
@@ -750,7 +752,7 @@ const Dashboard: NextPage = () => {
   }
 
   const editRegistryHandler = (rowData: any) => {
-    
+
     return (
       <>
         <button className={layoutStyles.blueTextBtn} onClick={() => editContactFiledHandler(rowData.id, false)}>Edit</button> <button className={layoutStyles.blueTextBtn} onClick={() => editContactFiledHandler(rowData.id, true)}>View</button>
