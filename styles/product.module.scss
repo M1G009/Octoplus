@@ -523,8 +523,27 @@ $lightBlue: #2236f1;
                 .dataBox {
                     padding: 15px;
                     display: flex;
-                    align-items: center;
+                    flex-direction: column;
                     border-bottom: 1px solid #e0dede;
+
+                    > div {
+                        padding: 10px 0px;
+                        border-bottom: 1px solid #e0dede;
+
+                        &:last-child {
+                            border-bottom: none;
+                        }
+                    }
+
+                    .registryPaddingBox {
+                        border-bottom: 1px solid #e0dede;
+                        padding: 10px 0px;
+
+                        &:last-child{
+                            border-bottom: 0px;
+                        }
+                    }
+
                     label {
                         font-size: 14px;
                         color: #a5adba;
@@ -546,6 +565,10 @@ $lightBlue: #2236f1;
                     &.registryDataBox {
                         .numberText {
                             color: #1cc723;
+                        }
+
+                        >div{
+                            border-bottom: 0px;
                         }
                     }
 
@@ -699,7 +722,7 @@ $lightBlue: #2236f1;
     }
 }
 
-.csvUploadError{
+.csvUploadError {
     margin: 0px;
     color: #ff0000;
 }

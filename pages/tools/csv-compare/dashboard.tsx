@@ -551,32 +551,29 @@ const CsvCompare: NextPage = (props: any) => {
                                                             registryEntries.length && subActiveColumnValue && subActiveColumnValue.value ?
                                                                 registryEntries.map((obj, i) => {
                                                                     let keys: any = Object.keys(obj);
-                                                                    return keys.map((el: string, index: number) => {
-                                                                        if (activeColumn == el) {
-                                                                            return <div key={"csvdata" + i} className='p-d-flex p-ai-center p-mb-2 uniqueRegistryColumn'>
-                                                                                <RadioButton className='p-mr-1' value={obj[el]} name={el} checked={obj[el] == mergeEntries[el]}  onChange={(e) => mergeColumnCheckHandler(e.target.value, e.target.name)} />
-                                                                                <label htmlFor="">{el}</label>
-                                                                                <p>{obj[el] == "null" ? '' : obj[el]}</p>
-                                                                            </div>
+                                                                    return <div key={"registryEntries"+i} className={styles.registryPaddingBox}>
+                                                                        {
+                                                                            keys.map((el: string, index: number) => {
+                                                                                if (activeColumn == el) {
+                                                                                    return <div key={"csvdata" + i} className='p-d-flex p-ai-center p-mb-2 uniqueRegistryColumn'>
+                                                                                        <RadioButton className='p-mr-1' value={obj[el]} name={el} checked={obj[el] == mergeEntries[el]} onChange={(e) => mergeColumnCheckHandler(e.target.value, e.target.name)} />
+                                                                                        <label htmlFor="">{el}</label>
+                                                                                        <p>{obj[el] == "null" ? '' : obj[el]}</p>
+                                                                                    </div>
+                                                                                }
+                                                                                return <div key={"registrydata" + index} className='p-d-flex p-ai-center p-mb-2'>
+                                                                                    <RadioButton className='p-mr-1' value={obj[el]} name={el} checked={obj[el] == mergeEntries[el]} onChange={(e) => mergeColumnCheckHandler(e.target.value, e.target.name)} />
+                                                                                    <label htmlFor="">{el}</label>
+                                                                                    {
+                                                                                        !editFieldStatus ?
+                                                                                            <p>{obj[el] == "null" ? '' : obj[el]}</p>
+                                                                                            :
+                                                                                            <input type="text" name={el} value={obj[el]} onChange={(e) => registryColumnEditHandler(el, e.target.value, i)} />
+                                                                                    }
+                                                                                </div>
+                                                                            })
                                                                         }
-                                                                        // if (currentColumn == el) {
-                                                                        //     return <div key={"csvdata" + index} className='p-d-flex p-ai-center p-mb-2'>
-                                                                        //         <RadioButton className='p-mr-1' value={obj[el]} name={el} checked={obj[el] == mergeEntries[el]} disabled={true} />
-                                                                        //         <label htmlFor="">{el}</label>
-                                                                        //         <p>{obj[el] == "null" ? '' : obj[el]}</p>
-                                                                        //     </div>
-                                                                        // }
-                                                                        return <div key={"registrydata" + index} className='p-d-flex p-ai-center p-mb-2'>
-                                                                            <RadioButton className='p-mr-1' value={obj[el]} name={el} checked={obj[el] == mergeEntries[el]} onChange={(e) => mergeColumnCheckHandler(e.target.value, e.target.name)} />
-                                                                            <label htmlFor="">{el}</label>
-                                                                            {
-                                                                                !editFieldStatus ?
-                                                                                    <p>{obj[el] == "null" ? '' : obj[el]}</p>
-                                                                                    :
-                                                                                    <input type="text" name={el} value={obj[el]} onChange={(e) => registryColumnEditHandler(el, e.target.value, i)} />
-                                                                            }
-                                                                        </div>
-                                                                    })
+                                                                    </div>
                                                                 })
                                                                 : "No registry data found"
                                                         }

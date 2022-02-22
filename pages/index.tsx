@@ -430,7 +430,8 @@ const Dashboard: NextPage = () => {
         }
       } else {
         let parseData = JSON.parse(getData);
-
+        console.log(editContactRowId);
+        
         if (Object.keys(parseData).length) {
           if (editContactRowId) {
             let editObj = Object.assign(parseData, { "row_id": editContactRowId });
@@ -536,7 +537,8 @@ const Dashboard: NextPage = () => {
   }
 
   const editContactFiledHandler = async (id: any, view: Boolean) => {
-
+    console.log(id);
+    
     if (view) {
       setEditData(false);
       setViewData(true);
