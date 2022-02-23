@@ -57,14 +57,14 @@ const Header = () => {
                 <Link href="/report">Reports</Link>
             </div>
             <div className={styles.right_list}>
-                <div className={styles.searchBox}>
+                {/* <div className={styles.searchBox}>
                     {
                         searchInput ? <InputText value={searchText} onChange={(e) => setSearchText(e.target.value)} autoFocus onBlur={() => { setSearchInput(false); setSearchText('') }} /> : null
                     }
                     <Button className={"p-button-text " + styles.searchIcon} onClick={() => searchInput ? false : setSearchInput(true)} ><FaSearch /></Button>
                 </div>
                 <Button className={"p-button-text " + styles.searchIcon} ><FaRegQuestionCircle /></Button>
-                <Button className={styles.bellIcon}><i className="pi pi-bell p-overlay-badge" style={{ fontSize: '18px' }}><Badge value="2" severity="danger" ></Badge></i></Button>
+                <Button className={styles.bellIcon}><i className="pi pi-bell p-overlay-badge" style={{ fontSize: '18px' }}><Badge value="2" severity="danger" ></Badge></i></Button> */}
                 <div className={styles.userProfile} onClick={() => routerPushHandler('/profile/account')}>
                     <Image
                         src={User}

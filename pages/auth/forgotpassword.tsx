@@ -116,7 +116,7 @@ const ForgotPassword: NextPage = () => {
                 </div>
                 <div className={styles.inputBox}>
                   <label htmlFor="email">Email</label>
-                  <Field type="email" name="email" />
+                  <Field type="email" name="email" autocomplete="false" />
                   <ErrorMessage name="email">
                     {(msg) => <p className={styles.error}>{msg}</p>}
                   </ErrorMessage>

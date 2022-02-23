@@ -901,13 +901,28 @@ const Dashboard: NextPage = () => {
                         } else {
                           if (!viewData) {
                             Object.keys(values).map(el => {
-                              if (el == "First Name" || el == "Last Name" || el == "Email Address") {
+                              if (el == "First Name" || el == "Last Name" || el == "Email" || el == "Contact") {
                                 if (!values[el]) {
-                                  error[el] = "Please enter valid value";
-                                } else if (el == "Email Address") {
+                                  if(el == "First Name"){
+                                    error[el] = "Please enter first name";
+                                  } else if(el == "Last Name"){
+                                    error[el] = "Please enter last name";
+                                  } else if(el == "Email"){
+                                    error[el] = "Please enter email";
+                                  } else if(el == "Contact"){
+                                    error[el] = "Please enter contact";
+                                  } else {
+                                    error[el] = "Please enter valid value";
+                                  }
+                                } else if (el == "Email") {
                                   var emailPattern = /^\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,3}$/;
                                   if (!emailPattern.test(values[el])) {
                                     error[el] = "Please enter valid email";
+                                  }
+                                } else if (el == "First Name" || el == "Last Name") {
+                                  var namePattern = /^[A-Za-z ]*$/;
+                                  if (!namePattern.test(values[el])) {
+                                    error[el] = "Please enter valid value";
                                   }
                                 }
                               }
