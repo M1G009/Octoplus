@@ -15,13 +15,15 @@ $lightBlue: #2236f1;
     }
 
     .btnGroup {
+        min-width: 200px;
         .menubar {
             background-color: transparent;
             border: none;
             padding: 0px;
+            justify-content: flex-end;
 
             .menuItem {
-                margin: 0px 5px;
+                margin: 5px;
                 a {
                     box-shadow: none !important;
                     span {

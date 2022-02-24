@@ -1086,7 +1086,7 @@ const Signup: NextPage = () => {
 
                                 <div className={styles.inputBox}>
                                     <label htmlFor="email">Email address</label>
-                                    <Field type="email" name="email" autocomplete="false" />
+                                    <Field type="email" name="email" autoComplete="false" />
                                     <ErrorMessage name="email">
                                         {(msg) => <p className={styles.error}>{msg}</p>}
                                     </ErrorMessage>

@@ -430,7 +430,6 @@ const Dashboard: NextPage = () => {
         }
       } else {
         let parseData = JSON.parse(getData);
-        console.log(editContactRowId);
         
         if (Object.keys(parseData).length) {
           if (editContactRowId) {
@@ -537,8 +536,6 @@ const Dashboard: NextPage = () => {
   }
 
   const editContactFiledHandler = async (id: any, view: Boolean) => {
-    console.log(id);
-    
     if (view) {
       setEditData(false);
       setViewData(true);
@@ -915,14 +912,19 @@ const Dashboard: NextPage = () => {
                                     error[el] = "Please enter valid value";
                                   }
                                 } else if (el == "Email") {
-                                  var emailPattern = /^\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,3}$/;
+                                  var emailPattern = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
                                   if (!emailPattern.test(values[el])) {
-                                    error[el] = "Please enter valid email";
+                                    error[el] = "Please enter valid email 2";
                                   }
                                 } else if (el == "First Name" || el == "Last Name") {
                                   var namePattern = /^[A-Za-z ]*$/;
                                   if (!namePattern.test(values[el])) {
                                     error[el] = "Please enter valid value";
+                                  }
+                                } else if (el == "Contact") {
+                                  var contactPattern = /^[0-9\.\-\.\+\.\)\.\(\/]+$/;
+                                  if (!contactPattern.test(values[el])) {
+                                    error[el] = "Please enter valid contact";
                                   }
                                 }
                               }

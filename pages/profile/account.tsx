@@ -126,8 +126,6 @@ const Account: NextPage = () => {
     Language: yup.string().required('Please select language')
   });
 
-  // .matches(/^(\+\d{1,3}[- ]?)?\d{10}$/i , 'Please enter valid phone number')
-
   const updateProfileHandler = async (userData: any) => {
     try {
       let updateUser = JSON.parse(userData);

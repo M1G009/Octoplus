@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react'
 // Next Module Imports
 import type { NextPage } from 'next'
 import { useRouter } from 'next/router'
-import slugify from 'slugify'
+import Link from 'next/link'
 
 // Prime React Imports
 import { Dialog } from 'primereact/dialog';
@@ -82,7 +82,7 @@ const CsvCompare: NextPage = (props: any) => {
     const [assignFilterModalSpinner, setAssignFilterModalSpinner] = useState(false);
     const [assignContactModalSpinner, setAssignContactModalSpinner] = useState(false);
     const [mergeCheck, setMergeCheck] = useState(false);
-
+    const [mergeBtnToggle, setMergeBtnToggle] = useState(false)
 
     const fetchSubColumnDataRecord = async (columnName: any, columnValue: any, csv_id: any) => {
         try {
@@ -95,6 +95,7 @@ const CsvCompare: NextPage = (props: any) => {
                 return router.push('/auth');
             }
             setDashBoardSpinner(true);
+
             const { data } = await service({
                 url: `https://octoplusapi.herokuapp.com/csvdash3`,
                 method: 'POST',
@@ -107,10 +108,18 @@ const CsvCompare: NextPage = (props: any) => {
                 setCsvEntries(data.data.csv)
                 setMergeEntries(data.data.registry[0])
                 setRegistryId(data.data.registry_id)
+            } else {
+                setRegistryEntries([])
+                setRegistryEntriesCopy([])
+                setCsvEntries([])
             }
+            setMergeBtnToggle(false)
             setDashBoardSpinner(false);
 
         } catch (err) {
+            setRegistryEntries([])
+            setRegistryEntriesCopy([])
+            setCsvEntries([])
             setDashBoardSpinner(false);
             return await toast({ type: "error", message: err });
         }
@@ -134,13 +143,13 @@ const CsvCompare: NextPage = (props: any) => {
                 data: JSON.stringify({ "column": columnName, csv_id }),
                 headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
             });
-            console.log("ab::", subActiveColumnValue);
 
             if (data.data.length) {
                 let activeVal = '';
+                let newArray;
 
-                let newArray = data.data.map((obj: any, i: number) => {
-                    if (!subActiveColumnValue.value) {
+                if (!subActiveColumnValue.value || columnName != activeColumn) {
+                    newArray = data.data.map((obj: any, i: number) => {
                         if (i == 0) {
                             activeVal = obj.value;
                             setSubActiveColumnValue(obj)
@@ -148,7 +157,9 @@ const CsvCompare: NextPage = (props: any) => {
                         } else {
                             return { ...obj, "active": false }
                         }
-                    } else {
+                    })
+                } else {
+                    newArray = data.data.map((obj: any, i: number) => {
                         if (obj.value == subActiveColumnValue.value && !ignore) {
                             activeVal = obj.value;
                             setSubActiveColumnValue(obj)
@@ -156,8 +167,9 @@ const CsvCompare: NextPage = (props: any) => {
                         } else {
                             return { ...obj, "active": false }
                         }
-                    }
-                })
+                    })
+                }
+
                 setSubColumns(newArray);
                 if (activeVal) {
                     await fetchSubColumnDataRecord(columnName, activeVal, csv_id)
@@ -165,6 +177,9 @@ const CsvCompare: NextPage = (props: any) => {
                 setDashBoardSpinner(false);
             } else {
                 setDashBoardSpinner(false);
+                setRegistryEntries([])
+                setRegistryEntriesCopy([])
+                setCsvEntries([])
                 return await toast({ type: "error", message: "No record found" });
             }
 
@@ -251,7 +266,7 @@ const CsvCompare: NextPage = (props: any) => {
                 if (!id) return router.push('/tools/csv-compare');
                 if (id) {
                     setCsvId(id)
-                    await fetchAllColumnsRecord(id)
+                    await fetchAllColumnsRecord(id, false)
                 }
             }
         }
@@ -300,7 +315,7 @@ const CsvCompare: NextPage = (props: any) => {
 
     const mainColumnActiveHandler = async (name: string) => {
         if (name != activeColumn) {
-            // let slug = slugify(name, { replacement: '-', remove: undefined, lower: true, strict: false, locale: 'vi', trim: true });
+            setSubActiveColumnValue('')
             await fetchSubColumnsRecord(name, csvId)
             let copyMainColumns: any = [...mainColumns].map((el: any) => {
                 if (el.name == name) {
@@ -321,7 +336,6 @@ const CsvCompare: NextPage = (props: any) => {
 
     const subColumnActiveHandler = async (value: string) => {
         if (value != activeColumn) {
-            // let slug = slugify(activeColumn, { replacement: '-', remove: undefined, lower: true, strict: false, locale: 'vi', trim: true });
             await fetchSubColumnDataRecord(activeColumn, value, csvId)
             let copySubColumns: any = [...subColumns].map((el: any) => {
                 if (el.value == value) {
@@ -334,10 +348,12 @@ const CsvCompare: NextPage = (props: any) => {
                     return copyEl
                 }
             });
-            let copySubActiveColumnValue = { ...subActiveColumnValue };
-            copySubActiveColumnValue.value = value
             setSubColumns(copySubColumns);
-            setSubActiveColumnValue(copySubActiveColumnValue);
+            let copySubActiveColumnValue = { ...subActiveColumnValue };
+            if (copySubActiveColumnValue.value) {
+                copySubActiveColumnValue.value = value
+                setSubActiveColumnValue(copySubActiveColumnValue);
+            }
         }
     }
 
@@ -372,12 +388,6 @@ const CsvCompare: NextPage = (props: any) => {
             copyObj['users'].map((el: any, i: number) => copyObj['users'][i] = el.user_id)
             let newObj: any = {};
 
-            // Object.keys(copyObj).map((el: any, i:number) => {
-            //     copyObj[el].map((list: any, index: number) => {
-            //         // console.log("::", el, copyObj[el]);
-            //     })
-            // })
-
             Object.keys(copyObj).map(el => {
                 if (copyObj[el][0]) {
                     return newObj[el] = copyObj[el][0]
@@ -409,6 +419,7 @@ const CsvCompare: NextPage = (props: any) => {
                 query = { "registry": registryEntriesCopy, "csv": csvEntries, "csv_id": csvId, "registry_id": registryId, "merge": mergeEntries }
             } else {
                 query = { "registry": registryEntriesCopy, "csv": csvEntries, "csv_id": csvId, "registry_id": registryId, "ignored": mergeEntries }
+                setactiveColumn('');
             }
 
             const { data } = await service({
@@ -417,6 +428,7 @@ const CsvCompare: NextPage = (props: any) => {
                 data: JSON.stringify(query),
                 headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
             });
+
             setSubActiveColumnValue('');
             setSaveContactModal(false)
             await fetchAllColumnsRecord(csvId, true)
@@ -453,7 +465,7 @@ const CsvCompare: NextPage = (props: any) => {
             <div className={layoutStyles.topBar}>
                 <div className='p-d-flex p-ai-center p-jc-between'>
                     <div>
-                        <p>Tools / CSV Compare / <span>Dashboard</span></p>
+                        <p className={styles.breadcrumButtons}><Link href="/tools/csv-compare">CSV Compare</Link> / <span>Dashboard</span></p>
                         <h5>Dashboard</h5>
                     </div>
                 </div>
@@ -469,7 +481,7 @@ const CsvCompare: NextPage = (props: any) => {
                             }
                             <div className={styles.columnsBox}>
                                 {
-                                    mainColumns.length ?
+                                    mainColumns && mainColumns.length ?
                                         mainColumns.map((el, i) => {
                                             if (el.duplicate == 0) {
                                                 return <button key={"mainColumns" + i} className={styles.columnText} disabled>
@@ -500,7 +512,7 @@ const CsvCompare: NextPage = (props: any) => {
                                 </div>
                                 <div className={styles.searchContentBox}>
                                     {
-                                        subColumns.length ?
+                                        subColumns && subColumns.length ?
                                             subColumns.filter((el) => {
                                                 if (searchVal) {
                                                     return el.value.toLowerCase().includes(searchVal);
@@ -508,16 +520,18 @@ const CsvCompare: NextPage = (props: any) => {
                                                     return true;
                                                 }
                                             }).map((el, i) => {
-                                                if (el.active) {
-                                                    return <button key={"subcolumns" + i} className={styles.columnText + " " + styles.active} onClick={() => subColumnActiveHandler(el.value)}>
-                                                        <h6>{el.value}</h6>
-                                                        <p>{el.registry} in Registry, {el.csv} in CSV</p>
-                                                    </button>
-                                                } else {
-                                                    return <button key={"subcolumns" + i} className={styles.columnText} onClick={() => subColumnActiveHandler(el.value)}>
-                                                        <h6>{el.value}</h6>
-                                                        <p>{el.registry} in Registry, {el.csv} in CSV</p>
-                                                    </button>
+                                                if (el.value || el.value == "0") {
+                                                    if (el.active) {
+                                                        return <button key={"subcolumns" + i} className={styles.columnText + " " + styles.active} onClick={() => subColumnActiveHandler(el.value)}>
+                                                            <h6>{el.value}</h6>
+                                                            <p>{el.registry} in Registry, {el.csv} in CSV</p>
+                                                        </button>
+                                                    } else {
+                                                        return <button key={"subcolumns" + i} className={styles.columnText} onClick={() => subColumnActiveHandler(el.value)}>
+                                                            <h6>{el.value}</h6>
+                                                            <p>{el.registry} in Registry, {el.csv} in CSV</p>
+                                                        </button>
+                                                    }
                                                 }
                                             })
                                             :
@@ -535,7 +549,11 @@ const CsvCompare: NextPage = (props: any) => {
                                             </div>
                                             <p className={styles.text}>Kindly select below data to perform desire action</p>
                                         </div>
-                                        <button className={layoutStyles.customBluebtn} onClick={() => assignContactModalHandler()} >Assign Contact Fixing</button>
+                                        {
+                                            registryEntries && registryEntries.length && csvEntries && csvEntries.length ?
+                                                <button className={layoutStyles.customBluebtn} onClick={() => assignContactModalHandler()} >Assign Contact Fixing</button>
+                                                : ""
+                                        }
                                     </div>
                                     {
                                         mergeEntriesDis ?
@@ -548,10 +566,10 @@ const CsvCompare: NextPage = (props: any) => {
                                                 <div className={styles.dataBox + " customDashboardRadio " + styles.registryDataBox}>
                                                     <div className='p-mx-3'>
                                                         {
-                                                            registryEntries.length && subActiveColumnValue && subActiveColumnValue.value ?
+                                                            registryEntries && registryEntries.length && subActiveColumnValue && subActiveColumnValue.value ?
                                                                 registryEntries.map((obj, i) => {
                                                                     let keys: any = Object.keys(obj);
-                                                                    return <div key={"registryEntries"+i} className={styles.registryPaddingBox}>
+                                                                    return <div key={"registryEntries" + i} className={styles.registryPaddingBox}>
                                                                         {
                                                                             keys.map((el: string, index: number) => {
                                                                                 if (activeColumn == el) {
@@ -581,7 +599,7 @@ const CsvCompare: NextPage = (props: any) => {
                                                     {
                                                         subActiveColumnValue && subActiveColumnValue.value ?
                                                             !editFieldStatus ?
-                                                                <button className={layoutStyles.blueTextBtn + " p-ml-auto p-as-start p-d-flex"} onClick={() => setEditFieldStatus(true)}><FaRegEdit className='p-mr-1' />Edit</button>
+                                                                <button className={layoutStyles.blueTextBtn + " p-ml-auto p-as-start p-d-flex " + styles.columnEditBtn} onClick={() => setEditFieldStatus(true)}><FaRegEdit className='p-mr-1' />Edit</button>
                                                                 :
                                                                 <button className={layoutStyles.blueTextBtn + " p-ml-auto p-as-start p-d-flex"} onClick={() => setEditFieldStatus(false)}><FaRegSave className='p-mr-1' />Save</button>
                                                             : ""
@@ -592,27 +610,20 @@ const CsvCompare: NextPage = (props: any) => {
                                                         CSV File Data
                                                     </h6>
                                                 </div>
-                                                {/* <div className='p-d-flex p-ai-center p-mb-2'>
-                                                    <RadioButton className={'p-mr-1 duplicateBtn'} value="kduasdjkasd" name="kduasdjkasd" checked={false} disabled={true} />
-                                                    <label htmlFor="">kduasdjkasd</label>
-                                                    <p>kduasdjkasd</p>
-                                                </div> */}
                                                 <div className={styles.dataBox + " customDashboardRadio " + styles.csvDataBox}>
                                                     {
-                                                        csvEntries.length && subActiveColumnValue && subActiveColumnValue.value ?
+                                                        csvEntries && csvEntries.length && subActiveColumnValue && subActiveColumnValue.value && registryEntries && registryEntries.length ?
                                                             csvEntries.map((obj, i) => {
                                                                 let keys: any = Object.keys(obj);
                                                                 return <div className='p-mx-3' key={"csvdatas" + i}>
                                                                     {
                                                                         keys.map((el: any, i: number) => {
                                                                             if (obj[el] != registryEntries[0][el] && obj[el]) {
-                                                                                // if (currentColumn == el) {
-                                                                                //     return <div key={"csvdata" + i} className='p-d-flex p-ai-center p-mb-2'>
-                                                                                //         <RadioButton className='p-mr-1' value={obj[el]} name={el} checked={obj[el] == mergeEntries[el]} />
-                                                                                //         <label htmlFor="">{el}</label>
-                                                                                //         <p>{obj[el]}</p>
-                                                                                //     </div>
-                                                                                // }
+                                                                                {
+                                                                                    !mergeBtnToggle ?
+                                                                                        setMergeBtnToggle(true)
+                                                                                        : ""
+                                                                                }
                                                                                 return <div key={"csvdata" + i} className='p-d-flex p-ai-center p-mb-2'>
                                                                                     <RadioButton className='p-mr-1' value={obj[el]} name={el} checked={obj[el] == mergeEntries[el]} onChange={(e) => mergeColumnCheckHandler(e.target.value, e.target.name)} />
                                                                                     <label htmlFor="">{el}</label>
@@ -621,12 +632,14 @@ const CsvCompare: NextPage = (props: any) => {
                                                                             }
                                                                             else {
                                                                                 if (activeColumn == el) {
+
                                                                                     return <div key={"csvdata" + i} className='p-d-flex p-ai-center p-mb-2 duplicatesColumnId'>
                                                                                         <RadioButton className='p-mr-1' value={obj[el]} name={el} checked={obj[el] == mergeEntries[el]} disabled={true} />
                                                                                         <label htmlFor="">{el}</label>
                                                                                         <p>{obj[el]}</p>
                                                                                     </div>
                                                                                 } else {
+
                                                                                     return <div key={"csvdata" + i} className='p-d-flex p-ai-center p-mb-2'>
                                                                                         <RadioButton className={'p-mr-1 duplicateBtn'} value={obj[el]} name={el} checked={obj[el] == mergeEntries[el]} disabled={true} />
                                                                                         <label htmlFor="">{el}</label>
@@ -646,8 +659,16 @@ const CsvCompare: NextPage = (props: any) => {
                                     }
                                 </div>
                                 <div className="p-mt-3 p-text-right">
-                                    <button type='button' className={layoutStyles.customDarkBgbtn} onClick={() => { setMergeCheck(false); ignoreMappingDialogHandler() }} >Ignore</button>
-                                    <button type='button' onClick={() => { setMergeCheck(true); setSaveContactModal(true) }} className={layoutStyles.customBlueBgbtn}>Merge</button>
+                                    {
+                                        registryEntries && registryEntries.length && csvEntries && csvEntries.length ?
+                                            <button type='button' className={layoutStyles.customDarkBgbtn} onClick={() => { setMergeCheck(false); ignoreMappingDialogHandler() }} >Ignore</button>
+                                            : ""
+                                    }
+                                    {
+                                        mergeBtnToggle ?
+                                            <button type='button' onClick={() => { setMergeCheck(true); setSaveContactModal(true) }} className={layoutStyles.customBlueBgbtn}>Merge</button>
+                                            : ""
+                                    }
                                 </div>
                             </div>
                         </div>

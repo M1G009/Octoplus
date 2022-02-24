@@ -12,7 +12,7 @@ import { Dropdown } from 'primereact/dropdown';
 // 3rd Party Imports
 import * as yup from 'yup';
 import { AiOutlineSwap } from "react-icons/ai";
-import { MdCompare } from "react-icons/md";
+import { MdCompare, MdDashboard } from "react-icons/md";
 import { FaRegEye, FaRegTrashAlt } from "react-icons/fa";
 import { ErrorMessage, Formik, FieldArray, Field, FormikHelpers } from 'formik';
 import { ToastContainer } from "react-toastify";
@@ -385,7 +385,7 @@ const CsvCompare: NextPage = (props: any) => {
                         mainMappingColumns.push({ registry_column: mappingRegistryColumnIndex[i], csv_column: el.name });
                     }
                 })
-                
+
                 const { data } = await service({
                     url: `https://octoplusapi.herokuapp.com/columnmapPOST`,
                     method: 'POST',
@@ -469,11 +469,14 @@ const CsvCompare: NextPage = (props: any) => {
                                                             <div className='p-d-flex'>
                                                                 {
                                                                     el.is_active == "Y" ?
-                                                                        <button className={layoutStyles.blueTextBtn + " p-d-flex p-ai-center"} onClick={() => router.push(`/csvreport?id=${el._id}`)}><FaRegEye className='p-mr-1' /> <span>Reports</span></button>
+                                                                        <>
+                                                                            <button className={layoutStyles.blueTextBtn + " p-d-flex p-ai-center"} onClick={() => router.push(`/csvreport?id=${el._id}`)}><FaRegEye className='p-mr-1' /> <span>Reports</span></button>
+                                                                            <button className={layoutStyles.blueTextBtn + " p-d-flex p-ai-center"} onClick={() => compareCsvDialogHandler(el._id, el.is_active)}><MdDashboard className='p-mr-1' /> <span>Dashboard</span></button>
+                                                                        </>
                                                                         :
-                                                                        null
+                                                                        <button className={layoutStyles.blueTextBtn + " p-d-flex p-ai-center"} onClick={() => compareCsvDialogHandler(el._id, el.is_active)}><MdCompare className='p-mr-1' /> <span>Continue comparing</span></button>
                                                                 }
-                                                                <button className={layoutStyles.blueTextBtn + " p-d-flex p-ai-center"} onClick={() => compareCsvDialogHandler(el._id, el.is_active)}><MdCompare className='p-mr-1' /> <span>Continue comparing</span></button>
+
                                                                 <button className={layoutStyles.customRedFontbtn + " p-d-flex p-ai-center"} onClick={() => deleteCsvDialogHandler(el._id)}><FaRegTrashAlt className='p-mr-1' /> <span>Delete</span></button>
                                                             </div>
                                                         </td>
@@ -602,17 +605,15 @@ const CsvCompare: NextPage = (props: any) => {
 
                             <div className={styles.columnsData}>
                                 <span className={styles.columnItem}>CSV Column</span>
-                                {/* {console.log(mappingCsvColumn)} */}
                                 {
                                     mappingCsvColumn ?
                                         <DragSwapActive mappingCsvColumn={mappingCsvColumn} setMapppingTabledata={setMappingCsvColumn} dragBtn={styles.dragBtn} className={styles.columnItem} classNameIgnore={styles.columnItem + " " + styles.columnItemIgnore}
-                                        active={styles.active} activeBtn={styles.activeBtn} activeBtnRed={styles.activeBtnRed} csvColumnActiveHandler={csvColumnActiveHandler} />
+                                            active={styles.active} activeBtn={styles.activeBtn} activeBtnRed={styles.activeBtnRed} csvColumnActiveHandler={csvColumnActiveHandler} />
                                         : ''
                                 }
                             </div>
                             <div className={styles.columnsData}>
                                 <span className={styles.columnItem}>Registry Column</span>
-                                {/* {console.log(mappingRegistryColumnIndex)} */}
                                 {
                                     mappingRegistryColumnIndex ?
                                         <DragSwap mappingRegistryColumn={mappingRegistryColumnIndex} setMapppingTabledata={setMappingRegistryColumnIndex} dragBtn={styles.dragBtn} className={styles.columnItem} classNameIgnore={styles.columnItem + " " + styles.columnItemIgnore} />

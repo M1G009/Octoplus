@@ -163,8 +163,6 @@ const Team: NextPage = (props: any) => {
         method: 'GET',
         headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
       });
-      console.log(data.data);
-      
       if (!data.data.length) {
         return setTeamMember([]);
       }
@@ -475,8 +473,6 @@ const Team: NextPage = (props: any) => {
           return router.push('/auth');
         }
         setTeamMemberSpinner(true)
-        console.log(createUpdateRoleObj);
-        
         await service({
           url: `${process.env.API_BASE_URL}/roleupdate`,
           method: 'POST',

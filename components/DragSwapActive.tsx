@@ -13,7 +13,6 @@ const Box = (props: any) => {
                 onDragOver={props.onDragOver({ id: props.id })}
                 onDrop={props.onDrop({ id: props.id })}
             >
-                {console.log(props.activeBtn)}
                 <button className={props.dragBtn}><GrDrag /></button>
                 {
                     !props.box.active ?
@@ -109,7 +108,6 @@ const DragSwapActive = (props: any) => {
 
     const makeBoxes = () => {
         if (boxes) {
-            { console.log("boxes", boxes) }
             return boxes.map((box: any, i: number) => (
                 <Box
                     box={box}
