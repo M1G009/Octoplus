@@ -56,7 +56,9 @@ export interface compareData {
     compare_name: string;
     csv_name: string;
     work_progress: WorkProgress;
-    is_active: string
+    is_active: string;
+    total_rows: number;
+    fixed: number;
 }
 
 {/* add field button */ }
@@ -413,6 +415,25 @@ const CsvCompare: NextPage = (props: any) => {
         setMappingCsvColumn(copyArray);
     }
 
+    const newCompareCloseHandler = (e: any) => {
+        if (e.target.classList.contains("p-dialog-mask")) {
+            setNewCompareModal(false)
+        }
+    }
+
+    const columnMappingCloseHandler = (e: any) => {
+        if (e.target.classList.contains("p-dialog-mask")) {
+            setColumnMappingModal(false);
+            setNewCompareModal(false)
+        }
+    }
+
+    const addNewFieldCloseHandler = (e: any) => {
+        if (e.target.classList.contains("p-dialog-mask")) {
+            setAddNewFieldModal(false)
+        }
+    }
+
     return (
         <DashboardLayout sidebar={false}>
             <ToastContainer
@@ -461,26 +482,28 @@ const CsvCompare: NextPage = (props: any) => {
                                         {
                                             compareData && compareData.length ?
                                                 compareData.map((el, i) => {
-                                                    return <tr key={"compareTable" + i}>
-                                                        <td>{el.compare_name}</td>
-                                                        <td>{el.csv_name}</td>
-                                                        <td><MultiProgressBar complete={el.work_progress.complete} progress={el.work_progress.progress} ignored={el.work_progress.ignored} /></td>
-                                                        <td>
-                                                            <div className='p-d-flex'>
-                                                                {
-                                                                    el.is_active == "Y" ?
-                                                                        <>
-                                                                            <button className={layoutStyles.blueTextBtn + " p-d-flex p-ai-center"} onClick={() => router.push(`/csvreport?id=${el._id}`)}><FaRegEye className='p-mr-1' /> <span>Reports</span></button>
-                                                                            <button className={layoutStyles.blueTextBtn + " p-d-flex p-ai-center"} onClick={() => compareCsvDialogHandler(el._id, el.is_active)}><MdDashboard className='p-mr-1' /> <span>Dashboard</span></button>
-                                                                        </>
-                                                                        :
-                                                                        <button className={layoutStyles.blueTextBtn + " p-d-flex p-ai-center"} onClick={() => compareCsvDialogHandler(el._id, el.is_active)}><MdCompare className='p-mr-1' /> <span>Continue comparing</span></button>
-                                                                }
+                                                    if (el.total_rows > el.fixed) {
+                                                        return <tr key={"compareTable" + i}>
+                                                            <td>{el.compare_name}</td>
+                                                            <td>{el.csv_name}</td>
+                                                            <td><MultiProgressBar complete={el.work_progress.complete} progress={el.work_progress.progress} ignored={el.work_progress.ignored} /></td>
+                                                            <td>
+                                                                <div className='p-d-flex'>
+                                                                    {
+                                                                        el.is_active == "Y" ?
+                                                                            <>
+                                                                                <button className={layoutStyles.blueTextBtn + " p-d-flex p-ai-center"} onClick={() => router.push(`/csvreport?id=${el._id}`)}><FaRegEye className='p-mr-1' /> <span>Reports</span></button>
+                                                                                <button className={layoutStyles.blueTextBtn + " p-d-flex p-ai-center"} onClick={() => compareCsvDialogHandler(el._id, el.is_active)}><MdDashboard className='p-mr-1' /> <span>Dashboard</span></button>
+                                                                            </>
+                                                                            :
+                                                                            <button className={layoutStyles.blueTextBtn + " p-d-flex p-ai-center"} onClick={() => compareCsvDialogHandler(el._id, el.is_active)}><MdCompare className='p-mr-1' /> <span>Continue comparing</span></button>
+                                                                    }
 
-                                                                <button className={layoutStyles.customRedFontbtn + " p-d-flex p-ai-center"} onClick={() => deleteCsvDialogHandler(el._id)}><FaRegTrashAlt className='p-mr-1' /> <span>Delete</span></button>
-                                                            </div>
-                                                        </td>
-                                                    </tr>
+                                                                    <button className={layoutStyles.customRedFontbtn + " p-d-flex p-ai-center"} onClick={() => deleteCsvDialogHandler(el._id)}><FaRegTrashAlt className='p-mr-1' /> <span>Delete</span></button>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    }
                                                 })
                                                 :
                                                 <tr>
@@ -502,7 +525,7 @@ const CsvCompare: NextPage = (props: any) => {
             </div>
 
             {/* New Compare Modal */}
-            <Dialog showHeader={false} contentClassName={styles.modelsCustomStyles} maskClassName={styles.dialogMask} visible={newCompareModal} style={{ width: '500px', }} onHide={() => ''}>
+            <Dialog showHeader={false} onMaskClick={newCompareCloseHandler} contentClassName={styles.modelsCustomStyles} maskClassName={styles.dialogMask} visible={newCompareModal} style={{ width: '500px', }} onHide={() => ''}>
                 <Formik
                     enableReinitialize
                     initialValues={{
@@ -591,7 +614,7 @@ const CsvCompare: NextPage = (props: any) => {
             </Dialog>
 
             {/* Column Mapping Modal */}
-            <Dialog showHeader={false} contentClassName={styles.modelsCustomStyles} maskClassName={styles.dialogMask} visible={columnMappingModal} style={{ width: '500px', }} onHide={() => ''}>
+            <Dialog showHeader={false} contentClassName={styles.modelsCustomStyles} maskClassName={styles.dialogMask} visible={columnMappingModal} style={{ width: '500px', }} onHide={() => ''} onMaskClick={columnMappingCloseHandler}>
                 <div className={styles.replaceDataModal}>
                     {
                         columnMappingModalSpinner ? <div className={styles.formSpinner}>
@@ -636,7 +659,7 @@ const CsvCompare: NextPage = (props: any) => {
             </Dialog>
 
             {/* Add New Field-Modal */}
-            <Dialog showHeader={false} contentClassName={styles.addNewFieldModalCustomStyles} maskClassName={styles.dialogMask} visible={addNewFieldModal} style={{ width: '500px', }} onHide={() => ''}>
+            <Dialog showHeader={false} contentClassName={styles.addNewFieldModalCustomStyles} maskClassName={styles.dialogMask} visible={addNewFieldModal} style={{ width: '500px', }} onHide={() => ''} onMaskClick={addNewFieldCloseHandler}>
                 <div className={styles.addNewFieldModal}>
                     <h5>Add new field</h5>
                     <Formik

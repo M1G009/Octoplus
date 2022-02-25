@@ -491,6 +491,12 @@ const Team: NextPage = (props: any) => {
     }
   }
 
+  const invitePeopleCloseHandler = (e: any) => {
+    if (e.target.classList.contains("p-dialog-mask")) {
+      setInvitePeopleModal(false)
+    }
+  }
+
   return (
     <DashboardLayout sidebar={true}>
       <ToastContainer
@@ -693,7 +699,7 @@ const Team: NextPage = (props: any) => {
       </div>
 
       {/* Invite People */}
-      <Dialog showHeader={false} contentClassName={styles.invitePeopleModal} visible={invitePeopleModal} style={{ width: '500px', }} onHide={() => ''}>
+      <Dialog showHeader={false}  onMaskClick={invitePeopleCloseHandler} contentClassName={styles.invitePeopleModal} visible={invitePeopleModal} style={{ width: '500px', }} onHide={() => ''}>
         <div className={styles.invitePeopleModal}>
           <h5>Invite People</h5>
           <Formik

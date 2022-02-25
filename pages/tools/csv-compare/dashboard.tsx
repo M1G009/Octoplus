@@ -246,6 +246,7 @@ const CsvCompare: NextPage = (props: any) => {
                 setDashBoardSpinner(false);
             } else {
                 setDashBoardSpinner(false);
+
                 return await toast({ type: "error", message: "No record found" });
             }
 
@@ -448,6 +449,18 @@ const CsvCompare: NextPage = (props: any) => {
             accept: () => mergeColumnHandler()
         });
     }
+
+    const assignContactCloseHandler = (e: any) => {
+        if (e.target.classList.contains("p-dialog-mask")) {
+            setAssignContactFixingModal(false)
+        }
+    }
+
+    // const saveContactCloseHandler = (e: any) => {
+    //     if (e.target.classList.contains("p-dialog-mask")) {
+
+    //     }
+    // }
 
     return (
         <DashboardLayout sidebar={false}>
@@ -677,7 +690,7 @@ const CsvCompare: NextPage = (props: any) => {
             </div>
 
             {/* Assign Contact Fixing-Modal */}
-            <Dialog showHeader={false} contentClassName={styles.modelsCustomStyles} maskClassName={styles.dialogMask} visible={assignContactFixingModal} style={{ width: '500px', }} onHide={() => ''}>
+            <Dialog showHeader={false} onMaskClick={assignContactCloseHandler} contentClassName={styles.modelsCustomStyles} maskClassName={styles.dialogMask} visible={assignContactFixingModal} style={{ width: '500px', }} onHide={() => ''}>
                 <div className={styles.replaceDataModal}>
                     {
                         assignContactModalSpinner ? <div className={styles.formSpinner}>
@@ -731,7 +744,7 @@ const CsvCompare: NextPage = (props: any) => {
             </Dialog>
 
             {/* Save Contact Details Modal */}
-            <Dialog showHeader={false} contentClassName={styles.modelsCustomStyles} maskClassName={styles.dialogMask} visible={saveContactModal} style={{ width: '500px', }} onHide={() => ''}>
+            {/* <Dialog showHeader={false} onMaskClick={saveContactCloseHandler} contentClassName={styles.modelsCustomStyles} maskClassName={styles.dialogMask} visible={saveContactModal} style={{ width: '500px', }} onHide={() => ''}>
                 <div className={styles.replaceDataModal}>
                     <h5>Save Contact Details</h5>
                     <div className={styles.contactDetails}>
@@ -747,7 +760,7 @@ const CsvCompare: NextPage = (props: any) => {
                         </div>
                     </div>
                 </div>
-            </Dialog>
+            </Dialog> */}
 
         </DashboardLayout>
     )
