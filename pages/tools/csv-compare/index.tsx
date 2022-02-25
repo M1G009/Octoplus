@@ -146,7 +146,9 @@ const CsvCompare: NextPage = (props: any) => {
                 setTotalRecords(0);
             } else {
                 setCompareData(data.data[0]);
-                setTotalRecords(data.data[0].length);
+                console.log(data.data[1][0].count);
+                
+                setTotalRecords(data.data[1][0].count);
             }
 
 
@@ -482,28 +484,41 @@ const CsvCompare: NextPage = (props: any) => {
                                         {
                                             compareData && compareData.length ?
                                                 compareData.map((el, i) => {
-                                                    if (el.total_rows > el.fixed) {
-                                                        return <tr key={"compareTable" + i}>
-                                                            <td>{el.compare_name}</td>
-                                                            <td>{el.csv_name}</td>
-                                                            <td><MultiProgressBar complete={el.work_progress.complete} progress={el.work_progress.progress} ignored={el.work_progress.ignored} /></td>
-                                                            <td>
-                                                                <div className='p-d-flex'>
-                                                                    {
-                                                                        el.is_active == "Y" ?
-                                                                            <>
-                                                                                <button className={layoutStyles.blueTextBtn + " p-d-flex p-ai-center"} onClick={() => router.push(`/csvreport?id=${el._id}`)}><FaRegEye className='p-mr-1' /> <span>Reports</span></button>
-                                                                                <button className={layoutStyles.blueTextBtn + " p-d-flex p-ai-center"} onClick={() => compareCsvDialogHandler(el._id, el.is_active)}><MdDashboard className='p-mr-1' /> <span>Dashboard</span></button>
-                                                                            </>
-                                                                            :
-                                                                            <button className={layoutStyles.blueTextBtn + " p-d-flex p-ai-center"} onClick={() => compareCsvDialogHandler(el._id, el.is_active)}><MdCompare className='p-mr-1' /> <span>Continue comparing</span></button>
-                                                                    }
+                                                    return <tr key={"compareTable" + i}>
+                                                        <td>
+                                                            {
+                                                                el.total_rows > el.fixed ?
+                                                                    el.compare_name
+                                                                    :
+                                                                    <>
+                                                                        {el.compare_name}
+                                                                        <span className={styles.completeTag}>Completed</span>
+                                                                    </>
+                                                            }
+                                                        </td>
+                                                        <td>{el.csv_name}</td>
+                                                        <td><MultiProgressBar complete={el.work_progress.complete} progress={el.work_progress.progress} ignored={el.work_progress.ignored} /></td>
+                                                        <td>
+                                                            <div className='p-d-flex'>
+                                                                {
+                                                                    el.is_active == "Y" ?
+                                                                        <>
+                                                                            <button className={layoutStyles.blueTextBtn + " p-d-flex p-ai-center"} onClick={() => router.push(`/csvreport?id=${el._id}`)}><FaRegEye className='p-mr-1' /> <span>Reports</span></button>
 
-                                                                    <button className={layoutStyles.customRedFontbtn + " p-d-flex p-ai-center"} onClick={() => deleteCsvDialogHandler(el._id)}><FaRegTrashAlt className='p-mr-1' /> <span>Delete</span></button>
-                                                                </div>
-                                                            </td>
-                                                        </tr>
-                                                    }
+                                                                            {
+                                                                                el.total_rows > el.fixed ?
+                                                                                    <button className={layoutStyles.blueTextBtn + " p-d-flex p-ai-center"} onClick={() => compareCsvDialogHandler(el._id, el.is_active)}><MdDashboard className='p-mr-1' /> <span>Dashboard</span></button>
+                                                                                    : ""
+                                                                            }
+                                                                        </>
+                                                                        :
+                                                                        <button className={layoutStyles.blueTextBtn + " p-d-flex p-ai-center"} onClick={() => compareCsvDialogHandler(el._id, el.is_active)}><MdCompare className='p-mr-1' /> <span>Continue comparing</span></button>
+                                                                }
+
+                                                                <button className={layoutStyles.customRedFontbtn + " p-d-flex p-ai-center"} onClick={() => deleteCsvDialogHandler(el._id)}><FaRegTrashAlt className='p-mr-1' /> <span>Delete</span></button>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
                                                 })
                                                 :
                                                 <tr>

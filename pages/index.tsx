@@ -113,6 +113,7 @@ const Dashboard: NextPage = () => {
   const [contacts, setContacts] = useState<any[]>([]);
   const [showFieldsData, setShowFieldsData] = useState<any>(null);
   const [replaceColumn, setReplaceColumn] = useState(true)
+  const [registryId, setRegistryId] = useState('')
 
   const fetchAllContact = async (page: number, limit: number, filter: any, search: string, sort: any) => {
     try {
@@ -185,6 +186,7 @@ const Dashboard: NextPage = () => {
         setContacts(data.data.registry);
         setShowFieldsData(data.data.show)
         setTotalRecords(data.data.total_rows)
+        setRegistryId(data.data.registry_id)
       }
       setCreateContactTableSpinner(false)
     } catch (err) {
@@ -794,6 +796,11 @@ const Dashboard: NextPage = () => {
     setInitialValues(initialFields)
   }
 
+  const originalDetailsHandler = () => {
+    console.log(editContactRowId);
+    return router.push(`/tools/csv-compare/restore?registry_id=${registryId}&row_id=${editContactRowId}`);
+  }
+
   return (
     <DashboardLayout sidebar={false}>
       <ToastContainer
@@ -968,11 +975,11 @@ const Dashboard: NextPage = () => {
                               </div>
                             )}
                           />
-                          <div className="p-d-flex p-ai-center p-mt-4">
+                          <div className="p-d-flex p-ai-center p-mt-4 p-jc-end">
                             {
-                              contactDataUpdated && !viewData ? <button type="button" className={layoutStyles.customBluebtn}>See original details</button> : null
+                              viewData ? <button type="button" className={layoutStyles.customBluebtn} onClick={() => originalDetailsHandler()}>See Version History</button> : null
                             }
-                            <div className="p-ml-auto">
+                            <div className="">
                               {
                                 !viewData ? <button type='submit' className={layoutStyles.customBlueBgbtn}>Save</button> : ''
                               }

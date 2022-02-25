@@ -24,6 +24,7 @@ import {
     Legend,
 } from 'chart.js';
 import toast from "../../components/Toast";
+import { jsPDF } from "jspdf";
 
 // Style and Component Imports
 import CustomPagination from '../../components/CustomPagination'
@@ -76,7 +77,6 @@ const CsvCompare: NextPage = (props: any) => {
     prevNewDate.setDate(prevNewDate.getDate() - 7)
 
     const [rangeDate, setRangeDate] = useState<Date[] | undefined>([prevNewDate, currentNewDate]);
-    const [exportReportModal, setExportReportModal] = useState(false);
     const [assignData, setAssignData] = useState<assignRows[]>()
     const [graphBox, setGraphBox] = useState(false)
     const [chartData, setChartData] = useState<chartData[]>([])
@@ -126,7 +126,7 @@ const CsvCompare: NextPage = (props: any) => {
                     data: JSON.stringify(query),
                     headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
                 });
-                
+
                 setChartData(data.data[0].chart);
                 setAssigneeIds(data.data[0].username)
                 setAssignData(data.data[0].data)
@@ -198,6 +198,24 @@ const CsvCompare: NextPage = (props: any) => {
         return <Dropdown value={e.value} options={e.options} onChange={(event) => e.onChange(event.originalEvent, event.value)} className="p-ml-2" style={{ lineHeight: 1 }} />;
     }
 
+    const exportPdfHandler = async () => {
+        const doc = new jsPDF("p", "mm", "a4");
+        let el = document.getElementById('forPdf')
+
+        const elementHandlers = {
+            '#ignorePDF': (element :any, renderer: any)=>{
+              return true
+            }
+          }
+        if (typeof (el) === 'object' && el !== null) {
+            const width = 170
+            await doc.html(el, { width })
+            console.log(doc);
+            
+            // doc.save('sample.pdf')
+        }
+    }
+
     return (
         <DashboardLayout sidebar={false}>
             <ToastContainer
@@ -218,7 +236,7 @@ const CsvCompare: NextPage = (props: any) => {
                     </div>
                 </div>
             </div>
-            <div className={layoutStyles.box}>
+            <div className={layoutStyles.box} id="forPdf">
                 <div className={layoutStyles.headContentBox + " p-mb-5"}>
                     <div className={layoutStyles.head}>
                         <div className={'p-d-flex p-ai-center ' + styles.reportHead}>
@@ -229,7 +247,7 @@ const CsvCompare: NextPage = (props: any) => {
                         </div>
                         <div>
                             <Calendar dateFormat="dd/mm/yy" id="navigatorstemplate" value={rangeDate} selectionMode="range" onChange={(e: any) => setRangeDate(e.value)} monthNavigator yearNavigator yearRange="2010:2030" monthNavigatorTemplate={monthNavigatorTemplate} yearNavigatorTemplate={yearNavigatorTemplate} showIcon />
-                            <button className={layoutStyles.customBlueBgbtn} onClick={() => setExportReportModal(true)}>Export Report</button>
+                            <button className={layoutStyles.customBlueBgbtn} onClick={() => exportPdfHandler()}>Export Report</button>
                         </div>
                     </div>
                     <div className={styles.comparisonTableBox}>
@@ -312,24 +330,6 @@ const CsvCompare: NextPage = (props: any) => {
                         : null
                 }
             </div>
-
-            {/* Export Report Modal */}
-            <Dialog showHeader={false} contentClassName={styles.modelsCustomStyles} maskClassName={styles.dialogMask} visible={exportReportModal} style={{ width: '500px', }} onHide={() => ''}>
-                <div className={styles.replaceDataModal}>
-                    <h5>Export Report</h5>
-                    <div className={styles.contactDetails}>
-                        <div className={styles.textBox}>
-                            <p className='p-m-auto'>
-                                Choose for export type
-                            </p>
-                        </div>
-                        <div className='p-mt-4 p-text-center'>
-                            <button className={layoutStyles.customBluebtn} onClick={() => setExportReportModal(false)}>Export in PDF</button>
-                            <button className={layoutStyles.customBluebtn} onClick={() => setExportReportModal(false)}>Export in CSV</button>
-                        </div>
-                    </div>
-                </div>
-            </Dialog>
 
         </DashboardLayout>
     )

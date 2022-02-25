@@ -60,6 +60,17 @@ $lightBlue: #2236f1;
                             outline: none;
                         }
                     }
+
+                    .completeTag {
+                        background-color: #1cc723;
+                        padding: 3px 10px;
+                        border-radius: 50px;
+                        color: #ffffff;
+                        font-size: 12px;
+                        margin-left: 5px;
+                        transform: translate(0px, 0px);
+                        display: inline-block;
+                    }
                 }
 
                 &:last-child {
@@ -590,6 +601,10 @@ $lightBlue: #2236f1;
                 }
             }
         }
+    }
+
+    &.restore{
+        justify-content: center;
     }
 }
 

@@ -135,6 +135,7 @@ const CsvCompare: NextPage = (props: any) => {
                 window.localStorage.removeItem('loginUserdata');
                 return router.push('/auth');
             }
+            
             setDashBoardSpinner(true);
 
             const { data } = await service({
@@ -215,34 +216,50 @@ const CsvCompare: NextPage = (props: any) => {
 
             if (data.data.length) {
                 let allData = data.data[0];
+                let checkActive: any = Object.keys(allData).find(el => allData[el].duplicate > 0)
 
                 let newArray: any = [];
-                Object.keys(allData).map((name, i) => {
-                    if (!activeColumn) {
-                        if (i == 0) {
-                            setactiveColumn(name)
-                            return newArray.push({ name, ...allData[name], is_active: true })
-                        } else {
-                            return newArray.push({ name, ...allData[name], is_active: false })
+
+                if (!activeColumn) {
+                    Object.keys(allData).map((name, i) => {
+                        if (checkActive) {
+                            if (name == checkActive) {
+                                setactiveColumn(name)
+                                return newArray.push({ name, ...allData[name], is_active: true })
+                            } else {
+                                return newArray.push({ name, ...allData[name], is_active: false })
+                            }
                         }
-                    } else {
+                    })
+
+                    setCurrentColumn(checkActive);
+                } else {
+                    Object.keys(allData).map((name, i) => {
                         if (name == activeColumn) {
                             setactiveColumn(name)
                             return newArray.push({ name, ...allData[name], is_active: true })
                         } else {
                             return newArray.push({ name, ...allData[name], is_active: false })
                         }
-                    }
-
-                })
+                    })
+                }
 
                 setMainColumns(newArray);
-                setCurrentColumn(newArray[0].name)
+
                 if (ignore) {
-                    await fetchSubColumnsRecord(newArray[0].name, csv_id, true)
+                    if(activeColumn){
+                        await fetchSubColumnsRecord(activeColumn, csv_id, true)
+                    } else {
+                        await fetchSubColumnsRecord(checkActive, csv_id, true)
+                    }
                 } else {
-                    await fetchSubColumnsRecord(newArray[0].name, csv_id)
+                    if(activeColumn){
+                        await fetchSubColumnsRecord(activeColumn, csv_id)
+                    } else {
+                        await fetchSubColumnsRecord(checkActive, csv_id)
+                    }
                 }
+
                 setDashBoardSpinner(false);
             } else {
                 setDashBoardSpinner(false);
@@ -456,11 +473,11 @@ const CsvCompare: NextPage = (props: any) => {
         }
     }
 
-    // const saveContactCloseHandler = (e: any) => {
-    //     if (e.target.classList.contains("p-dialog-mask")) {
-
-    //     }
-    // }
+    const saveContactCloseHandler = (e: any) => {
+        if (e.target.classList.contains("p-dialog-mask")) {
+            setSaveContactModal(false)
+        }
+    }
 
     return (
         <DashboardLayout sidebar={false}>
@@ -744,7 +761,7 @@ const CsvCompare: NextPage = (props: any) => {
             </Dialog>
 
             {/* Save Contact Details Modal */}
-            {/* <Dialog showHeader={false} onMaskClick={saveContactCloseHandler} contentClassName={styles.modelsCustomStyles} maskClassName={styles.dialogMask} visible={saveContactModal} style={{ width: '500px', }} onHide={() => ''}>
+            <Dialog showHeader={false} onMaskClick={saveContactCloseHandler} contentClassName={styles.modelsCustomStyles} maskClassName={styles.dialogMask} visible={saveContactModal} style={{ width: '500px', }} onHide={() => ''}>
                 <div className={styles.replaceDataModal}>
                     <h5>Save Contact Details</h5>
                     <div className={styles.contactDetails}>
@@ -760,7 +777,7 @@ const CsvCompare: NextPage = (props: any) => {
                         </div>
                     </div>
                 </div>
-            </Dialog> */}
+            </Dialog>
 
         </DashboardLayout>
     )
