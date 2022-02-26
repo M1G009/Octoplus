@@ -25,6 +25,7 @@ import {
 } from 'chart.js';
 import toast from "../../components/Toast";
 import { jsPDF } from "jspdf";
+import html2PDF from 'jspdf-html2canvas';
 
 // Style and Component Imports
 import CustomPagination from '../../components/CustomPagination'
@@ -199,20 +200,15 @@ const CsvCompare: NextPage = (props: any) => {
     }
 
     const exportPdfHandler = async () => {
-        const doc = new jsPDF("p", "mm", "a4");
         let el = document.getElementById('forPdf')
 
-        const elementHandlers = {
-            '#ignorePDF': (element :any, renderer: any)=>{
-              return true
-            }
-          }
-        if (typeof (el) === 'object' && el !== null) {
-            const width = 170
-            await doc.html(el, { width })
-            
-            doc.save('sample.pdf')
-        }
+        html2PDF(el, {
+            jsPDF: {
+                format: 'a4',
+            },
+            imageType: 'image/jpeg',
+            output: 'report.pdf'
+        });
     }
 
     return (
