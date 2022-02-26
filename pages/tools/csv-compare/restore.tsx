@@ -45,10 +45,8 @@ export interface subColumns {
 
 const CsvCompare: NextPage = (props: any) => {
     const router = useRouter();
-    const [registryEntries, setRegistryEntries] = useState<any[]>([]);
-    const [csvdata, setCsvdata] = useState<any[]>([]);
-    const [csvId, setCsvId] = useState([]);
-    const [csvRowId, setCsvRowId] = useState([]);
+    const [restoreData, setRestoreData] = useState([])
+    const [currentData, setCurrentData] = useState<any>('')
     const [registryId, setRegistryId] = useState([]);
     const [registryRowId, setRegistryRowId] = useState([]);
     const [dashBoardSpinner, setDashBoardSpinner] = useState(false);
@@ -82,11 +80,10 @@ const CsvCompare: NextPage = (props: any) => {
                             data: JSON.stringify({ registry_id, row_id }),
                             headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
                         });
-
-                        setRegistryEntries(data.data[0][0].registry)
-                        setCsvdata(data.data[0][0].csv)
-                        setCsvId(data.data[0][0].csv_id)
-                        setCsvRowId(data.data[0][0].csv[0].id)
+                        if (data.data.length) {
+                            setRestoreData(data.data[0])
+                            setCurrentData(data.data[0][0])
+                        }
                         setDashBoardSpinner(false)
                     } catch (err) {
                         setDashBoardSpinner(false)
@@ -110,14 +107,16 @@ const CsvCompare: NextPage = (props: any) => {
                 window.localStorage.removeItem('loginUserdata');
                 return router.push('/auth');
             }
-            
+
             setDashBoardSpinner(true)
-            const { data } = await service({
-                url: `https://octoplusapi.herokuapp.com/restoredata`,
-                method: 'POST',
-                data: JSON.stringify({ registry_id: registryId, row_id: registryRowId, csv_id: csvId, csv_row_id: csvRowId }),
-                headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
-            });
+            if (currentData) {
+                const { data } = await service({
+                    url: `https://octoplusapi.herokuapp.com/restoredata`,
+                    method: 'POST',
+                    data: JSON.stringify({ registry_id: registryId, row_id: registryRowId, csv_id: currentData.csv_id, csv_row_id: currentData.csv[0].id }),
+                    headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
+                });
+            }
             setDashBoardSpinner(false)
             await toast({ type: "success", message: "Data Restored" });
             router.push('/')
@@ -147,6 +146,13 @@ const CsvCompare: NextPage = (props: any) => {
             accept: () => restoreColumnHandler()
         });
     }
+
+    const activeRestoreDataHandler = (id: string) => {
+        let selectedData = restoreData.find((el: any) => el._id == id);
+        setCurrentData(selectedData);
+
+    }
+
 
     return (
         <DashboardLayout sidebar={false}>
@@ -195,15 +201,20 @@ const CsvCompare: NextPage = (props: any) => {
                                         }
                                     </div> */}
                                     <div className={styles.bottomBox}>
-                                        <div className={styles.titleText}>
+                                        <div className={styles.titleText + " " + styles.restoreBy}>
                                             <h6>
                                                 Registry Database
                                             </h6>
+
+                                            <div className={styles.restoreBox}>
+                                                {currentData.created_date ? <p>Created at:<br /> <span>{currentData.created_date}</span></p> : ""}
+                                                {currentData.restore_by ? <p className='p-m-0'>Created by:<br /> <span>{currentData.restore_by}</span></p> : ""}
+                                            </div>
                                         </div>
                                         <div className={styles.dataBox + " customDashboardRadio " + styles.registryDataBox}>
                                             {
-                                                registryEntries && registryEntries.length ?
-                                                    registryEntries.map((el, i) => {
+                                                currentData && currentData.registry.length ?
+                                                    currentData.registry.map((el: any, i: any) => {
 
                                                         return <div className='p-mx-3' key={"registrydataP" + i}>
                                                             {
@@ -228,8 +239,8 @@ const CsvCompare: NextPage = (props: any) => {
                                         </div>
                                         <div className={styles.dataBox + " customDashboardRadio " + styles.csvDataBox}>
                                             {
-                                                csvdata && csvdata.length ?
-                                                    csvdata.map((el, i) => {
+                                                currentData && currentData.csv.length ?
+                                                    currentData.csv.map((el: any, i: any) => {
 
                                                         return <div className='p-mx-3' key={"csvdataP" + i}>
                                                             {
@@ -253,6 +264,30 @@ const CsvCompare: NextPage = (props: any) => {
                                     <button type='button' className={layoutStyles.customDarkBgbtn} onClick={() => { ignoreMappingDialogHandler() }} >Ignore</button>
 
                                     <button type='button' onClick={() => { restoreDialogHandler() }} className={layoutStyles.customBlueBgbtn}>Restore</button>
+                                </div>
+                            </div>
+                            <div className={styles.restoresPoints}>
+                                <h4>Version History</h4>
+                                <div className={styles.restoreBtnBox}>
+                                    {
+                                        restoreData && restoreData.length ?
+                                            restoreData.map((el: any, i: number) => {
+
+                                                if (el._id == currentData._id) {
+                                                    return <button key={"restoreBtn" + i} className={styles.active}>
+                                                        <span>{el.restore_by}</span>
+                                                        <span>{el.created_date}</span>
+                                                    </button>
+                                                } else {
+                                                    return <button key={"restoreBtn" + i} onClick={() => activeRestoreDataHandler(el._id)}>
+                                                        <span>{el.restore_by}</span>
+                                                        <span>{el.created_date}</span>
+                                                    </button>
+                                                }
+
+                                            })
+                                            : ""
+                                    }
                                 </div>
                             </div>
                         </div>

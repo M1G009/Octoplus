@@ -17,7 +17,7 @@ import { ToastContainer } from "react-toastify";
 import toast from "../../components/Toast";
 import styles from '../../styles/Auth.module.scss'
 import Layout from '../../components/layout'
-import Logo from '../../public/images/logo_authentication.svg'
+import Logo from '../../public/images/logo-black.png'
 import { withAuthSync } from '../../utils/auth'
 
 // Interface/Helper Imports

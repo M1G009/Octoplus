@@ -114,6 +114,7 @@ const Dashboard: NextPage = () => {
   const [showFieldsData, setShowFieldsData] = useState<any>(null);
   const [replaceColumn, setReplaceColumn] = useState(true)
   const [registryId, setRegistryId] = useState('')
+  const [restoreCheck, setRestoreCheck] = useState(false)
 
   const fetchAllContact = async (page: number, limit: number, filter: any, search: string, sort: any) => {
     try {
@@ -267,8 +268,8 @@ const Dashboard: NextPage = () => {
   });
 
   const replaceValueSchema = yup.object().shape({
-    replace_from: yup.string().trim().required('Please enter Select data'),
-    replace_to: yup.string().trim().required('Please enter Change to'),
+    replace_from: yup.string().trim().required('Please enter select data'),
+    replace_to: yup.string().trim().required('Please enter change to'),
     column: yup.string()
   });
 
@@ -432,7 +433,7 @@ const Dashboard: NextPage = () => {
         }
       } else {
         let parseData = JSON.parse(getData);
-        
+
         if (Object.keys(parseData).length) {
           if (editContactRowId) {
             let editObj = Object.assign(parseData, { "row_id": editContactRowId });
@@ -538,19 +539,54 @@ const Dashboard: NextPage = () => {
   }
 
   const editContactFiledHandler = async (id: any, view: Boolean) => {
-    if (view) {
-      setEditData(false);
-      setViewData(true);
-    } else {
-      setViewData(false);
-      setEditData(true);
+    try {
+      setRestoreCheck(false);
+      if (view) {
+        setEditData(false);
+        setViewData(true);
+      } else {
+        setViewData(false);
+        setEditData(true);
+      }
+      let copyObj = [...contacts].slice().find(el => el.id == id);
+      var checkId = Object.assign({}, copyObj);
+      setEditContactRowId(id);
+      delete checkId.id;
+      setInitialValues(checkId);
+      setCreateNewContactModal(true);
+
+      if (view) {
+        let authToken = await window.localStorage.getItem('authToken');
+
+        if (!authToken) {
+          window.localStorage.removeItem("authToken")
+          window.localStorage.removeItem("ValidUser")
+          window.localStorage.removeItem('loginUserdata');
+          return router.push('/auth');
+        }
+
+        setCreateContactSpinner(true)
+
+        let { data } = await service({
+          url: `https://octoplusapi.herokuapp.com/orignal`,
+          method: 'POST',
+          data: JSON.stringify({ registry_id: registryId, row_id: id }),
+          headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
+        });
+
+        if (data.data) {
+          if(data.data[0][0].csv.length && data.data[0][0].registry.length){
+            setRestoreCheck(true);
+          }
+        }
+
+        setCreateContactSpinner(false)
+
+      }
+    } catch (err) {
+      setCreateContactSpinner(false)
     }
-    let copyObj = [...contacts].slice().find(el => el.id == id);
-    var checkId = Object.assign({}, copyObj);
-    setEditContactRowId(id);
-    delete checkId.id;
-    setInitialValues(checkId);
-    setCreateNewContactModal(true);
+
   }
 
   const columnEditHandler = (id: any) => {
@@ -906,13 +942,13 @@ const Dashboard: NextPage = () => {
                             Object.keys(values).map(el => {
                               if (el == "First Name" || el == "Last Name" || el == "Email" || el == "Contact") {
                                 if (!values[el]) {
-                                  if(el == "First Name"){
+                                  if (el == "First Name") {
                                     error[el] = "Please enter first name";
-                                  } else if(el == "Last Name"){
+                                  } else if (el == "Last Name") {
                                     error[el] = "Please enter last name";
-                                  } else if(el == "Email"){
+                                  } else if (el == "Email") {
                                     error[el] = "Please enter email";
-                                  } else if(el == "Contact"){
+                                  } else if (el == "Contact") {
                                     error[el] = "Please enter contact";
                                   } else {
                                     error[el] = "Please enter valid value";
@@ -976,7 +1012,7 @@ const Dashboard: NextPage = () => {
                           />
                           <div className="p-d-flex p-ai-center p-mt-4 p-jc-end">
                             {
-                              viewData ? <button type="button" className={layoutStyles.customBluebtn} onClick={() => originalDetailsHandler()}>See Version History</button> : null
+                              viewData && restoreCheck ? <button type="button" className={layoutStyles.customBluebtn} onClick={() => originalDetailsHandler()}>See Version History</button> : null
                             }
                             <div className="">
                               {

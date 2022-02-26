@@ -1,5 +1,5 @@
 $darkBlue: #091e42;
-$lightBlue: #2236f1;
+$lightBlue: #4753c1;
 
 $XSmall: 425px;
 $Small: 575.98px;
@@ -24,7 +24,7 @@ $XXLarge: 1600px;
         position: relative;
         width: 198px;
         max-width: 100%;
-        aspect-ratio: 198/48;
+        aspect-ratio: 202/ 43;
         margin-bottom: 15px;
 
         @media (max-width: $Large) {
@@ -103,7 +103,7 @@ $XXLarge: 1600px;
                     justify-content: space-between;
 
                     a {
-                        color: #2236f1;
+                        color: $lightBlue;
                     }
                 }
 
@@ -254,7 +254,7 @@ $XXLarge: 1600px;
                     padding: 12px;
                     background: rgba(34, 54, 241, 0.12);
                     border-radius: 4px;
-                    color: #2236f1;
+                    color: $lightBlue;
                     cursor: pointer;
                 }
             }
@@ -264,7 +264,7 @@ $XXLarge: 1600px;
             }
 
             .formMessage {
-                color: #2236f1;
+                color: $lightBlue;
             }
         }
 
