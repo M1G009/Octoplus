@@ -16,7 +16,7 @@ import { confirmDialog } from 'primereact/confirmdialog';
 // 3rd Party Imports
 import { ToastContainer } from "react-toastify";
 import { FaRegEdit, FaRegSave } from "react-icons/fa";
-import { ErrorMessage, Formik, FieldArray, Field, FormikHelpers } from 'formik';
+import { Formik, FieldArray, FormikHelpers } from 'formik';
 import { BsExclamationCircleFill } from "react-icons/bs";
 import toast from "../../../components/Toast";
 
@@ -102,6 +102,7 @@ const CsvCompare: NextPage = (props: any) => {
                 data: JSON.stringify({ "column": columnName, "value": columnValue, csv_id }),
                 headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
             });
+            
             if (data.data) {
                 setRegistryEntries(data.data.registry)
                 setRegistryEntriesCopy(data.data.registry)
@@ -135,7 +136,7 @@ const CsvCompare: NextPage = (props: any) => {
                 window.localStorage.removeItem('loginUserdata');
                 return router.push('/auth');
             }
-            
+
             setDashBoardSpinner(true);
 
             const { data } = await service({
@@ -161,13 +162,24 @@ const CsvCompare: NextPage = (props: any) => {
                     })
                 } else {
                     newArray = data.data.map((obj: any, i: number) => {
-                        if (obj.value == subActiveColumnValue.value && !ignore) {
-                            activeVal = obj.value;
-                            setSubActiveColumnValue(obj)
-                            return { ...obj, "active": true }
+                        if (!ignore) {
+                            if (obj.value == subActiveColumnValue.value) {
+                                activeVal = obj.value;
+                                setSubActiveColumnValue(obj)
+                                return { ...obj, "active": true }
+                            } else {
+                                return { ...obj, "active": false }
+                            }
                         } else {
-                            return { ...obj, "active": false }
+                            if (i == 0) {
+                                activeVal = obj.value;
+                                setSubActiveColumnValue(obj)
+                                return { ...obj, "active": true }
+                            } else {
+                                return { ...obj, "active": false }
+                            }
                         }
+
                     })
                 }
 
@@ -247,13 +259,13 @@ const CsvCompare: NextPage = (props: any) => {
                 setMainColumns(newArray);
 
                 if (ignore) {
-                    if(activeColumn){
+                    if (activeColumn) {
                         await fetchSubColumnsRecord(activeColumn, csv_id, true)
                     } else {
                         await fetchSubColumnsRecord(checkActive, csv_id, true)
                     }
                 } else {
-                    if(activeColumn){
+                    if (activeColumn) {
                         await fetchSubColumnsRecord(activeColumn, csv_id)
                     } else {
                         await fetchSubColumnsRecord(checkActive, csv_id)

@@ -797,7 +797,6 @@ const Dashboard: NextPage = () => {
   }
 
   const originalDetailsHandler = () => {
-    console.log(editContactRowId);
     return router.push(`/tools/csv-compare/restore?registry_id=${registryId}&row_id=${editContactRowId}`);
   }
 

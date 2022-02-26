@@ -210,7 +210,6 @@ const CsvCompare: NextPage = (props: any) => {
         if (typeof (el) === 'object' && el !== null) {
             const width = 170
             await doc.html(el, { width })
-            console.log(doc);
             
             doc.save('sample.pdf')
         }

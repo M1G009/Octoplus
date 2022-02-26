@@ -110,7 +110,6 @@ const CsvCompare: NextPage = (props: any) => {
                 window.localStorage.removeItem('loginUserdata');
                 return router.push('/auth');
             }
-            console.log(JSON.stringify({ registry_id: registryRowId, row_id: registryId, csv_id: csvId, csv_row_id: csvRowId }));
             
             setDashBoardSpinner(true)
             const { data } = await service({

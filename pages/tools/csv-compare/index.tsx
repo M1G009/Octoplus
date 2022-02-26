@@ -146,7 +146,6 @@ const CsvCompare: NextPage = (props: any) => {
                 setTotalRecords(0);
             } else {
                 setCompareData(data.data[0]);
-                console.log(data.data[1][0].count);
                 
                 setTotalRecords(data.data[1][0].count);
             }
