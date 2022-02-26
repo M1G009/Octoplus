@@ -212,9 +212,10 @@ const CsvCompare: NextPage = (props: any) => {
                                             </div>
                                         </div>
                                         <div className={styles.dataBox + " customDashboardRadio " + styles.registryDataBox}>
+                                            {console.log(currentData)}
                                             {
-                                                currentData && currentData.registry.length ?
-                                                    currentData.registry.map((el: any, i: any) => {
+                                                currentData && currentData.csv.length ?
+                                                    currentData.csv.map((el: any, i: any) => {
 
                                                         return <div className='p-mx-3' key={"registrydataP" + i}>
                                                             {
@@ -234,13 +235,13 @@ const CsvCompare: NextPage = (props: any) => {
                                         </div>
                                         <div className={styles.titleText}>
                                             <h6>
-                                                CSV File Data
+                                                Previous Version
                                             </h6>
                                         </div>
                                         <div className={styles.dataBox + " customDashboardRadio " + styles.csvDataBox}>
                                             {
-                                                currentData && currentData.csv.length ?
-                                                    currentData.csv.map((el: any, i: any) => {
+                                                currentData && currentData.registry.length ?
+                                                    currentData.registry.map((el: any, i: any) => {
 
                                                         return <div className='p-mx-3' key={"csvdataP" + i}>
                                                             {

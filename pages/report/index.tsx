@@ -24,8 +24,8 @@ import {
     Legend,
 } from 'chart.js';
 import toast from "../../components/Toast";
+import html2canvas from 'html2canvas';
 import { jsPDF } from "jspdf";
-import html2PDF from 'jspdf-html2canvas';
 
 // Style and Component Imports
 import CustomPagination from '../../components/CustomPagination'
@@ -201,14 +201,19 @@ const CsvCompare: NextPage = (props: any) => {
 
     const exportPdfHandler = async () => {
         let el = document.getElementById('forPdf')
+        if (el) {
+            html2canvas(el).then(canvas => {
+                // document.body.appendChild(canvas)
+                console.log(canvas);
 
-        html2PDF(el, {
-            jsPDF: {
-                format: 'a4',
-            },
-            imageType: 'image/jpeg',
-            output: 'report.pdf'
-        });
+                const imgData: any = canvas.toDataURL('image/png');
+                const pdf = new jsPDF();
+                pdf.addImage(imgData, 'JPEG', 0, 0, 210, 297);
+                // pdf.output('dataurlnewwindow');
+                pdf.save("report.pdf");
+
+            });
+        }
     }
 
     return (
