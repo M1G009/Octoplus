@@ -80,9 +80,10 @@ const CsvCompare: NextPage = (props: any) => {
                             data: JSON.stringify({ registry_id, row_id }),
                             headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
                         });
+
                         if (data.data.length) {
-                            setRestoreData(data.data[0])
-                            setCurrentData(data.data[0][0])
+                            setRestoreData(data.data)
+                            setCurrentData(data.data[0])
                         }
                         setDashBoardSpinner(false)
                     } catch (err) {
@@ -95,8 +96,7 @@ const CsvCompare: NextPage = (props: any) => {
         checkQuery();
 
     }, [])
-
-
+    
     const restoreColumnHandler = async () => {
         try {
             let authToken = await window.localStorage.getItem('authToken');
@@ -113,7 +113,7 @@ const CsvCompare: NextPage = (props: any) => {
                 const { data } = await service({
                     url: `https://octoplusapi.herokuapp.com/restoredata`,
                     method: 'POST',
-                    data: JSON.stringify({ registry_id: registryId, row_id: registryRowId, csv_id: currentData.csv_id, csv_row_id: currentData.csv[0].id }),
+                    data: JSON.stringify({ registry_id: registryId, row_id: registryRowId }),
                     headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
                 });
             }
@@ -212,24 +212,18 @@ const CsvCompare: NextPage = (props: any) => {
                                             </div>
                                         </div>
                                         <div className={styles.dataBox + " customDashboardRadio " + styles.registryDataBox}>
-                                            {console.log(currentData)}
                                             {
-                                                currentData && currentData.csv.length ?
-                                                    currentData.csv.map((el: any, i: any) => {
-
-                                                        return <div className='p-mx-3' key={"registrydataP" + i}>
-                                                            {
-                                                                Object.keys(el).map((item, index) => {
-                                                                    return <div key={"registrydata" + i + index} className='p-d-flex p-ai-center p-mb-2'>
-                                                                        <label htmlFor="">{item}</label>
-                                                                        <p>{el[item]}</p>
-                                                                    </div>
-                                                                })
-                                                            }
-                                                        </div>
-
-
-                                                    })
+                                                currentData && currentData.current ?
+                                                    <div className='p-mx-3'>
+                                                        {
+                                                            Object.keys(currentData.current).map((item, index) => {
+                                                                return <div key={"registrydata" + index} className='p-d-flex p-ai-center p-mb-2'>
+                                                                    <label htmlFor="">{item}</label>
+                                                                    <p>{currentData.current[item]}</p>
+                                                                </div>
+                                                            })
+                                                        }
+                                                    </div>
                                                     : ""
                                             }
                                         </div>
@@ -240,8 +234,8 @@ const CsvCompare: NextPage = (props: any) => {
                                         </div>
                                         <div className={styles.dataBox + " customDashboardRadio " + styles.csvDataBox}>
                                             {
-                                                currentData && currentData.registry.length ?
-                                                    currentData.registry.map((el: any, i: any) => {
+                                                currentData && currentData.previous.length ?
+                                                    currentData.previous.map((el: any, i: any) => {
 
                                                         return <div className='p-mx-3' key={"csvdataP" + i}>
                                                             {

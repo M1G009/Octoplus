@@ -539,7 +539,7 @@ const Dashboard: NextPage = () => {
   }
 
   const editContactFiledHandler = async (id: any, view: Boolean) => {
-    try {
+    try {      
       setRestoreCheck(false);
       if (view) {
         setEditData(false);
@@ -554,7 +554,7 @@ const Dashboard: NextPage = () => {
       delete checkId.id;
       setInitialValues(checkId);
       setCreateNewContactModal(true);
-
+      
       if (view) {
         let authToken = await window.localStorage.getItem('authToken');
 
@@ -573,13 +573,13 @@ const Dashboard: NextPage = () => {
           data: JSON.stringify({ registry_id: registryId, row_id: id }),
           headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
         });
-
+        
         if (data.data) {
-          if(data.data[0][0].csv.length && data.data[0][0].registry.length){
+          if(data.data[0].previous.length && data.data[0].current){
             setRestoreCheck(true);
           }
         }
-
+        
         setCreateContactSpinner(false)
 
       }
