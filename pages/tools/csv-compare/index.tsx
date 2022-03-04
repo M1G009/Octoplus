@@ -112,7 +112,7 @@ const CsvCompare: NextPage = (props: any) => {
         registry: yup.string().required('Please enter Change to'),
         csv_file: yup.mixed().required("Please upload CSV file").test("type", "Only CSV format is accepted", (value) => {
             return value && (
-                value.type === "application/vnd.ms-excel" || "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                value.type === "application/vnd.ms-excel"
             );
         }),
         csv_name: yup.string().required('Please enter csv name')
