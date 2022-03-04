@@ -111,6 +111,7 @@ const CsvCompare: NextPage = (props: any) => {
         compare_name: yup.string().required('Please enter Select data'),
         registry: yup.string().required('Please enter Change to'),
         csv_file: yup.mixed().required("Please upload CSV file").test("type", "Only CSV format is accepted", (value) => {
+            console.log(value.type);
             return value && (
                 value.type === "application/vnd.ms-excel" || "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
             );
@@ -157,7 +158,6 @@ const CsvCompare: NextPage = (props: any) => {
             return await toast({ type: "error", message: err });
         }
     }
-
 
     useEffect(() => {
         async function fetchAllContactData() {
