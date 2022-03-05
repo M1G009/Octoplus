@@ -118,7 +118,7 @@ const Dashboard: NextPage = () => {
         method: 'GET',
         headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
       });
-
+      console.log(data);
       if (data) {
         if (!data.data && !data.data.registry && !data.data.registry.length) {
           setNoDataModal(true)
@@ -555,7 +555,7 @@ const Dashboard: NextPage = () => {
           data: JSON.stringify({ registry_id: registryId, row_id: id }),
           headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
         });
-
+        
         if (data.data) {
           if (data.data[0].previous.length && data.data[0].current) {
             setRestoreCheck(true);
@@ -781,6 +781,7 @@ const Dashboard: NextPage = () => {
         data: newCSVForm,
         headers: { 'Content-Type': 'multipart/form-data', 'Authorization': JSON.parse(authToken) }
       });
+      console.log(data);
       
       setNoDataModalSpinner(false);
       setNoDataModal(false)
@@ -788,6 +789,7 @@ const Dashboard: NextPage = () => {
 
     } catch (err) {
       setNoDataModalSpinner(false);
+      setNoDataModal(false)
       return await toast({ type: "error", message: err });
     }
   }
