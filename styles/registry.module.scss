@@ -553,3 +553,20 @@ $lightBlue: #2236f1;
         margin: 0px;
     }
 }
+
+.exclaWarning{
+    text-align: center;
+    margin-top: 0px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 500;
+    font-size: 18px;
+    color: #000000;
+
+    svg{
+        color: #fbc02d;
+        font-size: 22px;
+        margin-right: 10px;
+    }
+}

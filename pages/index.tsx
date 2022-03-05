@@ -19,7 +19,7 @@ import { Column } from 'primereact/column';
 import * as yup from 'yup';
 import { AiOutlineSwap } from "react-icons/ai";
 import { ErrorMessage, Formik, FieldArray, Field, FormikHelpers } from 'formik';
-import { FaSearch } from "react-icons/fa";
+import { FaSearch, FaExclamationTriangle } from "react-icons/fa";
 import { MdClose } from "react-icons/md";
 import { InputText } from 'primereact/inputtext';
 import { FiFilter } from "react-icons/fi";
@@ -1253,6 +1253,7 @@ const Dashboard: NextPage = () => {
                       <div className={styles.CSVUpload}>
                         <h5>Upload CSV</h5>
                         <div className={styles.inputFields}>
+                          <p className={styles.exclaWarning}><FaExclamationTriangle /> Please upload a CSV file to create your first Registry database.</p>
                           <div className="p-text-center">
                             <label
                               htmlFor="CSVFileUpload"
