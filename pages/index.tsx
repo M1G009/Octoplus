@@ -37,38 +37,7 @@ import styles from '../styles/registry.module.scss'
 
 // Interface/Helper Imports
 import service from '../helper/api/api';
-
-
-export interface AddNewFiled {
-  column: string;
-  dtype: string;
-}
-
-export interface ReplaceData {
-  replace_from: string,
-  replace_to: string,
-  column: string
-}
-
-export interface DynamicFields {
-  [key: string]: string
-}
-
-export interface columnsHideShowFileds {
-  [key: string]: boolean
-}
-
-export interface TableColumns {
-  id: Number,
-  name: String,
-  editedName: String,
-  hide: Boolean,
-  readonly: Boolean
-}
-
-export interface CSVUpload {
-  file: any
-}
+import { AddNewFiled, ReplaceData, DynamicFields, columnsHideShowFileds, TableColumns, CSVUpload} from '../interface/registry'
 
 const Dashboard: NextPage = () => {
   const router = useRouter();
@@ -78,7 +47,6 @@ const Dashboard: NextPage = () => {
   const [addFiledSpinner, setAddFiledSpinner] = useState(false);
   const [replaceDataSpinner, setReplaceDataSpinner] = useState(false);
   const [settingDataModal, setSettingDataModal] = useState(false);
-  const [contactDataUpdated, setContactDataUpdated] = useState(false);
   const [createContactSpinner, setCreateContactSpinner] = useState(false);
   const [createNewContactModal, setCreateNewContactModal] = useState(false);
   const [deleteColumnModal, setDeleteColumnModal] = useState(false);
@@ -935,7 +903,7 @@ const Dashboard: NextPage = () => {
                       initialValues={initialValues}
                       validate={(values) => {
                         let error: any = {};
-                        if (filterData) {
+                        if (filterData || editData) {
                           return
                         } else {
                           if (!viewData) {

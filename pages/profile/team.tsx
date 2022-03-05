@@ -28,59 +28,8 @@ import styles from '../../styles/profile.module.scss';
 
 // Interface/Helper Imports
 import service from '../../helper/api/api';
+import { InviteFields, RoleData, RoleNames, TeamMember, ICreateRoleScopeData, Scope, IAddScopeData, Access } from '../../interface/profile'
 
-
-
-
-export interface Access {
-  create: boolean;
-  read: boolean;
-  update: boolean;
-  delete: boolean;
-}
-
-export interface IAddScopeData {
-  name: string;
-  slug: string;
-  create: boolean;
-  read: boolean;
-  update: boolean;
-  delete: boolean;
-}
-
-export interface Scope {
-  name: string;
-  slug: string;
-  access: Access;
-}
-
-export interface ICreateRoleScopeData {
-  name: string;
-  scopes: Scope[];
-}
-
-export interface TeamMember {
-  username: string;
-  email: string;
-  user_id: string;
-  role_name: string;
-}
-
-export interface RoleNames {
-  label: string;
-  id: string;
-}
-
-export interface RoleData {
-  _id: string;
-  role: ICreateRoleScopeData;
-}
-
-export interface InviteFields {
-  name: string;
-  email: string;
-  role: RoleNames
-}
 
 const Team: NextPage = (props: any) => {
   const router = useRouter();
@@ -157,7 +106,7 @@ const Team: NextPage = (props: any) => {
         window.localStorage.removeItem('loginUserdata');
         return router.push('/auth');
       }
-
+      setTeamMemberSpinner(true)
       const { data } = await service({
         url: `${process.env.API_BASE_URL}/getusers`,
         method: 'GET',
@@ -167,7 +116,9 @@ const Team: NextPage = (props: any) => {
         return setTeamMember([]);
       }
       setTeamMember(data.data);
+      setTeamMemberSpinner(false)
     } catch (err) {
+      setTeamMemberSpinner(false)
       return toast({ type: "error", message: err });
     }
   }
@@ -549,6 +500,11 @@ const Team: NextPage = (props: any) => {
                             <td>{el.email}</td>
                             <td>
                               {
+                                el.role_name != "Admin" ?
+                                  <Dropdown value={el.role_name} options={roleNames.map(function (el) { return el['label']; })} onChange={(e) => memberRoleUpdateHandler(el.user_id, e.target.value)} />
+                                  : el.role_name
+                              }
+                              {/* {
                                 el.role_name == "Owner" ? el.role_name
                                   :
                                   <select className={styles.roleDropdown} value={el.role_name} onChange={(e) => memberRoleUpdateHandler(el.user_id, e.target.value)}>
@@ -558,7 +514,7 @@ const Team: NextPage = (props: any) => {
                                       })
                                     }
                                   </select>
-                              }
+                              } */}
                             </td>
                           </tr>
                         })
@@ -699,7 +655,7 @@ const Team: NextPage = (props: any) => {
       </div>
 
       {/* Invite People */}
-      <Dialog showHeader={false}  onMaskClick={invitePeopleCloseHandler} contentClassName={styles.invitePeopleModal} visible={invitePeopleModal} style={{ width: '500px', }} onHide={() => ''}>
+      <Dialog showHeader={false} onMaskClick={invitePeopleCloseHandler} contentClassName={styles.invitePeopleModal} visible={invitePeopleModal} style={{ width: '500px', }} onHide={() => ''}>
         <div className={styles.invitePeopleModal}>
           <h5>Invite People</h5>
           <Formik

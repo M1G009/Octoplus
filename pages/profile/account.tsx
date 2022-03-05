@@ -26,59 +26,7 @@ import "react-toastify/dist/ReactToastify.css";
 
 // Interface/Helper Imports
 import service from '../../helper/api/api';
-
-
-export interface Access {
-  create: string;
-  read: string;
-  update: string;
-  delete: string;
-}
-
-export interface Scope {
-  name: string;
-  slug: string;
-  access: Access;
-}
-
-export interface Role {
-  name: string;
-  scopes: Scope[];
-}
-
-export interface ILoginUserData {
-  _id: string;
-  username: string;
-  email: string;
-  country: string;
-  profile_photo: string;
-  IS_BLOCKED: string;
-  phone_number: string;
-  Company: string;
-  Language: string;
-  INVITE_ASSIGN: number;
-  created_date: string;
-  role: Role;
-  modified_date: string;
-}
-
-export interface updatedData {
-  username: string;
-  Company: string;
-  email: string;
-  country: string;
-  phone_number: string;
-  Language: string;
-}
-
-export interface IupdatedObject {
-  username: string;
-  Company: string;
-  email: string;
-  country: string;
-  phone_number: string;
-  Language: string;
-}
+import { ILoginUserData, updatedData } from '../../interface/profile'
 
 const Account: NextPage = () => {
   const router = useRouter();
@@ -219,6 +167,7 @@ const Account: NextPage = () => {
             </div>
             <input type="file" className="p-d-none"
               ref={imageFileRef}
+              accept="image/jpeg, image/png"
               onChange={imageFileChangeHandler} />
             <button className={styles.userImgChange} onClick={imageFileBtnHandler}><FaCamera className="p-mr-1" /> Change Photo Profile</button>
           </div>

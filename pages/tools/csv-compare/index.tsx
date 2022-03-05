@@ -14,7 +14,7 @@ import * as yup from 'yup';
 import { AiOutlineSwap } from "react-icons/ai";
 import { MdCompare, MdDashboard } from "react-icons/md";
 import { FaRegEye, FaRegTrashAlt } from "react-icons/fa";
-import { ErrorMessage, Formik, FieldArray, Field, FormikHelpers } from 'formik';
+import { ErrorMessage, Formik, Field, FormikHelpers } from 'formik';
 import { ToastContainer } from "react-toastify";
 import { FiUpload, FiPlus } from 'react-icons/fi';
 import { confirmDialog } from 'primereact/confirmdialog';
@@ -32,39 +32,11 @@ import MultiProgressBar from '../../../components/MultiProgressBar';
 
 // Interface/Helper Imports
 import service from '../../../helper/api/api';
-
-export interface NewCompareFields {
-    compare_name: string,
-    registry: string,
-    csv_file: any,
-    csv_name: string
-}
-
-export interface AddNewFiled {
-    column: string;
-    dtype: string;
-}
-
-export interface WorkProgress {
-    complete: number;
-    progress: number;
-    ignored: number;
-}
-
-export interface compareData {
-    _id: string;
-    compare_name: string;
-    csv_name: string;
-    work_progress: WorkProgress;
-    is_active: string;
-    total_rows: number;
-    fixed: number;
-}
+import { NewCompareFields, AddNewFiled, compareData } from '../../../interface/tools'
 
 {/* add field button */ }
 const CsvCompare: NextPage = (props: any) => {
     const router = useRouter();
-    const { query } = router;
     const [compareCsvTableSpinner, setCompareCsvTableSpinner] = useState(false)
     const [newCompareModal, setNewCompareModal] = useState(false);
     const [columnMappingModalSpinner, setColumnMappingModalSpinner] = useState(false);
@@ -111,9 +83,8 @@ const CsvCompare: NextPage = (props: any) => {
         compare_name: yup.string().required('Please enter Select data'),
         registry: yup.string().required('Please enter Change to'),
         csv_file: yup.mixed().required("Please upload CSV file").test("type", "Only CSV format is accepted", (value) => {
-            console.log(value.type);
             return value && (
-                value.type === "application/vnd.ms-excel" || "text/csv"
+                value.type === "application/vnd.ms-excel" || value.type === "text/csv"
             );
         }),
         csv_name: yup.string().required('Please enter csv name')
@@ -147,7 +118,7 @@ const CsvCompare: NextPage = (props: any) => {
                 setTotalRecords(0);
             } else {
                 setCompareData(data.data[0]);
-                
+
                 setTotalRecords(data.data[1][0].count);
             }
 

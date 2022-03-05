@@ -69,7 +69,6 @@ const CsvCompare: NextPage = (props: any) => {
     const [totalRecords, setTotalRecords] = useState(1);
     const [currentPage, setCurrentPage] = useState(1);
     const [perPage, setPerPage] = useState(10);
-    const [contacts, setContacts] = useState<any[]>([]);
     const [assigneeIds, setAssigneeIds] = useState([])
     const [assigneeCurrent, setAssigneeCurrent] = useState('')
 
@@ -127,7 +126,6 @@ const CsvCompare: NextPage = (props: any) => {
                     data: JSON.stringify(query),
                     headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
                 });
-
                 setChartData(data.data[0].chart);
                 setAssigneeIds(data.data[0].username)
                 setAssignData(data.data[0].data)
@@ -246,8 +244,8 @@ const CsvCompare: NextPage = (props: any) => {
                             </div>
                         </div>
                         <div>
-                            <Calendar dateFormat="dd/mm/yy" id="navigatorstemplate" value={rangeDate} selectionMode="range" onChange={(e: any) => setRangeDate(e.value)} monthNavigator yearNavigator yearRange="2010:2030" monthNavigatorTemplate={monthNavigatorTemplate} yearNavigatorTemplate={yearNavigatorTemplate} showIcon />
-                            <button className={layoutStyles.customBlueBgbtn} onClick={() => exportPdfHandler()}>Export Report</button>
+                            <Calendar disabled={!assignData || !assignData.length} dateFormat="dd/mm/yy" id="navigatorstemplate" value={rangeDate} selectionMode="range" onChange={(e: any) => setRangeDate(e.value)} monthNavigator yearNavigator yearRange="2010:2030" monthNavigatorTemplate={monthNavigatorTemplate} yearNavigatorTemplate={yearNavigatorTemplate} showIcon />
+                            <button disabled={!assignData || !assignData.length} className={layoutStyles.customBlueBgbtn} onClick={() => exportPdfHandler()}>Export Report</button>
                         </div>
                     </div>
                     <div className={styles.comparisonTableBox}>
@@ -258,7 +256,7 @@ const CsvCompare: NextPage = (props: any) => {
                                 </div> : null
                             } */}
                             {
-                                // contacts.length ?
+                                assignData && assignData.length ?
                                 <table className={styles.comparisonTable}>
                                     <thead>
                                         <tr>
@@ -281,35 +279,14 @@ const CsvCompare: NextPage = (props: any) => {
                                                 </tr>
                                             })
                                         }
-                                        {/* <tr>
-                                            <td>Suryansh</td>
-                                            <td>20</td>
-                                            <td>10 (50%)</td>
-                                            <td>5</td>
-                                            <td>0.5</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Suryansh</td>
-                                            <td>20</td>
-                                            <td>10 (50%)</td>
-                                            <td>5</td>
-                                            <td>0.5</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Suryansh</td>
-                                            <td>20</td>
-                                            <td>10 (50%)</td>
-                                            <td>5</td>
-                                            <td>0.5</td>
-                                        </tr> */}
                                     </tbody>
                                 </table>
-                                // : <p className='p-text-center'>No data found</p>
+                                : <p className='p-text-center'>No data found</p>
                             }
                         </div>
 
                         {
-                            Math.ceil(totalRecords / perPage) >= 1 && contacts.length ?
+                            Math.ceil(totalRecords / perPage) >= 1 && assignData && assignData.length ?
                                 <CustomPagination totalRecords={totalRecords} currentPage={currentPage} perPage={perPage} currentPageHandler={currentPageHandler} perPageHandler={perPageHandler} />
                                 : ''
                         }

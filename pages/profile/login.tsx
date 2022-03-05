@@ -24,12 +24,7 @@ import styles from '../../styles/profile.module.scss';
 
 // Interface/Helper Imports
 import service from '../../helper/api/api';
-
-interface Values {
-  currentpass: string,
-  password: string,
-  confirmpass: string
-}
+import { Values } from '../../interface/profile'
 
 const Login: NextPage = () => {
   const router = useRouter();

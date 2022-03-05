@@ -146,6 +146,7 @@ $lightBlue: #2236f1;
 
     &:disabled {
         opacity: 0.85;
+        pointer-events: none;
     }
 }
 

@@ -34,29 +34,8 @@ import styles from '../../styles/profile.module.scss';
 
 // Interface/Helper Imports
 import service from '../../helper/api/api';
+import { CardFields, GetCardDetails } from '../../interface/profile'
 
-
-
-
-export interface CardFields {
-  Card_name: string;
-  card_number: string;
-  cvv: string;
-  expire_date: string;
-  is_primary: string;
-}
-
-export interface GetCardDetails {
-  _id: string;
-  Card_name: string;
-  card_number: string;
-  cvv: string;
-  expire_date: string;
-  card_type: string;
-  user_id: string;
-  created_date: string;
-  is_primary: string
-}
 
 const Billing: NextPage = () => {
   const router = useRouter();
@@ -68,6 +47,7 @@ const Billing: NextPage = () => {
   const [cardFields, setCardFields] = useState<CardFields>()
   const [getCardDetails, setGetCardDetails] = useState<GetCardDetails[]>([])
   const [invoiceDate, setInvoiceDate] = useState<Date | Date[] | undefined>(new Date());
+  const [paymentMethodSpinner, setPaymentMethodSpinner] = useState(false)
 
 
   const monthsOptions = [
@@ -95,13 +75,16 @@ const Billing: NextPage = () => {
         window.localStorage.removeItem('loginUserdata');
         return router.push('/auth');
       }
+      setPaymentMethodSpinner(true)
       const { data } = await service({
         url: `${process.env.API_BASE_URL}/card_detail`,
         method: 'GET',
         headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
       });
+      setPaymentMethodSpinner(false)
       return setGetCardDetails(data.data)
     } catch (err) {
+      setPaymentMethodSpinner(false)
       return toast({ type: "error", message: err });
     }
   }
@@ -327,6 +310,11 @@ const Billing: NextPage = () => {
           </div>
           <div className={layoutStyles.textBox}>
             <div className={styles.paymentMethod}>
+              {
+                paymentMethodSpinner ? <div className={styles.formSpinner}>
+                  <div className={styles.loading}></div>
+                </div> : null
+              }
               {
                 getCardDetails.length ?
                   getCardDetails.map((card, i) => {
