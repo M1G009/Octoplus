@@ -770,10 +770,10 @@ const Dashboard: NextPage = () => {
         return router.push('/auth');
       }
 
-      let newCSVForm = new FormData();
-      newCSVForm.append('registry', getData);
-
       setNoDataModalSpinner(true);
+      
+      let newCSVForm = new FormData();
+      newCSVForm.append('registry', getData.file);
 
       const { data } = await service({
         url: `https://octoplusapi.herokuapp.com/create_registry`,
@@ -781,7 +781,6 @@ const Dashboard: NextPage = () => {
         data: newCSVForm,
         headers: { 'Content-Type': 'multipart/form-data', 'Authorization': JSON.parse(authToken) }
       });
-      console.log(data);
       
       setNoDataModalSpinner(false);
       setNoDataModal(false)
