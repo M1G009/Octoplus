@@ -37,7 +37,7 @@ import styles from '../styles/registry.module.scss'
 
 // Interface/Helper Imports
 import service from '../helper/api/api';
-import { AddNewFiled, ReplaceData, DynamicFields, columnsHideShowFileds, TableColumns, CSVUpload} from '../interface/registry'
+import { AddNewFiled, ReplaceData, DynamicFields, columnsHideShowFileds, TableColumns, CSVUpload } from '../interface/registry'
 
 const Dashboard: NextPage = () => {
   const router = useRouter();
@@ -83,6 +83,7 @@ const Dashboard: NextPage = () => {
   const [replaceColumn, setReplaceColumn] = useState(true)
   const [registryId, setRegistryId] = useState('')
   const [restoreCheck, setRestoreCheck] = useState(false)
+  const [noCsvError, setNoCsvError] = useState(false)
 
   const fetchAllContact = async (page: number, limit: number, filter: any, search: string, sort: any) => {
     try {
@@ -119,8 +120,21 @@ const Dashboard: NextPage = () => {
       });
 
       if (data) {
-        if (!data.data.length && !data.data.registry) {
+        if (!data.data && !data.data.registry && !data.data.registry.length) {
           setNoDataModal(true)
+        } else if(data.data.registry.length == 1){
+          let singleData = {...data.data.registry[0]}
+          Object.keys(singleData).map(el => {
+            if(el == "id"){
+              delete singleData["id"]
+            } else if(!singleData[el]){
+              delete singleData[el]
+            }
+            if(Object.keys(singleData).length == 0){
+              setNoDataModal(true)
+            }
+          })
+          
         }
         // setColumns
         let withVal = { ...data.data.dtypes };
@@ -507,7 +521,7 @@ const Dashboard: NextPage = () => {
   }
 
   const editContactFiledHandler = async (id: any, view: Boolean) => {
-    try {      
+    try {
       setRestoreCheck(false);
       if (view) {
         setEditData(false);
@@ -522,7 +536,7 @@ const Dashboard: NextPage = () => {
       delete checkId.id;
       setInitialValues(checkId);
       setCreateNewContactModal(true);
-      
+
       if (view) {
         let authToken = await window.localStorage.getItem('authToken');
 
@@ -541,18 +555,19 @@ const Dashboard: NextPage = () => {
           data: JSON.stringify({ registry_id: registryId, row_id: id }),
           headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
         });
-        
+
         if (data.data) {
-          if(data.data[0].previous.length && data.data[0].current){
+          if (data.data[0].previous.length && data.data[0].current) {
             setRestoreCheck(true);
           }
         }
-        
+
         setCreateContactSpinner(false)
 
       }
     } catch (err) {
       setCreateContactSpinner(false)
+      return await toast({ type: "error", message: err });
     }
 
   }
@@ -733,7 +748,9 @@ const Dashboard: NextPage = () => {
 
   const noDataDialogCloseHandler = (e: any) => {
     if (e.target.classList.contains("p-dialog-mask")) {
-      setNoDataModal(false);
+      // setNoDataModal(false);
+      setNoCsvError(true)
+      setTimeout(() => setNoCsvError(false), 3000)
     }
   }
 
@@ -741,8 +758,39 @@ const Dashboard: NextPage = () => {
     setFieldValue("file", e.currentTarget.files[0]);
   }
 
-  const CSVUploadSubmitHandler = (getData: any) => {
-    return router.push('/product');
+  const CSVUploadSubmitHandler = async (getData: any) => {
+    try {
+
+      let authToken = await window.localStorage.getItem('authToken');
+
+      if (!authToken) {
+        window.localStorage.removeItem("authToken")
+        window.localStorage.removeItem("ValidUser")
+        window.localStorage.removeItem('loginUserdata');
+        return router.push('/auth');
+      }
+
+      let newCSVForm = new FormData();
+      newCSVForm.append('registry', getData);
+
+      setNoDataModalSpinner(true);
+
+      const { data } = await service({
+        url: `https://octoplusapi.herokuapp.com/create_registry`,
+        method: 'POST',
+        data: newCSVForm,
+        headers: { 'Content-Type': 'multipart/form-data', 'Authorization': JSON.parse(authToken) }
+      });
+      console.log(data);
+      
+      setNoDataModalSpinner(false);
+      setNoDataModal(false)
+      return await fetchAllContact(currentPage, perPage, filterFields, searchField, sortingField);
+
+    } catch (err) {
+      setNoDataModalSpinner(false);
+      return await toast({ type: "error", message: err });
+    }
   }
 
   const csvFileName = (value: any) => {
@@ -869,7 +917,7 @@ const Dashboard: NextPage = () => {
                 </div> : null
               }
               {
-                contacts.length && showFieldsData ?
+                showFieldsData ?
                   <DataTable className='registryDataTable' value={contacts} removableSort responsiveLayout="scroll" sortField={sortField} sortOrder={sortOrder} onSort={onSortHandler}>
                     <Column header="Id" body={idRegistryHandler}></Column>
                     {
@@ -1209,7 +1257,7 @@ const Dashboard: NextPage = () => {
                               htmlFor="CSVFileUpload"
                               className="button">
                               <FiUpload />
-                              Upload an CSV
+                              Upload a CSV
                             </label>
                             <p className={styles.fileName}>{csvFileName(props.values)}</p>
                             <input id="CSVFileUpload" name="file" type="file" accept=".csv" onChange={(e) => csvFileUploadHandler(e, props.setFieldValue)} className={styles.CSVFileUpload} />
@@ -1217,10 +1265,13 @@ const Dashboard: NextPage = () => {
                             <ErrorMessage name="file">
                               {(msg) => <p className={styles.error}>{msg}</p>}
                             </ErrorMessage>
+                            {
+                              noCsvError ? <p className={styles.error}>Please upload an CSV to upload data into the registry</p> : ""
+                            }
                           </div>
                           <div className="p-d-flex p-ai-center p-mt-4">
                             <div className="p-m-auto">
-                              <button type='button' onClick={() => { setDeleteColumnName(null); setDeleteFromDatabase(false); setNoDataModal(false) }} className={layoutStyles.customBluebtn} >Cancel</button>
+                              {/* <button type='button' onClick={() => { setDeleteColumnName(null); setDeleteFromDatabase(false); setNoDataModal(false) }} className={layoutStyles.customBluebtn} >Cancel</button> */}
                               <button type='submit' className={layoutStyles.customBlueBgbtn}>Upload</button>
                             </div>
                           </div>
