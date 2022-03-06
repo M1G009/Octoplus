@@ -1235,7 +1235,7 @@ const Dashboard: NextPage = () => {
                   validationSchema={yup.object().shape({
                     file: yup.mixed().required("Please upload CSV file").test("type", "Only CSV format is accepted", (value) => {
                       return value && (
-                        value.type === "application/vnd.ms-excel"
+                        value.type === "application/vnd.ms-excel" || value.type === "text/csv"
                       );
                     }),
                   })}
