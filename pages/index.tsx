@@ -34,7 +34,6 @@ import { withProtectSync } from "../utils/protect"
 import DashboardLayout from '../components/DashboardLayout';
 import layoutStyles from '../styles/Home.module.scss';
 import styles from '../styles/registry.module.scss';
-import CreateContact from '../components/dialogs/registry/CreateContact';
 
 // Interface/Helper Imports
 import service from '../helper/api/api';
