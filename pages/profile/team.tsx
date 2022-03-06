@@ -28,7 +28,7 @@ import styles from '../../styles/profile.module.scss';
 
 // Interface/Helper Imports
 import service from '../../helper/api/api';
-import { InviteFields, RoleData, RoleNames, TeamMember, ICreateRoleScopeData, Scope, IAddScopeData, Access } from '../../interface/profile'
+import { InviteFields, RoleData, RoleNames, TeamMember, ICreateRoleScopeData, Scope, InvitedMember } from '../../interface/profile'
 
 
 const Team: NextPage = (props: any) => {
@@ -64,6 +64,7 @@ const Team: NextPage = (props: any) => {
   const [roleNames, setRoleNames] = useState<RoleNames[]>([]);
   const [roleData, setRoleData] = useState<RoleData[]>();
   const [teamMember, setTeamMember] = useState<TeamMember[]>([])
+  const [inviteMember, setInviteMember] = useState<InvitedMember[]>([])
   const [editScopeSpinner, setEditScopeSpinner] = useState(false)
 
   // States Ends
@@ -113,9 +114,12 @@ const Team: NextPage = (props: any) => {
         headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
       });
       if (!data.data.length) {
+        setInviteMember([])
         return setTeamMember([]);
       }
-      setTeamMember(data.data);
+
+      setTeamMember(data.data[0].members);
+      setInviteMember(data.data[0].invited);
       setTeamMemberSpinner(false)
     } catch (err) {
       setTeamMemberSpinner(false)
@@ -504,17 +508,6 @@ const Team: NextPage = (props: any) => {
                                   <Dropdown value={el.role_name} options={roleNames.map(function (el) { return el['label']; })} onChange={(e) => memberRoleUpdateHandler(el.user_id, e.target.value)} />
                                   : el.role_name
                               }
-                              {/* {
-                                el.role_name == "Owner" ? el.role_name
-                                  :
-                                  <select className={styles.roleDropdown} value={el.role_name} onChange={(e) => memberRoleUpdateHandler(el.user_id, e.target.value)}>
-                                    {
-                                      roleNames.map((opt, i) => {
-                                        return <option key={"roleoption" + i} value={opt.label}>{opt.label}</option>
-                                      })
-                                    }
-                                  </select>
-                              } */}
                             </td>
                           </tr>
                         })
@@ -522,6 +515,19 @@ const Team: NextPage = (props: any) => {
                         <tr>
                           <td colSpan={3} align='center'>No data found</td>
                         </tr>
+                    }
+                    {
+                      inviteMember.length ?
+                        inviteMember.map((el, i) => {
+
+                          return <tr key={"team_member" + i}>
+                            <td style={{color: "green"}}>Invited</td>
+                            <td>{el.invited_user}</td>
+                            <td> {el.role_name} </td>
+                          </tr>
+                        })
+                        :
+                        null
                     }
                   </tbody>
                 </table>

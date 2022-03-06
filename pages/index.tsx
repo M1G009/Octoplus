@@ -33,7 +33,8 @@ import CustomPagination from '../components/CustomPagination'
 import { withProtectSync } from "../utils/protect"
 import DashboardLayout from '../components/DashboardLayout';
 import layoutStyles from '../styles/Home.module.scss';
-import styles from '../styles/registry.module.scss'
+import styles from '../styles/registry.module.scss';
+import CreateContact from '../components/dialogs/registry/CreateContact';
 
 // Interface/Helper Imports
 import service from '../helper/api/api';
@@ -941,7 +942,7 @@ const Dashboard: NextPage = () => {
                 : ''
             }
 
-            {/* Create-Contact-Modal */}
+
             <Dialog showHeader={false} onMaskClick={createContactDialogCloseHandler} className={styles.createNewContactCustomStyles} maskClassName={styles.dialogMask} position={'right'} visible={createNewContactModal} style={{ width: '500px', }} onHide={() => ''}>
               <div className={styles.createContactModal}>
                 <h5>{editData ? "Edit Contact" : (viewData ? "View Data" : (filterData ? "Filter Data" : "Create New Contact"))}</h5>

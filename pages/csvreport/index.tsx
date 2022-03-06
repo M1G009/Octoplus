@@ -21,20 +21,7 @@ import DashboardLayout from '../../components/DashboardLayout';
 
 // Interface/Helper Imports
 import service from '../../helper/api/api';
-
-export interface assignRows {
-    username: string;
-    total: number;
-    fix: number;
-    Perc_Com: string;
-    compare_name: string;
-}
-
-export interface chartData {
-    username: [string];
-    dates: [string];
-    data: [number];
-}
+import { assignRows } from '../../interface/report';
 
 const CsvCompare: NextPage = (props: any) => {
     const router = useRouter();
@@ -45,7 +32,6 @@ const CsvCompare: NextPage = (props: any) => {
     const [contacts, setContacts] = useState<any[]>([]);
     const [assigneeIds, setAssigneeIds] = useState([])
     const [assigneeCurrent, setAssigneeCurrent] = useState('')
-    const [csvId, setCsvId] = useState('')
     const [assignData, setAssignData] = useState<assignRows[]>()
     const [tableSpinner, setTableSpinner] = useState(false);
 
@@ -90,7 +76,6 @@ const CsvCompare: NextPage = (props: any) => {
 
                 if (!id) return router.push('/tools/csv-compare');
 
-                setCsvId(id);
                 await fetchAllCompareRecord(id);
             }
         }

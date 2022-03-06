@@ -424,7 +424,24 @@ const CsvCompare: NextPage = (props: any) => {
                 }
             })
 
-            setAssignFiltersData(data.data[0]);
+            let filterDatas = {...data.data[0]}
+            Object.keys(filterDatas).map((key: any) => {
+                let newArray: any = [];
+                filterDatas[key].map((el: any) => {
+                    if(el && el != "0" && el != "Null" && el != "null"){
+                        return newArray.push(el)
+                    }
+                })
+
+                if(newArray.length){
+                    return filterDatas[key] = newArray;
+                } else {
+                    delete filterDatas[key]
+                }
+            })
+            
+            
+            setAssignFiltersData(filterDatas);
             setInitialAssignFiltersData(newObj);
             setAssignContactModalSpinner(false)
 

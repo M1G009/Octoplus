@@ -64,7 +64,6 @@ const CsvCompare: NextPage = (props: any) => {
             type: "text",
         }
     ])
-    const [mappingRegistryColumnDtype, setMappingRegistryColumnDtype] = useState([])
     const [mappingRegistryColumnIndex, setMappingRegistryColumnIndex] = useState<any>([])
     const [mappingCsvColumn, setMappingCsvColumn] = useState<any>([])
     const [csvId, setCsvId] = useState('')
@@ -197,7 +196,6 @@ const CsvCompare: NextPage = (props: any) => {
                     }
                 })
 
-                setMappingRegistryColumnDtype(dataTypes)
                 setMappingRegistryColumnIndex(registryColumns)
                 setMappingCsvColumn(csvColumnsArray)
                 setColumnMappingModalSpinner(false);
@@ -235,7 +233,7 @@ const CsvCompare: NextPage = (props: any) => {
                 data: newCompareForm,
                 headers: { 'Content-Type': 'multipart/form-data', 'Authorization': JSON.parse(authToken) }
             });
-
+            
             if (data.status == "400") {
                 setNewCompareDataSpinner(false);
                 setCsvUploadError(data.message);
@@ -366,7 +364,8 @@ const CsvCompare: NextPage = (props: any) => {
                     data: JSON.stringify({ "csv_id": csvId, "columns": mainMappingColumns, "is_active": "Y" }),
                     headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
                 });
-
+                console.log(data);
+                
                 await fetchAllCompareRecord(currentPage, perPage);
                 setColumnMappingModal(false)
                 setColumnMappingModalSpinner(false);

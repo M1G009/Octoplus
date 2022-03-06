@@ -32,6 +32,11 @@ export interface TeamMember {
     role_name: string;
 }
 
+export interface InvitedMember {
+    invited_user: string;
+    role_name: string;
+}
+
 export interface RoleNames {
     label: string;
     id: string;
