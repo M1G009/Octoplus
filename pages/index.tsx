@@ -304,13 +304,12 @@ const Dashboard: NextPage = () => {
         data: { "format": "csv" },
         headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
       });
-      let csvContent = "data:text/csv;charset=utf-8," + data.data;
-      var encodedUri = encodeURI(csvContent);
-      window.open(encodedUri);
-
-      var link = window.document.createElement("csvFile");
-      link.setAttribute("href", "data:text/csv;charset=utf-8,%EF%BB%BF" + encodeURI(data.data));
+      
+      var link = window.document.createElement("a");
+      link.setAttribute("href", "data:text/csv;charset=utf-8," + encodeURI(data.data));
       link.setAttribute("download", "Registry.csv");
+      console.log(link);
+      
       link.click();
 
     } catch (err) {
