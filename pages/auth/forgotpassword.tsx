@@ -42,7 +42,7 @@ const ForgotPassword: NextPage = () => {
       setAuthSpinner(true)
 
       const { data } = await service({
-        url: `${process.env.API_BASE_URL}/user/login`,
+        url: `${process.env.API_BASE_URL}/user/sendmail`,
         method: 'POST',
         data: userData,
         headers: { 'Content-Type': 'application/json' }
