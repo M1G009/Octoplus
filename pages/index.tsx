@@ -307,9 +307,7 @@ const Dashboard: NextPage = () => {
       
       var link = window.document.createElement("a");
       link.setAttribute("href", "data:text/csv;charset=utf-8," + encodeURI(data.data));
-      link.setAttribute("download", "Registry.csv");
-      console.log(link);
-      
+      link.setAttribute("download", "Registry.csv");      
       link.click();
 
     } catch (err) {
