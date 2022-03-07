@@ -122,19 +122,19 @@ const Dashboard: NextPage = () => {
       if (data) {
         if (!data.data && !data.data.registry && !data.data.registry.length) {
           setNoDataModal(true)
-        } else if(data.data.registry.length == 1){
-          let singleData = {...data.data.registry[0]}
+        } else if (data.data.registry.length == 1) {
+          let singleData = { ...data.data.registry[0] }
           Object.keys(singleData).map(el => {
-            if(el == "id"){
+            if (el == "id") {
               delete singleData["id"]
-            } else if(!singleData[el]){
+            } else if (!singleData[el]) {
               delete singleData[el]
             }
-            if(Object.keys(singleData).length == 0){
+            if (Object.keys(singleData).length == 0) {
               setNoDataModal(true)
             }
           })
-          
+
         }
         // setColumns
         let withVal = { ...data.data.dtypes };
@@ -307,6 +307,11 @@ const Dashboard: NextPage = () => {
       let csvContent = "data:text/csv;charset=utf-8," + data.data;
       var encodedUri = encodeURI(csvContent);
       window.open(encodedUri);
+
+      var link = window.document.createElement("csvFile");
+      link.setAttribute("href", "data:text/csv;charset=utf-8,%EF%BB%BF" + encodeURI(data.data));
+      link.setAttribute("download", "Registry.csv");
+      link.click();
 
     } catch (err) {
       return await toast({ type: "error", message: err });
@@ -555,7 +560,7 @@ const Dashboard: NextPage = () => {
           data: JSON.stringify({ registry_id: registryId, row_id: id }),
           headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
         });
-        
+
         if (data.data) {
           if (data.data[0].previous.length && data.data[0].current) {
             setRestoreCheck(true);
@@ -771,7 +776,7 @@ const Dashboard: NextPage = () => {
       }
 
       setNoDataModalSpinner(true);
-      
+
       let newCSVForm = new FormData();
       newCSVForm.append('registry', getData.file);
 
@@ -782,7 +787,7 @@ const Dashboard: NextPage = () => {
         headers: { 'Content-Type': 'multipart/form-data', 'Authorization': JSON.parse(authToken) }
       });
       console.log(data);
-      
+
       setNoDataModalSpinner(false);
       setNoDataModal(false)
       return await fetchAllContact(currentPage, perPage, filterFields, searchField, sortingField);
