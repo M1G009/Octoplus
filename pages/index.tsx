@@ -390,6 +390,7 @@ const Dashboard: NextPage = () => {
 
   const createNewContactHanler = async (getData: any) => {
     try {
+
       let authToken = await window.localStorage.getItem('authToken');
 
       if (!authToken) {
@@ -400,6 +401,7 @@ const Dashboard: NextPage = () => {
       }
 
       setCreateContactSpinner(true)
+
       if (filterData) {
         let filterObj = JSON.parse(getData);
         for (var propName in filterObj) {
@@ -420,7 +422,6 @@ const Dashboard: NextPage = () => {
         }
       } else {
         let parseData = JSON.parse(getData);
-
         if (Object.keys(parseData).length) {
           if (editContactRowId) {
             let editObj = Object.assign(parseData, { "row_id": editContactRowId });
@@ -432,8 +433,10 @@ const Dashboard: NextPage = () => {
             });
             await fetchAllContact(currentPage, perPage, filterFields, searchField, sortingField);
           } else {
+            
             Object.keys(parseData).map(el => {
-              if (parseData[el].trim() == "") {
+              
+              if (`${parseData[el]}`.trim() == "") {
                 delete parseData[el];
               }
             })
@@ -443,12 +446,12 @@ const Dashboard: NextPage = () => {
               data: { insert: [parseData] },
               headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
             });
+            
             setRoutingQuery(filterFields, '', sortingField);
             await fetchAllContact(currentPage, perPage, filterFields, '', sortingField);
           }
         }
       }
-
       setCreateContactSpinner(false)
       setCreateNewContactModal(false)
       setFilterData(false);
@@ -521,6 +524,7 @@ const Dashboard: NextPage = () => {
       return await fetchAllContact(currentPage, perPage, filterFields, searchField, sortingField);
     } catch (err) {
       setReplaceDataSpinner(false)
+      setReplaceDataModal(false)
       return await toast({ type: "error", message: err });
     }
   }
