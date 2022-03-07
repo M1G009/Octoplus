@@ -50,21 +50,6 @@ const Billing: NextPage = () => {
   const [paymentMethodSpinner, setPaymentMethodSpinner] = useState(false)
 
 
-  const monthsOptions = [
-    { name: 'January' },
-    { name: 'February' },
-    { name: 'March' },
-    { name: 'April' },
-    { name: 'May' },
-    { name: 'June' },
-    { name: 'July' },
-    { name: 'August' },
-    { name: 'September' },
-    { name: 'October' },
-    { name: 'November' },
-    { name: 'December' }
-  ];
-
   const fatchingCards = async () => {
     try {
       let authToken = await window.localStorage.getItem('authToken');
