@@ -67,9 +67,7 @@ const Account: NextPage = () => {
 
   const validationSchema = yup.object().shape({
     username: yup.string().required('Please enter user name'),
-    Company: yup.string().required('Please enter company'),
     email: yup.string().required('Please enter email').email("Please enter valid email"),
-    country: yup.string().required('Please select country'),
     phone_number: yup.string().required('Please enter phone number'),
     Language: yup.string().required('Please select language')
   });
