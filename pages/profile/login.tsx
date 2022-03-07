@@ -41,7 +41,10 @@ const Login: NextPage = () => {
 
   const validationSchema = yup.object().shape({
     currentpass: yup.string().required('Please enter current password').min(8, 'Password is too short - should be 8 chars minimum'),
-    password: yup.string().required('Please enter password').notOneOf([yup.ref('currentpass'), null], 'New password cannot be same as current password').min(8, 'Password is too short - should be 8 chars minimum'),
+    password: yup.string().required('Please enter password').notOneOf([yup.ref('currentpass'), null], 'New password cannot be same as current password').min(8, 'Password is too short - should be 8 chars minimum').matches(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])(?=.{8,})/,
+      "Password must have uppercase, lowercase, number and special case character"
+    ),
     confirmpass: yup.string().oneOf([yup.ref('password'), null], 'Passwords must match')
   });
 
