@@ -126,7 +126,7 @@ $lightBlue: #2236f1;
 
 .blueTextBtn {
     background: transparent;
-    color: $lightBlue;
+    color: #2236f1;
     border-radius: 4px;
     border: none;
     padding: 0px;
@@ -134,6 +134,12 @@ $lightBlue: #2236f1;
     margin: 0px 10px;
     font-size: 16px;
     cursor: pointer;
+    display: flex;
+    align-items: center;
+
+    svg{
+        margin-left: 5px;
+    }
 }
 
 .customBlueBgbtn {

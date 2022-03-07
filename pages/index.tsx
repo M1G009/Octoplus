@@ -23,6 +23,7 @@ import { FaSearch, FaExclamationTriangle } from "react-icons/fa";
 import { MdClose } from "react-icons/md";
 import { InputText } from 'primereact/inputtext';
 import { FiFilter } from "react-icons/fi";
+import { FaCog } from "react-icons/fa";
 import { RiCloseLine } from "react-icons/ri";
 import { ToastContainer } from "react-toastify";
 import toast from "../components/Toast";
@@ -912,7 +913,7 @@ const Dashboard: NextPage = () => {
                   :
                   <button onClick={() => { setFilterData(true); setCreateNewContactModal(true) }} className={layoutStyles.blueBtn + " " + styles.filterBtn}>Filter <FiFilter /></button>
               }
-              <button onClick={() => setSettingDataModal(true)} className={layoutStyles.blueBtn}>Table Settings</button>
+              <button onClick={() => setSettingDataModal(true)} className={layoutStyles.blueTextBtn}>Table Settings <FaCog/></button>
               <button onClick={() => setAddNewFieldModal(true)} className={layoutStyles.blueBgBtn}>Add New Field</button>
             </div>
           </div>
