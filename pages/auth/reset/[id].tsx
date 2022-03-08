@@ -1,10 +1,9 @@
 // React Module Imports
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 // Next Module Imports
 import type { NextPage } from 'next'
 import { useRouter } from 'next/router'
-import Link from 'next/link'
 import Image from 'next/image'
 import { setCookies } from 'cookies-next';
 
@@ -15,20 +14,20 @@ import { Password } from 'primereact/password';
 import * as yup from 'yup';
 import { ErrorMessage, Formik, Field, FormikHelpers } from 'formik';
 import { ToastContainer } from "react-toastify";
-import toast from "../../components/Toast";
+import toast from "../../../components/Toast";
 
 // Style and Component Imports
-import Logo from '../../public/images/logo-black.png'
-import styles from '../../styles/Auth.module.scss'
-import Layout from '../../components/layout'
-import { withAuthSync } from '../../utils/auth'
+import Logo from '../../../public/images/logo-black.png'
+import styles from '../../../styles/Auth.module.scss'
+import Layout from '../../../components/layout'
+import { withAuthSync } from '../../../utils/auth'
 
 // Interface/Helper Imports
-import service from '../../helper/api/api';
+import service from '../../../helper/api/api';
 
 interface Values {
-  email: string;
   password: string;
+  confirmpassword: string;
 }
 
 const Login: NextPage = () => {
@@ -37,37 +36,46 @@ const Login: NextPage = () => {
   const [authSpinner, setAuthSpinner] = useState(false);
 
   const validationSchema = yup.object().shape({
-    email: yup.string().required('Please enter email').email("Please enter valid email"),
-    password: yup.string().required('Please enter password')
+    password: yup.string().required('Please enter password').min(8, 'Password is too short - should be 8 chars minimum').matches(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])(?=.{8,})/,
+      "Password must have uppercase, lowercase, number and special case character"
+    ),
+    confirmpassword: yup.string().required('Please enter confirm password').oneOf([yup.ref('password'), null], 'Passwords must match')
   });
 
   // LoginSubmitHandler
-  const LoginSubmitHandler = async (userData: any) => {
+  const ResetSubmitHandler = async (userData: any) => {
     try {
-      setAuthSpinner(true)
-
-      const { data } = await service({
-        url: `${process.env.API_BASE_URL}/user/login`,
-        method: 'POST',
-        data: userData,
-        headers: { 'Content-Type': 'application/json' }
-      });
-      if (data.status != 200) {
-        setErrorMessage(data.message)
-        return setAuthSpinner(false)
+      // console.log(router);
+      if (router.query && router.query.id) {
+        let token = router.query.id;
+        if (token) {
+          setAuthSpinner(true)
+          const { data } = await service({
+            url: `${process.env.API_BASE_URL}/confirm_email/${token}`,
+            method: 'POST',
+            data: userData,
+            headers: { 'Content-Type': 'application/json' }
+          });
+          setAuthSpinner(false)
+          await toast({ type: "success", message: "Password change successfull" });
+          setTimeout(() => {
+            return router.push('/auth');
+          }, 3000)
+        } else {
+          router.push('/auth');
+        }
+      } else {
+        router.push('/auth');
       }
-      let setUser = Date.now() + JSON.parse(userData).email;
-      window.localStorage.setItem('loginUserdata', JSON.stringify(data.data[0].user));
-      window.localStorage.setItem('authToken', JSON.stringify(data.data[0].token));
-      await window.localStorage.setItem('ValidUser', setUser);
-      await setCookies('ValidUser', setUser);
-      setErrorMessage('')
-      setAuthSpinner(false)
-      router.push('/');
 
     } catch (err: any) {
       setErrorMessage(err.message)
       setAuthSpinner(false);
+      await toast({ type: "error", message: err.message });
+      setTimeout(() => {
+        return router.push('/auth');
+      }, 3000)
     }
   }
 
@@ -96,15 +104,15 @@ const Login: NextPage = () => {
         <div className={styles.authForm}>
           <Formik
             initialValues={{
-              email: '',
-              password: ''
+              password: '',
+              confirmpassword: ''
             }}
             validationSchema={validationSchema}
             onSubmit={(
               values: Values,
               { setSubmitting }: FormikHelpers<Values>
             ) => {
-              LoginSubmitHandler(JSON.stringify(values, null, 2));
+              ResetSubmitHandler(values);
               setSubmitting(false);
             }}
           >
@@ -116,28 +124,12 @@ const Login: NextPage = () => {
                   </div> : null
                 }
                 <div className={styles.titleBox}>
-                  <h3>Sign In to Octoplus</h3>
-                  <p>
-                    New Here?
-                    <Link href="/auth/signup">
-                      <a> Create an Account</a>
-                    </Link>
-                  </p>
-                </div>
-                <div className={styles.inputBox}>
-                  <label htmlFor="email">Email</label>
-                  <Field type="email" name="email" autoComplete="false" />
-                  <ErrorMessage name="email">
-                    {(msg) => <p className={styles.error}>{msg}</p>}
-                  </ErrorMessage>
+                  <h3>Reset Password</h3>
                 </div>
 
                 <div className={styles.inputBox}>
                   <label htmlFor="password">
                     Password
-                    <Link href="/auth/forgotpassword">
-                      <a>Forgot Password ?</a>
-                    </Link>
                   </label>
                   <Field name="password">
                     {({ field }: any) => (
@@ -147,12 +139,26 @@ const Login: NextPage = () => {
                   <ErrorMessage name="password">
                     {(msg) => <p className={styles.error}>{msg}</p>}
                   </ErrorMessage>
-                  
+
+                </div>
+                <div className={styles.inputBox}>
+                  <label htmlFor="password">
+                    Confirm Password
+                  </label>
+                  <Field name="confirmpassword">
+                    {({ field }: any) => (
+                      <Password {...field} toggleMask feedback={false} />
+                    )}
+                  </Field>
+                  <ErrorMessage name="confirmpassword">
+                    {(msg) => <p className={styles.error}>{msg}</p>}
+                  </ErrorMessage>
+
                 </div>
                 {
                   errorMessage ? <p className={styles.formError + " p-mt-0"}>{errorMessage}</p> : null
                 }
-                <button type="submit">Login</button>
+                <button type="submit">Reset</button>
               </form>
             )}
           </Formik>

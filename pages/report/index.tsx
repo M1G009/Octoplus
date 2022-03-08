@@ -56,6 +56,7 @@ const CsvCompare: NextPage = (props: any) => {
     const [perPage, setPerPage] = useState(10);
     const [assigneeIds, setAssigneeIds] = useState([])
     const [assigneeCurrent, setAssigneeCurrent] = useState('')
+    const [reportSpinner, setReportSpinner] = useState(false)
 
     let currentNewDate = new Date();
     let prevNewDate = new Date();
@@ -104,7 +105,7 @@ const CsvCompare: NextPage = (props: any) => {
                 } else {
                     query = { start: startDate, end: endDate }
                 }
-
+                setReportSpinner(true)
                 const { data } = await service({
                     url: `https://octoplusapi.herokuapp.com/detailreportGET`,
                     method: 'POST',
@@ -115,7 +116,9 @@ const CsvCompare: NextPage = (props: any) => {
                 setAssigneeIds(data.data[0].username)
                 setAssignData(data.data[0].data)
                 setGraphBox(true);
+                setReportSpinner(false)
             } catch (err) {
+                setReportSpinner(false)
                 return await toast({ type: "error", message: err });
             }
         }
@@ -186,13 +189,11 @@ const CsvCompare: NextPage = (props: any) => {
         let el = document.getElementById('forPdf')
         if (el) {
             html2canvas(el).then(canvas => {
-                // document.body.appendChild(canvas)
                 console.log(canvas);
 
-                const imgData: any = canvas.toDataURL('image/png');
+                const imgData: any = canvas.toDataURL();
                 const pdf = new jsPDF();
                 pdf.addImage(imgData, 'JPEG', 0, 0, 210, 297);
-                // pdf.output('dataurlnewwindow');
                 pdf.save("report.pdf");
 
             });
@@ -235,11 +236,11 @@ const CsvCompare: NextPage = (props: any) => {
                     </div>
                     <div className={styles.comparisonTableBox}>
                         <div className={styles.comparisonTableOverflow}>
-                            {/* {
-                                createContactTableSpinner ? <div className={styles.formSpinner}>
+                            {
+                                reportSpinner ? <div className={styles.formSpinner}>
                                     <div className={styles.loading}></div>
                                 </div> : null
-                            } */}
+                            }
                             {
                                 assignData && assignData.length ?
                                 <table className={styles.comparisonTable}>
