@@ -13,7 +13,7 @@ import User from '../public/images/user_img.png'
 
 import styles from './DashboardLayout.module.scss'
 
-const Header = () => {
+const Header = (props: any) => {
     const router = useRouter();
     const [searchText, setSearchText] = useState('');
     const [searchInput, setSearchInput] = useState(false);
@@ -65,7 +65,7 @@ const Header = () => {
                 </div>
                 <Button className={"p-button-text " + styles.searchIcon} ><FaRegQuestionCircle /></Button>
                 <Button className={styles.bellIcon}><i className="pi pi-bell p-overlay-badge" style={{ fontSize: '18px' }}><Badge value="2" severity="danger" ></Badge></i></Button> */}
-                <div className={styles.userProfile} onClick={() => routerPushHandler('/profile/account')}>
+                <div className={styles.userProfile} onClick={() => props.profile(true)} ref={props.userRef}>
                     <Image
                         src={User}
                         className={styles.userImage}
