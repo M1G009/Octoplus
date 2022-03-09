@@ -1040,7 +1040,7 @@ const Dashboard: NextPage = () => {
                             }
                             <div className="">
                               {
-                                !viewData ? (editData ? <button type='submit' className={layoutStyles.customBlueBgbtn}>Apply Filter</button> : <button type='submit' className={layoutStyles.customBlueBgbtn}>Save</button>) : ''
+                                !viewData ? (filterData ? <button type='submit' className={layoutStyles.customBlueBgbtn}>Apply Filter</button> : <button type='submit' className={layoutStyles.customBlueBgbtn}>Save</button>) : ''
                               }
                               <button type='button' onClick={emptyContactFiledHandler} className={layoutStyles.customDarkBgbtn}>{viewData ? "Close" : "Cancel"}</button>
                             </div>
