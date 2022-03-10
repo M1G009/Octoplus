@@ -102,6 +102,7 @@ const CsvCompare: NextPage = (props: any) => {
                 data: JSON.stringify({ "column": columnName, "value": columnValue, csv_id }),
                 headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
             });
+            console.log("SubColumnData", data);
             
             if (data.data) {
                 setRegistryEntries(data.data.registry)
@@ -145,13 +146,20 @@ const CsvCompare: NextPage = (props: any) => {
                 data: JSON.stringify({ "column": columnName, csv_id }),
                 headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
             });
-
+            console.log("SubColumn", data);
             if (data.data.length) {
+                let subColumnsDataArray = [...data.data];
+                subColumnsDataArray.map((el, i) => {
+                    if(!el.value){
+                        subColumnsDataArray.splice(i,1);
+                    }
+                })
+                
                 let activeVal = '';
                 let newArray;
 
                 if (!subActiveColumnValue.value || columnName != activeColumn) {
-                    newArray = data.data.map((obj: any, i: number) => {
+                    newArray = subColumnsDataArray.map((obj: any, i: number) => {
                         if (i == 0) {
                             activeVal = obj.value;
                             setSubActiveColumnValue(obj)
@@ -161,7 +169,7 @@ const CsvCompare: NextPage = (props: any) => {
                         }
                     })
                 } else {
-                    newArray = data.data.map((obj: any, i: number) => {
+                    newArray = subColumnsDataArray.map((obj: any, i: number) => {
                         if (!ignore) {
                             if (obj.value == subActiveColumnValue.value) {
                                 activeVal = obj.value;
@@ -220,7 +228,7 @@ const CsvCompare: NextPage = (props: any) => {
                 data: JSON.stringify({ csv_id }),
                 headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
             });
-
+            console.log("AllColumns", data);
             if (data.status == "400") {
                 setDashBoardSpinner(false);
                 return await toast({ type: "error", message: data.message });

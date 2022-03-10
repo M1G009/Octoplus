@@ -165,20 +165,6 @@ const CsvCompare: NextPage = (props: any) => {
                             }
                             <div className={styles.detailsBox + " customCheckBox"}>
                                 <div className={styles.textBox}>
-                                    {/* <div className={styles.headBox + " p-d-flex p-ai-center p-jc-between"}>
-                                        <div className={styles.columnHead}>
-                                            <div className='p-d-flex p-ai-center p-mb-3'>
-                                                <h4>{subActiveColumnValue.value}</h4>
-                                                <p className='p-ml-2'>{subActiveColumnValue.registry} Registry, {subActiveColumnValue.csv} CSV</p>
-                                            </div>
-                                            <p className={styles.text}>Kindly select below data to perform desire action</p>
-                                        </div>
-                                        {
-                                            registryEntries && registryEntries.length && csvEntries && csvEntries.length ?
-                                                <button className={layoutStyles.customBluebtn} onClick={() => assignContactModalHandler()} >Assign Contact Fixing</button>
-                                                : ""
-                                        }
-                                    </div> */}
                                     <div className={styles.bottomBox}>
                                         <div className={styles.titleText + " " + styles.restoreBy}>
                                             <h6>
