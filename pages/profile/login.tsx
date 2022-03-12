@@ -78,7 +78,7 @@ const Login: NextPage = () => {
       window.localStorage.removeItem("authToken")
       window.localStorage.removeItem("ValidUser")
       window.localStorage.removeItem('loginUserdata');
-      
+
       return router.push('/auth');
 
     } catch (err) {
@@ -143,7 +143,7 @@ const Login: NextPage = () => {
 
 
   return (
-    <DashboardLayout sidebar={true}>
+    <>
       <ToastContainer
         position="top-right"
         autoClose={3000}
@@ -155,114 +155,116 @@ const Login: NextPage = () => {
         draggable
         pauseOnHover
       />
-      <div className={layoutStyles.topBar}>
-        <p>Home / Proflie / <span>Login</span></p>
-        <h5>Login {`&`} Security</h5>
-      </div>
-      <div className={layoutStyles.box}>
-        <div className={layoutStyles.headContentBox + " p-mb-5"}>
-          <div className={layoutStyles.head}>
-            <h4>Login Credentials</h4>
-          </div>
-          <div className={layoutStyles.textBox}>
-            {!editProfile ?
-              <div className={styles.profileForm}>
-                <div className={styles.inputBox + " w-100"}>
-                  <label>Email Address</label>
-                  <p>{loginUserData.email}</p>
-                </div>
-                <div className="p-d-flex w-100 p-ai-center p-jc-between">
-                  <div className={styles.inputBox}>
-                    <label>Password</label>
-                    <p>&bull; &bull; &bull; &bull; &bull; &bull; &bull;</p>
-                  </div>
-                  <button onClick={() => setEditProfile(true)} className={layoutStyles.customBluebtn}>Reset Password</button>
-                </div>
-              </div>
-              :
-              <Formik
-                enableReinitialize
-                initialValues={{
-                  currentpass: '',
-                  password: '',
-                  confirmpass: ''
-                }}
-                validationSchema={validationSchema}
-                onSubmit={(
-                  values: Values,
-                  { setSubmitting }: FormikHelpers<Values>
-                ) => {
-                  updatePasswordConfirm(JSON.stringify(values, null, 2));
-                  setSubmitting(false);
-                }}
-              >
-                {props => (
-                  <form onSubmit={props.handleSubmit}>
-                    {
-                      formSpinner ? <div className={styles.formSpinner}>
-                        <div className={styles.loading}></div>
-                      </div> : null
-                    }
-                    <>
-                      <div className={styles.passUpdateForm}>
-                        <div className={styles.inputBox}>
-                          <label htmlFor="currentpass">Current Password</label>
-                          <Field type="password" name="currentpass">
-                            {({ field }: any) => (
-                              <Password {...field} toggleMask feedback={false} />
-                            )}
-                          </Field>
-                          <ErrorMessage name="currentpass">
-                            {(msg) => <p className={styles.error}>{msg}</p>}
-                          </ErrorMessage>
-                        </div>
-                        <div className={styles.inputBox}>
-                          <label htmlFor="password">New Password</label>
-                          <Field type="password" name="password">
-                            {({ field }: any) => (
-                              <Password {...field} toggleMask feedback={false} />
-                            )}
-                          </Field>
-                          <ErrorMessage name="password">
-                            {(msg) => <p className={styles.error}>{msg}</p>}
-                          </ErrorMessage>
-                        </div>
-                        <div className={styles.inputBox}>
-                          <label htmlFor="confirmpass">Confirm New Password</label>
-                          <Field type="password" name="confirmpass">
-                            {({ field }: any) => (
-                              <Password {...field} toggleMask feedback={false} />
-                            )}
-                          </Field>
-                          <ErrorMessage name="confirmpass">
-                            {(msg) => <p className={styles.error}>{msg}</p>}
-                          </ErrorMessage>
-                        </div>
-                      </div>
-                      <div>
-                        <button type='submit' className={layoutStyles.customBlueBgbtn + " p-mr-1 p-ml-0"}>Update Password</button>
-                        <button type='button' onClick={() => setEditProfile(false)} className={layoutStyles.customBluebtn}>Cancel</button>
-                      </div>
-                    </>
-                  </form>
-                )}
-              </Formik>
-            }
-          </div>
+      <DashboardLayout sidebar={true}>
+        <div className={layoutStyles.topBar}>
+          <p>Home / Proflie / <span>Login</span></p>
+          <h5>Login {`&`} Security</h5>
         </div>
-        <div className={layoutStyles.headContentBox}>
-          <div className={layoutStyles.head}>
-            <h4>Delete Account</h4>
+        <div className={layoutStyles.box}>
+          <div className={layoutStyles.headContentBox + " p-mb-5"}>
+            <div className={layoutStyles.head}>
+              <h4>Login Credentials</h4>
+            </div>
+            <div className={layoutStyles.textBox}>
+              {!editProfile ?
+                <div className={styles.profileForm}>
+                  <div className={styles.inputBox + " w-100"}>
+                    <label>Email Address</label>
+                    <p>{loginUserData.email}</p>
+                  </div>
+                  <div className="p-d-flex w-100 p-ai-center p-jc-between">
+                    <div className={styles.inputBox}>
+                      <label>Password</label>
+                      <p>&bull; &bull; &bull; &bull; &bull; &bull; &bull;</p>
+                    </div>
+                    <button onClick={() => setEditProfile(true)} className={layoutStyles.customBluebtn}>Reset Password</button>
+                  </div>
+                </div>
+                :
+                <Formik
+                  enableReinitialize
+                  initialValues={{
+                    currentpass: '',
+                    password: '',
+                    confirmpass: ''
+                  }}
+                  validationSchema={validationSchema}
+                  onSubmit={(
+                    values: Values,
+                    { setSubmitting }: FormikHelpers<Values>
+                  ) => {
+                    updatePasswordConfirm(JSON.stringify(values, null, 2));
+                    setSubmitting(false);
+                  }}
+                >
+                  {props => (
+                    <form onSubmit={props.handleSubmit}>
+                      {
+                        formSpinner ? <div className={styles.formSpinner}>
+                          <div className={styles.loading}></div>
+                        </div> : null
+                      }
+                      <>
+                        <div className={styles.passUpdateForm}>
+                          <div className={styles.inputBox}>
+                            <label htmlFor="currentpass">Current Password</label>
+                            <Field type="password" name="currentpass">
+                              {({ field }: any) => (
+                                <Password {...field} toggleMask feedback={false} />
+                              )}
+                            </Field>
+                            <ErrorMessage name="currentpass">
+                              {(msg) => <p className={styles.error}>{msg}</p>}
+                            </ErrorMessage>
+                          </div>
+                          <div className={styles.inputBox}>
+                            <label htmlFor="password">New Password</label>
+                            <Field type="password" name="password">
+                              {({ field }: any) => (
+                                <Password {...field} toggleMask feedback={false} />
+                              )}
+                            </Field>
+                            <ErrorMessage name="password">
+                              {(msg) => <p className={styles.error}>{msg}</p>}
+                            </ErrorMessage>
+                          </div>
+                          <div className={styles.inputBox}>
+                            <label htmlFor="confirmpass">Confirm New Password</label>
+                            <Field type="password" name="confirmpass">
+                              {({ field }: any) => (
+                                <Password {...field} toggleMask feedback={false} />
+                              )}
+                            </Field>
+                            <ErrorMessage name="confirmpass">
+                              {(msg) => <p className={styles.error}>{msg}</p>}
+                            </ErrorMessage>
+                          </div>
+                        </div>
+                        <div>
+                          <button type='submit' className={layoutStyles.customBlueBgbtn + " p-mr-1 p-ml-0"}>Update Password</button>
+                          <button type='button' onClick={() => setEditProfile(false)} className={layoutStyles.customBluebtn}>Cancel</button>
+                        </div>
+                      </>
+                    </form>
+                  )}
+                </Formik>
+              }
+            </div>
           </div>
-          <div className={layoutStyles.textBox}>
-            <div className={styles.deleteAccForm}>
-              <p>By deleting your account, you'll no longer be able to access any of your data or log in to Octoplus.</p>
-              <button onClick={deleteConfirm} className={styles.deleteBtn}>Delete Account</button>
+          <div className={layoutStyles.headContentBox}>
+            <div className={layoutStyles.head}>
+              <h4>Delete Account</h4>
+            </div>
+            <div className={layoutStyles.textBox}>
+              <div className={styles.deleteAccForm}>
+                <p>By deleting your account, you'll no longer be able to access any of your data or log in to Octoplus.</p>
+                <button onClick={deleteConfirm} className={styles.deleteBtn}>Delete Account</button>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    </DashboardLayout>
+      </DashboardLayout>
+    </>
   )
 }
 

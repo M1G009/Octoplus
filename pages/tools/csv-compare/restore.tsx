@@ -75,7 +75,7 @@ const CsvCompare: NextPage = (props: any) => {
         checkQuery();
 
     }, [])
-    
+
     const restoreColumnHandler = async () => {
         try {
             let authToken = await window.localStorage.getItem('authToken');
@@ -134,7 +134,7 @@ const CsvCompare: NextPage = (props: any) => {
 
 
     return (
-        <DashboardLayout sidebar={false}>
+        <>
             <ToastContainer
                 position="top-right"
                 autoClose={3000}
@@ -146,116 +146,118 @@ const CsvCompare: NextPage = (props: any) => {
                 draggable
                 pauseOnHover
             />
-            <div className={layoutStyles.topBar}>
-                <div className='p-d-flex p-ai-center p-jc-between'>
-                    <div>
-                        <p className={styles.breadcrumButtons}><Link href="/tools/csv-compare">CSV Compare</Link> / <span>Dashboard</span></p>
-                        <h5>Dashboard</h5>
+            <DashboardLayout sidebar={false}>
+                <div className={layoutStyles.topBar}>
+                    <div className='p-d-flex p-ai-center p-jc-between'>
+                        <div>
+                            <p className={styles.breadcrumButtons}><Link href="/tools/csv-compare">CSV Compare</Link> / <span>Dashboard</span></p>
+                            <h5>Dashboard</h5>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div className={layoutStyles.box}>
-                <div className={layoutStyles.headContentBox}>
-                    <div className={layoutStyles.textBox}>
-                        <div className={styles.restore + ' p-d-flex p-flex-md-row ' + styles.dashboardContainer}>
-                            {
-                                dashBoardSpinner ? <div className={styles.formSpinner}>
-                                    <div className={styles.loading}></div>
-                                </div> : null
-                            }
-                            <div className={styles.detailsBox + " customCheckBox"}>
-                                <div className={styles.textBox}>
-                                    <div className={styles.bottomBox}>
-                                        <div className={styles.titleText + " " + styles.restoreBy}>
-                                            <h6>
-                                                Registry Database
-                                            </h6>
+                <div className={layoutStyles.box}>
+                    <div className={layoutStyles.headContentBox}>
+                        <div className={layoutStyles.textBox}>
+                            <div className={styles.restore + ' p-d-flex p-flex-md-row ' + styles.dashboardContainer}>
+                                {
+                                    dashBoardSpinner ? <div className={styles.formSpinner}>
+                                        <div className={styles.loading}></div>
+                                    </div> : null
+                                }
+                                <div className={styles.detailsBox + " customCheckBox"}>
+                                    <div className={styles.textBox}>
+                                        <div className={styles.bottomBox}>
+                                            <div className={styles.titleText + " " + styles.restoreBy}>
+                                                <h6>
+                                                    Registry Database
+                                                </h6>
 
-                                            <div className={styles.restoreBox}>
-                                                {currentData.created_date ? <p>Created at:<br /> <span>{currentData.created_date}</span></p> : ""}
-                                                {currentData.restore_by ? <p className='p-m-0'>Created by:<br /> <span>{currentData.restore_by}</span></p> : ""}
+                                                <div className={styles.restoreBox}>
+                                                    {currentData.created_date ? <p>Created at:<br /> <span>{currentData.created_date}</span></p> : ""}
+                                                    {currentData.restore_by ? <p className='p-m-0'>Created by:<br /> <span>{currentData.restore_by}</span></p> : ""}
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div className={styles.dataBox + " customDashboardRadio " + styles.registryDataBox}>
-                                            {
-                                                currentData && currentData.current ?
-                                                    <div className='p-mx-3'>
-                                                        {
-                                                            Object.keys(currentData.current).map((item, index) => {
-                                                                return <div key={"registrydata" + index} className='p-d-flex p-ai-center p-mb-2'>
-                                                                    <label htmlFor="">{item}</label>
-                                                                    <p>{currentData.current[item]}</p>
-                                                                </div>
-                                                            })
-                                                        }
-                                                    </div>
-                                                    : ""
-                                            }
-                                        </div>
-                                        <div className={styles.titleText}>
-                                            <h6>
-                                                Previous Version
-                                            </h6>
-                                        </div>
-                                        <div className={styles.dataBox + " customDashboardRadio " + styles.csvDataBox}>
-                                            {
-                                                currentData && currentData.previous.length ?
-                                                    currentData.previous.map((el: any, i: any) => {
-
-                                                        return <div className='p-mx-3' key={"csvdataP" + i}>
+                                            <div className={styles.dataBox + " customDashboardRadio " + styles.registryDataBox}>
+                                                {
+                                                    currentData && currentData.current ?
+                                                        <div className='p-mx-3'>
                                                             {
-                                                                Object.keys(el).map((item, index) => {
-                                                                    return <div key={"csvdata" + i + index} className='p-d-flex p-ai-center p-mb-2'>
+                                                                Object.keys(currentData.current).map((item, index) => {
+                                                                    return <div key={"registrydata" + index} className='p-d-flex p-ai-center p-mb-2'>
                                                                         <label htmlFor="">{item}</label>
-                                                                        <p>{el[item]}</p>
+                                                                        <p>{currentData.current[item]}</p>
                                                                     </div>
                                                                 })
                                                             }
                                                         </div>
+                                                        : ""
+                                                }
+                                            </div>
+                                            <div className={styles.titleText}>
+                                                <h6>
+                                                    Previous Version
+                                                </h6>
+                                            </div>
+                                            <div className={styles.dataBox + " customDashboardRadio " + styles.csvDataBox}>
+                                                {
+                                                    currentData && currentData.previous.length ?
+                                                        currentData.previous.map((el: any, i: any) => {
+
+                                                            return <div className='p-mx-3' key={"csvdataP" + i}>
+                                                                {
+                                                                    Object.keys(el).map((item, index) => {
+                                                                        return <div key={"csvdata" + i + index} className='p-d-flex p-ai-center p-mb-2'>
+                                                                            <label htmlFor="">{item}</label>
+                                                                            <p>{el[item]}</p>
+                                                                        </div>
+                                                                    })
+                                                                }
+                                                            </div>
 
 
-                                                    })
-                                                    : ""
-                                            }
+                                                        })
+                                                        : ""
+                                                }
+                                            </div>
                                         </div>
                                     </div>
+                                    <div className="p-mt-3 p-text-right">
+                                        <button type='button' className={layoutStyles.customDarkBgbtn} onClick={() => { ignoreMappingDialogHandler() }} >Ignore</button>
+
+                                        <button type='button' onClick={() => { restoreDialogHandler() }} className={layoutStyles.customBlueBgbtn}>Restore</button>
+                                    </div>
                                 </div>
-                                <div className="p-mt-3 p-text-right">
-                                    <button type='button' className={layoutStyles.customDarkBgbtn} onClick={() => { ignoreMappingDialogHandler() }} >Ignore</button>
+                                <div className={styles.restoresPoints}>
+                                    <h4>Version History</h4>
+                                    <div className={styles.restoreBtnBox}>
+                                        {
+                                            restoreData && restoreData.length ?
+                                                restoreData.map((el: any, i: number) => {
 
-                                    <button type='button' onClick={() => { restoreDialogHandler() }} className={layoutStyles.customBlueBgbtn}>Restore</button>
-                                </div>
-                            </div>
-                            <div className={styles.restoresPoints}>
-                                <h4>Version History</h4>
-                                <div className={styles.restoreBtnBox}>
-                                    {
-                                        restoreData && restoreData.length ?
-                                            restoreData.map((el: any, i: number) => {
+                                                    if (el._id == currentData._id) {
+                                                        return <button key={"restoreBtn" + i} className={styles.active}>
+                                                            <span>{el.restore_by}</span>
+                                                            <span>{el.created_date}</span>
+                                                        </button>
+                                                    } else {
+                                                        return <button key={"restoreBtn" + i} onClick={() => activeRestoreDataHandler(el._id)}>
+                                                            <span>{el.restore_by}</span>
+                                                            <span>{el.created_date}</span>
+                                                        </button>
+                                                    }
 
-                                                if (el._id == currentData._id) {
-                                                    return <button key={"restoreBtn" + i} className={styles.active}>
-                                                        <span>{el.restore_by}</span>
-                                                        <span>{el.created_date}</span>
-                                                    </button>
-                                                } else {
-                                                    return <button key={"restoreBtn" + i} onClick={() => activeRestoreDataHandler(el._id)}>
-                                                        <span>{el.restore_by}</span>
-                                                        <span>{el.created_date}</span>
-                                                    </button>
-                                                }
-
-                                            })
-                                            : ""
-                                    }
+                                                })
+                                                : ""
+                                        }
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-        </DashboardLayout>
+            </DashboardLayout>
+        </>
     )
 }
 

@@ -399,7 +399,7 @@ const Team: NextPage = (props: any) => {
         window.localStorage.removeItem('loginUserdata');
         return router.push('/auth');
       }
-
+      setFormSpinner(true)
       const { data } = await service({
         url: `${process.env.API_BASE_URL}/invite_send`,
         method: 'POST',
@@ -408,9 +408,12 @@ const Team: NextPage = (props: any) => {
       });
 
       toast({ type: "success", message: data.message });
+      await getTeamMembers();
+      setFormSpinner(false)
       return setInvitePeopleModal(false)
 
     } catch (err) {
+      setFormSpinner(false)
       return toast({ type: "error", message: err });
     }
   }
@@ -453,7 +456,7 @@ const Team: NextPage = (props: any) => {
   }
 
   return (
-    <DashboardLayout sidebar={true}>
+    <>
       <ToastContainer
         position="top-right"
         autoClose={3000}
@@ -465,267 +468,269 @@ const Team: NextPage = (props: any) => {
         draggable
         pauseOnHover
       />
-      <div className={layoutStyles.topBar}>
-        <p>Home / Proflie / <span>Team</span></p>
-        <h5>Manage Team</h5>
-      </div>
-      <div className={layoutStyles.box}>
-        {
-          !createRole ?
-            <div className={layoutStyles.headContentBox}>
-              {
-                teamMemberSpinner ? <div className={styles.formSpinner}>
-                  <div className={styles.loading}></div>
-                </div> : null
-              }
-              <div className={layoutStyles.head}>
-                <h4>Team Members <span>({teamMember.length})</span></h4>
-                <div className={layoutStyles.editButtons}>
-                  <button onClick={() => setCreateRole(true)} className={layoutStyles.blueBtn}>Create & Edit Role</button>
-                  <button onClick={() => setInvitePeopleModal(true)} className={layoutStyles.blueBgBtn}>Invite People</button>
-                </div>
-              </div>
-              <div>
-                <table className={styles.teamMemberTable}>
-                  <thead>
-                    <tr>
-                      <th>Name</th>
-                      <th>Email address</th>
-                      <th>Role</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {
-                      teamMember.length ?
-                        teamMember.map((el, i) => {
-
-                          return <tr key={"team_member" + i}>
-                            <td>{el.username}</td>
-                            <td>{el.email}</td>
-                            <td>
-                              {
-                                el.role_name != "Admin" ?
-                                  <Dropdown value={el.role_name} options={roleNames.map(function (el) { return el['label']; })} onChange={(e) => memberRoleUpdateHandler(el.user_id, e.target.value)} />
-                                  : el.role_name
-                              }
-                            </td>
-                          </tr>
-                        })
-                        :
-                        <tr>
-                          <td colSpan={3} align='center'>No data found</td>
-                        </tr>
-                    }
-                    {
-                      inviteMember.length ?
-                        inviteMember.map((el, i) => {
-
-                          return <tr key={"team_member" + i}>
-                            <td style={{color: "green"}}>Invited</td>
-                            <td>{el.invited_user}</td>
-                            <td> {el.role_name} </td>
-                          </tr>
-                        })
-                        :
-                        null
-                    }
-                  </tbody>
-                </table>
-              </div>
-            </div>
-            :
-            <div className={layoutStyles.headContentBox}>
-              <div className={layoutStyles.head}>
-                <h4>Create & Edit Role</h4>
-                <div className={layoutStyles.editButtons}>
-                  {
-                    (selectRoleName.label && selectRoleName.id) ? <button onClick={deleteRoleConfirmHandler} className={layoutStyles.customRedBgbtn}>Delete</button> : null
-                  }
-                  <button onClick={discardRoleHandler} className={layoutStyles.blueBtn}>Discard</button>
-                  <button disabled={saveRoleBtn} onClick={saveRoleHandler} className={layoutStyles.blueBgBtn}>Save</button>
-                </div>
-              </div>
-              <div className={layoutStyles.textBox + ' ' + styles.roleNameBox}>
-                <div className={styles.inputBox}>
-                  <label htmlFor="rolename">Role Name</label>
-                  <div className='p-d-flex w-100 p-ai-center'>
-                    <InputText id="rolename" name="rolename" type="text" placeholder='Create new role' value={createRoleName} onChange={(e) => createNewDataInputHandler(e)} />
-                    <span className='p-mx-2'>or</span>
-                    <Dropdown className={styles.selectRoleDropdown} value={selectRoleName.label} options={roleNames} onChange={(e) => selectEditRoleHandler(e)} placeholder="Select a Role" />
-                  </div>
-                </div>
-              </div>
-              <div className={layoutStyles.textBox}>
-                <div className={styles.profileForm + ' ' + styles.createRoleGroup}>
-                  {
-                    editScopeSpinner ? <div className={styles.formSpinner}>
-                      <div className={styles.loading}></div>
-                    </div> : null
-                  }
-                  <div className={styles.inputBox}>
-                    <label htmlFor="name">Scope Name</label>
-                    {/* <InputText id="name" name="name" type="text" value={addScopeData.name} onChange={(e) => addScopeFieldsHandler(e.target.name, e.target.value, false)} /> */}
-                    <Dropdown className={styles.selectRoleDropdown} id="name" name='name' value={addScopeData.name} options={selectScopeName} onChange={(e) => addScopeFieldsHandler(e.target.name, e.target.value, false)} placeholder="Select a Scope" />
-                  </div>
-                  <div className={styles.radioButtons}>
-                    <div className={styles.radioBox}>
-                      <label htmlFor="create">Create</label>
-                      <Checkbox id="create" name="create" checked={addScopeData.access.create} onChange={(e) => addScopeFieldsHandler("create", !addScopeData.access.create, true)} />
-                    </div>
-                    <div className={styles.radioBox}>
-                      <label htmlFor="read">Read</label>
-                      <Checkbox id="read" name="read" checked={addScopeData.access.read} onChange={(e) => addScopeFieldsHandler("read", !addScopeData.access.read, true)} />
-                    </div>
-                    <div className={styles.radioBox}>
-                      <label htmlFor="update">Update</label>
-                      <Checkbox id="update" name="update" checked={addScopeData.access.update} onChange={(e) => addScopeFieldsHandler("update", !addScopeData.access.update, true)} />
-                    </div>
-                    <div className={styles.radioBox}>
-                      <label htmlFor="delete">Delete</label>
-                      <Checkbox id="delete" name="delete" checked={addScopeData.access.delete} onChange={(e) => addScopeFieldsHandler("delete", !addScopeData.access.delete, true)} />
-                    </div>
-                  </div>
-                  <div className="p-mt-3 p-mx-auto">
-                    <button onClick={addScopeHandler} className={layoutStyles.customBluebtn + ' p-m-auto'}>{editScopeIndex >= 0 ? "Save Edit" : "Add Scope"}</button>
-                  </div>
-                </div>
-              </div>
-              <div className={styles.teamMembertableBox}>
-                <table className={styles.teamMemberTable + ' ' + styles.createRoleTable}>
-                  <thead>
-                    <tr>
-                      <th>Scope name</th>
-                      <th>Scope slug</th>
-                      <th>Create</th>
-                      <th>Read</th>
-                      <th>Update</th>
-                      <th>Delete</th>
-                      <th>Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {
-                      !createRoleScopeData.scopes.length ?
-                        <tr>
-                          <td colSpan={7}>Please Add Scope</td>
-                        </tr>
-                        :
-                        [...createRoleScopeData.scopes].map((el, i) => {
-                          return <tr key={"create_role" + i}>
-                            <td>{el.name}</td>
-                            <td>{el.slug}</td>
-                            <td>
-                              {
-                                el.access.create ?
-                                  <BsCheck2Square />
-                                  :
-                                  <BsSquare />
-                              }
-                            </td>
-                            <td>
-                              {
-                                el.access.read ?
-                                  <BsCheck2Square />
-                                  :
-                                  <BsSquare />
-                              }
-                            </td>
-                            <td>
-                              {
-                                el.access.update ?
-                                  <BsCheck2Square />
-                                  :
-                                  <BsSquare />
-                              }
-                            </td>
-                            <td>
-                              {
-                                el.access.delete ?
-                                  <BsCheck2Square />
-                                  :
-                                  <BsSquare />
-                              }
-                            </td>
-                            <td>
-                              <button onClick={() => editScopeHandler(i)} className={layoutStyles.customBluebtn + ' p-m-1'}>Edit</button>
-                              <button onClick={() => deleteScopeHandler(i)} className={layoutStyles.customRedbtn + ' p-m-1'}>Delete</button>
-                            </td>
-                          </tr>
-                        })
-                    }
-                  </tbody>
-                </table>
-              </div>
-            </div>
-        }
-      </div>
-
-      {/* Invite People */}
-      <Dialog showHeader={false} onMaskClick={invitePeopleCloseHandler} contentClassName={styles.invitePeopleModal} visible={invitePeopleModal} style={{ width: '500px', }} onHide={() => ''}>
-        <div className={styles.invitePeopleModal}>
-          <h5>Invite People</h5>
-          <Formik
-            enableReinitialize
-            initialValues={{
-              name: '',
-              email: '',
-              role: { label: 'Testing', id: '61c80fa7b46f3dca7d5bdcfb' }
-            }}
-            validationSchema={validationSchema}
-            onSubmit={(
-              values: InviteFields,
-              { setSubmitting }: FormikHelpers<InviteFields>
-            ) => {
-              sendInviteHandler(JSON.stringify(values, null, 2));
-              setSubmitting(false);
-            }}
-          >
-            {props => (
-              <form onSubmit={props.handleSubmit}>
+      <DashboardLayout sidebar={true}>
+        <div className={layoutStyles.topBar}>
+          <p>Home / Proflie / <span>Team</span></p>
+          <h5>Manage Team</h5>
+        </div>
+        <div className={layoutStyles.box}>
+          {
+            !createRole ?
+              <div className={layoutStyles.headContentBox}>
                 {
-                  formSpinner ? <div className={styles.formSpinner}>
+                  teamMemberSpinner ? <div className={styles.formSpinner}>
                     <div className={styles.loading}></div>
                   </div> : null
                 }
-                <div className={styles.inputFields}>
-                  <div className={styles.inputBox}>
-                    <label htmlFor="inviteName">Name</label>
-                    <div>
-                      <Field type="text" name="name" />
-                      <ErrorMessage name="name">
-                        {(msg) => <p className={styles.error}>{msg}</p>}
-                      </ErrorMessage>
-                    </div>
+                <div className={layoutStyles.head}>
+                  <h4>Team Members <span>({teamMember.length})</span></h4>
+                  <div className={layoutStyles.editButtons}>
+                    <button onClick={() => setCreateRole(true)} className={layoutStyles.blueBtn}>Create & Edit Role</button>
+                    <button onClick={() => setInvitePeopleModal(true)} className={layoutStyles.blueBgBtn}>Invite People</button>
                   </div>
-                  <div className={styles.inputBox}>
-                    <label htmlFor="inviteEmail">Email</label>
-                    <div>
-                      <Field type="text" name="email" />
-                      <ErrorMessage name="email">
-                        {(msg) => <p className={styles.error}>{msg}</p>}
-                      </ErrorMessage>
-                    </div>
-                  </div>
-                  <div className={styles.inputBox}>
-                    <label htmlFor="inviteRole">Role</label>
+                </div>
+                <div>
+                  <table className={styles.teamMemberTable}>
+                    <thead>
+                      <tr>
+                        <th>Name</th>
+                        <th>Email address</th>
+                        <th>Role</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {
+                        teamMember.length ?
+                          teamMember.map((el, i) => {
+
+                            return <tr key={"team_member" + i}>
+                              <td>{el.username}</td>
+                              <td>{el.email}</td>
+                              <td>
+                                {
+                                  el.role_name != "Admin" ?
+                                    <Dropdown value={el.role_name} options={roleNames.map(function (el) { return el['label']; })} onChange={(e) => memberRoleUpdateHandler(el.user_id, e.target.value)} />
+                                    : el.role_name
+                                }
+                              </td>
+                            </tr>
+                          })
+                          :
+                          <tr>
+                            <td colSpan={3} align='center'>No data found</td>
+                          </tr>
+                      }
+                      {
+                        inviteMember.length ?
+                          inviteMember.map((el, i) => {
+
+                            return <tr key={"team_member" + i}>
+                              <td style={{ color: "green" }}>Invited</td>
+                              <td>{el.invited_user}</td>
+                              <td> {el.role_name} </td>
+                            </tr>
+                          })
+                          :
+                          null
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              :
+              <div className={layoutStyles.headContentBox}>
+                <div className={layoutStyles.head}>
+                  <h4>Create & Edit Role</h4>
+                  <div className={layoutStyles.editButtons}>
                     {
-                      roleNames ?
-                        <Dropdown id="inviteRole" className={styles.selectBox} name="role" value={props.values.role} options={roleNames} optionLabel="label" onChange={(e: any) => props.setFieldValue('role', e.target.value)} /> : ''
+                      (selectRoleName.label && selectRoleName.id) ? <button onClick={deleteRoleConfirmHandler} className={layoutStyles.customRedBgbtn}>Delete</button> : null
                     }
+                    <button onClick={discardRoleHandler} className={layoutStyles.blueBtn}>Discard</button>
+                    <button disabled={saveRoleBtn} onClick={saveRoleHandler} className={layoutStyles.blueBgBtn}>Save</button>
                   </div>
-                  <div className="p-d-flex p-ai-center p-mt-4">
-                    <div className="p-m-auto">
-                      <button type='submit' className={layoutStyles.customBlueBgbtn}>Save</button>
-                      <button type='button' onClick={() => setInvitePeopleModal(false)} className={layoutStyles.customBluebtn}>Cancel</button>
+                </div>
+                <div className={layoutStyles.textBox + ' ' + styles.roleNameBox}>
+                  <div className={styles.inputBox}>
+                    <label htmlFor="rolename">Role Name</label>
+                    <div className='p-d-flex w-100 p-ai-center'>
+                      <InputText id="rolename" name="rolename" type="text" placeholder='Create new role' value={createRoleName} onChange={(e) => createNewDataInputHandler(e)} />
+                      <span className='p-mx-2'>or</span>
+                      <Dropdown className={styles.selectRoleDropdown} value={selectRoleName.label} options={roleNames} onChange={(e) => selectEditRoleHandler(e)} placeholder="Select a Role" />
                     </div>
                   </div>
                 </div>
-              </form>
-            )}
-          </Formik>
+                <div className={layoutStyles.textBox}>
+                  <div className={styles.profileForm + ' ' + styles.createRoleGroup}>
+                    {
+                      editScopeSpinner ? <div className={styles.formSpinner}>
+                        <div className={styles.loading}></div>
+                      </div> : null
+                    }
+                    <div className={styles.inputBox}>
+                      <label htmlFor="name">Scope Name</label>
+                      {/* <InputText id="name" name="name" type="text" value={addScopeData.name} onChange={(e) => addScopeFieldsHandler(e.target.name, e.target.value, false)} /> */}
+                      <Dropdown className={styles.selectRoleDropdown} id="name" name='name' value={addScopeData.name} options={selectScopeName} onChange={(e) => addScopeFieldsHandler(e.target.name, e.target.value, false)} placeholder="Select a Scope" />
+                    </div>
+                    <div className={styles.radioButtons}>
+                      <div className={styles.radioBox}>
+                        <label htmlFor="create">Create</label>
+                        <Checkbox id="create" name="create" checked={addScopeData.access.create} onChange={(e) => addScopeFieldsHandler("create", !addScopeData.access.create, true)} />
+                      </div>
+                      <div className={styles.radioBox}>
+                        <label htmlFor="read">Read</label>
+                        <Checkbox id="read" name="read" checked={addScopeData.access.read} onChange={(e) => addScopeFieldsHandler("read", !addScopeData.access.read, true)} />
+                      </div>
+                      <div className={styles.radioBox}>
+                        <label htmlFor="update">Update</label>
+                        <Checkbox id="update" name="update" checked={addScopeData.access.update} onChange={(e) => addScopeFieldsHandler("update", !addScopeData.access.update, true)} />
+                      </div>
+                      <div className={styles.radioBox}>
+                        <label htmlFor="delete">Delete</label>
+                        <Checkbox id="delete" name="delete" checked={addScopeData.access.delete} onChange={(e) => addScopeFieldsHandler("delete", !addScopeData.access.delete, true)} />
+                      </div>
+                    </div>
+                    <div className="p-mt-3 p-mx-auto">
+                      <button onClick={addScopeHandler} className={layoutStyles.customBluebtn + ' p-m-auto'}>{editScopeIndex >= 0 ? "Save Edit" : "Add Scope"}</button>
+                    </div>
+                  </div>
+                </div>
+                <div className={styles.teamMembertableBox}>
+                  <table className={styles.teamMemberTable + ' ' + styles.createRoleTable}>
+                    <thead>
+                      <tr>
+                        <th>Scope name</th>
+                        <th>Scope slug</th>
+                        <th>Create</th>
+                        <th>Read</th>
+                        <th>Update</th>
+                        <th>Delete</th>
+                        <th>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {
+                        !createRoleScopeData.scopes.length ?
+                          <tr>
+                            <td colSpan={7}>Please Add Scope</td>
+                          </tr>
+                          :
+                          [...createRoleScopeData.scopes].map((el, i) => {
+                            return <tr key={"create_role" + i}>
+                              <td>{el.name}</td>
+                              <td>{el.slug}</td>
+                              <td>
+                                {
+                                  el.access.create ?
+                                    <BsCheck2Square />
+                                    :
+                                    <BsSquare />
+                                }
+                              </td>
+                              <td>
+                                {
+                                  el.access.read ?
+                                    <BsCheck2Square />
+                                    :
+                                    <BsSquare />
+                                }
+                              </td>
+                              <td>
+                                {
+                                  el.access.update ?
+                                    <BsCheck2Square />
+                                    :
+                                    <BsSquare />
+                                }
+                              </td>
+                              <td>
+                                {
+                                  el.access.delete ?
+                                    <BsCheck2Square />
+                                    :
+                                    <BsSquare />
+                                }
+                              </td>
+                              <td>
+                                <button onClick={() => editScopeHandler(i)} className={layoutStyles.customBluebtn + ' p-m-1'}>Edit</button>
+                                <button onClick={() => deleteScopeHandler(i)} className={layoutStyles.customRedbtn + ' p-m-1'}>Delete</button>
+                              </td>
+                            </tr>
+                          })
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+          }
         </div>
-      </Dialog>
-    </DashboardLayout>
+
+        {/* Invite People */}
+        <Dialog showHeader={false} onMaskClick={invitePeopleCloseHandler} contentClassName={styles.invitePeopleModal} visible={invitePeopleModal} style={{ width: '500px', }} onHide={() => ''}>
+          <div className={styles.invitePeopleModal}>
+            <h5>Invite People</h5>
+            <Formik
+              enableReinitialize
+              initialValues={{
+                name: '',
+                email: '',
+                role: { label: 'Testing', id: '61c80fa7b46f3dca7d5bdcfb' }
+              }}
+              validationSchema={validationSchema}
+              onSubmit={(
+                values: InviteFields,
+                { setSubmitting }: FormikHelpers<InviteFields>
+              ) => {
+                sendInviteHandler(JSON.stringify(values, null, 2));
+                setSubmitting(false);
+              }}
+            >
+              {props => (
+                <form onSubmit={props.handleSubmit}>
+                  {
+                    formSpinner ? <div className={styles.formSpinner}>
+                      <div className={styles.loading}></div>
+                    </div> : null
+                  }
+                  <div className={styles.inputFields}>
+                    <div className={styles.inputBox}>
+                      <label htmlFor="inviteName">Name</label>
+                      <div>
+                        <Field type="text" name="name" />
+                        <ErrorMessage name="name">
+                          {(msg) => <p className={styles.error}>{msg}</p>}
+                        </ErrorMessage>
+                      </div>
+                    </div>
+                    <div className={styles.inputBox}>
+                      <label htmlFor="inviteEmail">Email</label>
+                      <div>
+                        <Field type="text" name="email" />
+                        <ErrorMessage name="email">
+                          {(msg) => <p className={styles.error}>{msg}</p>}
+                        </ErrorMessage>
+                      </div>
+                    </div>
+                    <div className={styles.inputBox}>
+                      <label htmlFor="inviteRole">Role</label>
+                      {
+                        roleNames ?
+                          <Dropdown id="inviteRole" className={styles.selectBox} name="role" value={props.values.role} options={roleNames} optionLabel="label" onChange={(e: any) => props.setFieldValue('role', e.target.value)} /> : ''
+                      }
+                    </div>
+                    <div className="p-d-flex p-ai-center p-mt-4">
+                      <div className="p-m-auto">
+                        <button type='submit' className={layoutStyles.customBlueBgbtn}>Save</button>
+                        <button type='button' onClick={() => setInvitePeopleModal(false)} className={layoutStyles.customBluebtn}>Cancel</button>
+                      </div>
+                    </div>
+                  </div>
+                </form>
+              )}
+            </Formik>
+          </div>
+        </Dialog>
+      </DashboardLayout>
+    </>
   )
 }
 

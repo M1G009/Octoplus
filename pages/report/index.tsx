@@ -201,7 +201,7 @@ const CsvCompare: NextPage = (props: any) => {
     }
 
     return (
-        <DashboardLayout sidebar={false}>
+        <>
             <ToastContainer
                 position="top-right"
                 autoClose={3000}
@@ -213,88 +213,90 @@ const CsvCompare: NextPage = (props: any) => {
                 draggable
                 pauseOnHover
             />
-            <div className={layoutStyles.topBar}>
-                <div className='p-d-flex p-ai-center p-jc-between'>
-                    <div>
-                        <h5 className={styles.backBar}><button className={styles.backBtn} onClick={() => router.back()}><FiArrowLeft /></button> Report Selection</h5>
-                    </div>
-                </div>
-            </div>
-            <div className={layoutStyles.box} id="forPdf">
-                <div className={layoutStyles.headContentBox + " p-mb-5"}>
-                    <div className={layoutStyles.head}>
-                        <div className={'p-d-flex p-ai-center ' + styles.reportHead}>
-                            <div className={styles.reportSelect}>
-                                <label htmlFor=""><FiUser /> Assignee</label>
-                                <Dropdown id="compareId" className={styles.selectBox} name="column" value={assigneeCurrent} options={assigneeIds} onChange={(e) => setAssigneeCurrent(e.target.value)} />
-                            </div>
-                        </div>
+            <DashboardLayout sidebar={false}>
+                <div className={layoutStyles.topBar}>
+                    <div className='p-d-flex p-ai-center p-jc-between'>
                         <div>
-                            <Calendar disabled={!assignData || !assignData.length} dateFormat="dd/mm/yy" id="navigatorstemplate" value={rangeDate} selectionMode="range" onChange={(e: any) => setRangeDate(e.value)} monthNavigator yearNavigator yearRange="2010:2030" monthNavigatorTemplate={monthNavigatorTemplate} yearNavigatorTemplate={yearNavigatorTemplate} showIcon />
-                            <button disabled={!assignData || !assignData.length} className={layoutStyles.customBlueBgbtn} onClick={() => exportPdfHandler()}>Export Report</button>
+                            <h5 className={styles.backBar}><button className={styles.backBtn} onClick={() => router.back()}><FiArrowLeft /></button> Report Selection</h5>
                         </div>
-                    </div>
-                    <div className={styles.comparisonTableBox}>
-                        <div className={styles.comparisonTableOverflow}>
-                            {
-                                reportSpinner ? <div className={styles.formSpinner}>
-                                    <div className={styles.loading}></div>
-                                </div> : null
-                            }
-                            {
-                                assignData && assignData.length ?
-                                <table className={styles.comparisonTable}>
-                                    <thead>
-                                        <tr>
-                                            <th>Assignee Name</th>
-                                            <th>Total Contacts Assigned</th>
-                                            <th>Total Contacts Fixed</th>
-                                            <th>Contacts Fixed in Date Range</th>
-                                            <th>Avg. Contacts Fixed in Date Range</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {
-                                            assignData?.map((el, i) => {
-                                                return <tr key={"asssignData" + i}>
-                                                    <td>{el.username}</td>
-                                                    <td>{el.total}</td>
-                                                    <td>{el.fix} ({el.Perc_Com}%)</td>
-                                                    <td>{el.fix_range}</td>
-                                                    <td>{el.avg}</td>
-                                                </tr>
-                                            })
-                                        }
-                                    </tbody>
-                                </table>
-                                : <p className='p-text-center'>No data found</p>
-                            }
-                        </div>
-
-                        {
-                            Math.ceil(totalRecords / perPage) >= 1 && assignData && assignData.length ?
-                                <CustomPagination totalRecords={totalRecords} currentPage={currentPage} perPage={perPage} currentPageHandler={currentPageHandler} perPageHandler={perPageHandler} />
-                                : ''
-                        }
                     </div>
                 </div>
-                {
-                    graphBox && rangeDate && rangeDate[0] && rangeDate[1] ?
-                        <div className={layoutStyles.headContentBox + " p-mb-5"}>
-                            <div className={layoutStyles.head}>
-                                <h4>Performance Chart</h4>
-                            </div>
-                            <div className={styles.comparisonTableBox}>
-                                <div className='p-p-4'>
-                                    <Line options={options} data={data} />
+                <div className={layoutStyles.box} id="forPdf">
+                    <div className={layoutStyles.headContentBox + " p-mb-5"}>
+                        <div className={layoutStyles.head}>
+                            <div className={'p-d-flex p-ai-center ' + styles.reportHead}>
+                                <div className={styles.reportSelect}>
+                                    <label htmlFor=""><FiUser /> Assignee</label>
+                                    <Dropdown id="compareId" className={styles.selectBox} name="column" value={assigneeCurrent} options={assigneeIds} onChange={(e) => setAssigneeCurrent(e.target.value)} />
                                 </div>
                             </div>
+                            <div>
+                                <Calendar disabled={!assignData || !assignData.length} dateFormat="dd/mm/yy" id="navigatorstemplate" value={rangeDate} selectionMode="range" onChange={(e: any) => setRangeDate(e.value)} monthNavigator yearNavigator yearRange="2010:2030" monthNavigatorTemplate={monthNavigatorTemplate} yearNavigatorTemplate={yearNavigatorTemplate} showIcon />
+                                <button disabled={!assignData || !assignData.length} className={layoutStyles.customBlueBgbtn} onClick={() => exportPdfHandler()}>Export Report</button>
+                            </div>
                         </div>
-                        : null
-                }
-            </div>
+                        <div className={styles.comparisonTableBox}>
+                            <div className={styles.comparisonTableOverflow}>
+                                {
+                                    reportSpinner ? <div className={styles.formSpinner}>
+                                        <div className={styles.loading}></div>
+                                    </div> : null
+                                }
+                                {
+                                    assignData && assignData.length ?
+                                        <table className={styles.comparisonTable}>
+                                            <thead>
+                                                <tr>
+                                                    <th>Assignee Name</th>
+                                                    <th>Total Contacts Assigned</th>
+                                                    <th>Total Contacts Fixed</th>
+                                                    <th>Contacts Fixed in Date Range</th>
+                                                    <th>Avg. Contacts Fixed in Date Range</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {
+                                                    assignData?.map((el, i) => {
+                                                        return <tr key={"asssignData" + i}>
+                                                            <td>{el.username}</td>
+                                                            <td>{el.total}</td>
+                                                            <td>{el.fix} ({el.Perc_Com}%)</td>
+                                                            <td>{el.fix_range}</td>
+                                                            <td>{el.avg}</td>
+                                                        </tr>
+                                                    })
+                                                }
+                                            </tbody>
+                                        </table>
+                                        : <p className='p-text-center'>No data found</p>
+                                }
+                            </div>
 
-        </DashboardLayout>
+                            {
+                                Math.ceil(totalRecords / perPage) >= 1 && assignData && assignData.length ?
+                                    <CustomPagination totalRecords={totalRecords} currentPage={currentPage} perPage={perPage} currentPageHandler={currentPageHandler} perPageHandler={perPageHandler} />
+                                    : ''
+                            }
+                        </div>
+                    </div>
+                    {
+                        graphBox && rangeDate && rangeDate[0] && rangeDate[1] ?
+                            <div className={layoutStyles.headContentBox + " p-mb-5"}>
+                                <div className={layoutStyles.head}>
+                                    <h4>Performance Chart</h4>
+                                </div>
+                                <div className={styles.comparisonTableBox}>
+                                    <div className='p-p-4'>
+                                        <Line options={options} data={data} />
+                                    </div>
+                                </div>
+                            </div>
+                            : null
+                    }
+                </div>
+
+            </DashboardLayout>
+        </>
     )
 }
 

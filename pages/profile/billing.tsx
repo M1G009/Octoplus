@@ -269,7 +269,7 @@ const Billing: NextPage = () => {
   }
 
   return (
-    <DashboardLayout sidebar={true}>
+    <>
       <ToastContainer
         position="top-right"
         autoClose={3000}
@@ -281,185 +281,187 @@ const Billing: NextPage = () => {
         draggable
         pauseOnHover
       />
-      <div className={layoutStyles.topBar}>
-        <p>Home / Proflie / <span>Billing</span></p>
-        <h5>Billing Information</h5>
-      </div>
-      <div className={layoutStyles.box}>
-        <div className={layoutStyles.headContentBox + " p-mb-5"}>
-          <div className={layoutStyles.head}>
-            <h4>Payment Method</h4>
-            <div className={layoutStyles.editButtons}>
-              <button onClick={addPaymentMethodHandler} className={layoutStyles.blueBgBtn + " p-m-0"}>Add Payment Method</button>
-            </div>
-          </div>
-          <div className={layoutStyles.textBox}>
-            <div className={styles.paymentMethod}>
-              {
-                paymentMethodSpinner ? <div className={styles.formSpinner}>
-                  <div className={styles.loading}></div>
-                </div> : null
-              }
-              {
-                getCardDetails.length ?
-                  getCardDetails.map((card, i) => {
-                    return <div className={styles.methodCard} key={card._id}>
-                      <label htmlFor="">{card.Card_name} {card.is_primary == "Y" ? <span>Primary</span> : null}</label>
-                      <div className={styles.cardDetails}>
-                        <div className={styles.imgBox}>
-                          <div className={styles.cardType}>
-                            {cardTypeIconHandler(card.card_number)}
-                          </div>
-                          <div className={styles.textBox}>
-                            <h5>{card.card_type} {cardNumberHandler(card.card_number)}</h5>
-                            <p>Card expires at {card.expire_date}</p>
-                          </div>
-                        </div>
-                        <div className={styles.btnGroup}>
-                          {
-                            card.is_primary != "Y" ? <button onClick={() => deleteConfirm(card._id)} className={styles.deleteBtn}>Delete</button> : ''
-                          }
-                          <button onClick={() => editCardHandler(card._id)} className={styles.editBtn}>Edit</button>
-                        </div>
-                      </div>
-                    </div>
-                  })
-                  :
-                  <p className='p-m-0'>No card details found</p>
-              }
-            </div>
-          </div>
+      <DashboardLayout sidebar={true}>
+        <div className={layoutStyles.topBar}>
+          <p>Home / Proflie / <span>Billing</span></p>
+          <h5>Billing Information</h5>
         </div>
-        <div className={layoutStyles.headContentBox + " p-mb-5"}>
-          <div className={layoutStyles.head}>
-            <h4>Subcription Plan</h4>
-          </div>
-          <div className={layoutStyles.textBox + " " + styles.subPlan}>
-            <div className="p-d-flex p-ai-center p-jc-between">
-              <h5 className="p-m-0">Basic Plan</h5>
-              <div>
-                <button className={layoutStyles.customBlueBgbtn}>Upgrade Plan</button>
-                <button className={layoutStyles.customBluebtn}>Cancel</button>
+        <div className={layoutStyles.box}>
+          <div className={layoutStyles.headContentBox + " p-mb-5"}>
+            <div className={layoutStyles.head}>
+              <h4>Payment Method</h4>
+              <div className={layoutStyles.editButtons}>
+                <button onClick={addPaymentMethodHandler} className={layoutStyles.blueBgBtn + " p-m-0"}>Add Payment Method</button>
               </div>
             </div>
-          </div>
-        </div>
-        <div className={layoutStyles.headContentBox}>
-          <div className={layoutStyles.head}>
-            <h4>Invoice</h4>
-          </div>
-          <div className={layoutStyles.textBox + " p-d-flex p-jc-between"}>
-            <div className={styles.invoiceBox}>
-              <label htmlFor="DownloadInvoice">Download Invoice</label>
-              <Calendar id="monthpicker" value={invoiceDate} onChange={(e) => setInvoiceDate(e.value)} view="month" dateFormat="mm/yy" yearNavigator yearRange="2010:2030" />
-            </div>
-            <button className={styles.downloadBtn}><RiDownload2Line />Download PDF</button>
-          </div>
-        </div>
-      </div>
-
-      {/* Payment Card */}
-      <Dialog showHeader={false} contentClassName={styles.addCardModal} visible={addCardModal} style={{ width: '500px', }} onHide={() => ''}>
-        <div className={styles.addCardModal}>
-          <h5>
-            {
-              editId ? "Update Card" : "Add Card"
-            }
-          </h5>
-          <Formik
-            enableReinitialize
-            initialValues={{
-              Card_name: cardFields ? cardFields.Card_name : 'asdas',
-              card_number: cardFields ? cardFields.card_number : '',
-              cvv: cardFields ? cardFields.cvv : '',
-              expire_date: cardFields ? cardFields.expire_date : '',
-              is_primary: cardFields ? cardFields.is_primary : 'N'
-            }}
-            validationSchema={validationSchema}
-            onSubmit={(
-              values: CardFields,
-              { setSubmitting }: FormikHelpers<CardFields>
-            ) => {
-              saveCardHandler(JSON.stringify(values, null, 2));
-              setSubmitting(false);
-            }}
-          >
-            {props => (
-              <form onSubmit={props.handleSubmit}>
+            <div className={layoutStyles.textBox}>
+              <div className={styles.paymentMethod}>
                 {
-                  formSpinner ? <div className={styles.formSpinner}>
+                  paymentMethodSpinner ? <div className={styles.formSpinner}>
                     <div className={styles.loading}></div>
                   </div> : null
                 }
-                <div className={styles.inputFields}>
-                  <div className={styles.inputBox}>
-                    <label htmlFor="inviteEmail">Card Number</label>
-                    <div>
-                      <Field type="text" name="card_number" onChange={(e: any) => addCardFieldHandler('card_number', e.target.value, props.setFieldValue)} />
-                      <ErrorMessage name="card_number">
-                        {(msg) => <p className={styles.error}>{msg}</p>}
-                      </ErrorMessage>
-                    </div>
-                    {
-                      cardType ?
-                        (
-                          cardType == 'mastercard' ? <FaCcMastercard /> : (cardType == 'visa' ? <FaCcVisa /> : (cardType == 'diners-club' ? <FaCcDinersClub /> : (cardType == 'jcb' ? <FaCcJcb /> : (cardType == 'discover' ? <FaCcDiscover /> : (cardType == 'american-express' ? <FaCcAmex /> : null)))))
-                        )
-                        :
-                        null
-                    }
-                  </div>
-                  <div className={styles.inputBox}>
-                    <label htmlFor="inviteName">Card holder name</label>
-                    <div>
-                      <Field type="text" name="Card_name" onChange={(e: any) => addCardFieldHandler('Card_name', e.target.value, props.setFieldValue)} />
-                      <ErrorMessage name="Card_name">
-                        {(msg) => <p className={styles.error}>{msg}</p>}
-                      </ErrorMessage>
-                    </div>
-                  </div>
-                  <div className={styles.inputBox}>
-                    <label htmlFor="expire_date">Expire Date</label>
-                    <div>
-                      <Field type="text" name="expire_date" onChange={(e: any) => addCardFieldHandler('expire_date', e.target.value, props.setFieldValue)} />
-                      <ErrorMessage name="expire_date">
-                        {(msg) => <p className={styles.error}>{msg}</p>}
-                      </ErrorMessage>
-                    </div>
-                  </div>
-                  <div className={styles.inputBox}>
-                    <label htmlFor="cvv">CVV</label>
-                    <div>
-                      <Field type="text" name="cvv" onChange={(e: any) => addCardFieldHandler('cvv', e.target.value, props.setFieldValue)} />
-                      <ErrorMessage name="cvv">
-                        {(msg) => <p className={styles.error}>{msg}</p>}
-                      </ErrorMessage>
-                    </div>
-                  </div>
-                  <div className={styles.inputBox}>
-                    <label htmlFor="is_primary">Make Primary</label>
-                    <div>
-                      <Checkbox inputId="is_primary" name="is_primary" checked={props.values.is_primary == "Y"} onChange={(e) => props.setFieldValue('is_primary', e.target.checked ? "Y" : "N")} />
-                    </div>
-                  </div>
-                  <div className="p-d-flex p-ai-center p-mt-3">
-                    <div className="p-m-auto">
-                      <button type="submit" className={layoutStyles.customBlueBgbtn}>
-                        {
-                          editId ? "Update Card" : "Add Card"
-                        }
-                      </button>
-                      <button type="button" onClick={cancelAddCardHandler} className={layoutStyles.customBluebtn}>Cancel</button>
-                    </div>
-                  </div>
+                {
+                  getCardDetails.length ?
+                    getCardDetails.map((card, i) => {
+                      return <div className={styles.methodCard} key={card._id}>
+                        <label htmlFor="">{card.Card_name} {card.is_primary == "Y" ? <span>Primary</span> : null}</label>
+                        <div className={styles.cardDetails}>
+                          <div className={styles.imgBox}>
+                            <div className={styles.cardType}>
+                              {cardTypeIconHandler(card.card_number)}
+                            </div>
+                            <div className={styles.textBox}>
+                              <h5>{card.card_type} {cardNumberHandler(card.card_number)}</h5>
+                              <p>Card expires at {card.expire_date}</p>
+                            </div>
+                          </div>
+                          <div className={styles.btnGroup}>
+                            {
+                              card.is_primary != "Y" ? <button onClick={() => deleteConfirm(card._id)} className={styles.deleteBtn}>Delete</button> : ''
+                            }
+                            <button onClick={() => editCardHandler(card._id)} className={styles.editBtn}>Edit</button>
+                          </div>
+                        </div>
+                      </div>
+                    })
+                    :
+                    <p className='p-m-0'>No card details found</p>
+                }
+              </div>
+            </div>
+          </div>
+          <div className={layoutStyles.headContentBox + " p-mb-5"}>
+            <div className={layoutStyles.head}>
+              <h4>Subcription Plan</h4>
+            </div>
+            <div className={layoutStyles.textBox + " " + styles.subPlan}>
+              <div className="p-d-flex p-ai-center p-jc-between">
+                <h5 className="p-m-0">Basic Plan</h5>
+                <div>
+                  <button className={layoutStyles.customBlueBgbtn}>Upgrade Plan</button>
+                  <button className={layoutStyles.customBluebtn}>Cancel</button>
                 </div>
-              </form>
-            )}
-          </Formik>
+              </div>
+            </div>
+          </div>
+          <div className={layoutStyles.headContentBox}>
+            <div className={layoutStyles.head}>
+              <h4>Invoice</h4>
+            </div>
+            <div className={layoutStyles.textBox + " p-d-flex p-jc-between"}>
+              <div className={styles.invoiceBox}>
+                <label htmlFor="DownloadInvoice">Download Invoice</label>
+                <Calendar id="monthpicker" value={invoiceDate} onChange={(e) => setInvoiceDate(e.value)} view="month" dateFormat="mm/yy" yearNavigator yearRange="2010:2030" />
+              </div>
+              <button className={styles.downloadBtn}><RiDownload2Line />Download PDF</button>
+            </div>
+          </div>
         </div>
-      </Dialog>
 
-    </DashboardLayout>
+        {/* Payment Card */}
+        <Dialog showHeader={false} contentClassName={styles.addCardModal} visible={addCardModal} style={{ width: '500px', }} onHide={() => ''}>
+          <div className={styles.addCardModal}>
+            <h5>
+              {
+                editId ? "Update Card" : "Add Card"
+              }
+            </h5>
+            <Formik
+              enableReinitialize
+              initialValues={{
+                Card_name: cardFields ? cardFields.Card_name : 'asdas',
+                card_number: cardFields ? cardFields.card_number : '',
+                cvv: cardFields ? cardFields.cvv : '',
+                expire_date: cardFields ? cardFields.expire_date : '',
+                is_primary: cardFields ? cardFields.is_primary : 'N'
+              }}
+              validationSchema={validationSchema}
+              onSubmit={(
+                values: CardFields,
+                { setSubmitting }: FormikHelpers<CardFields>
+              ) => {
+                saveCardHandler(JSON.stringify(values, null, 2));
+                setSubmitting(false);
+              }}
+            >
+              {props => (
+                <form onSubmit={props.handleSubmit}>
+                  {
+                    formSpinner ? <div className={styles.formSpinner}>
+                      <div className={styles.loading}></div>
+                    </div> : null
+                  }
+                  <div className={styles.inputFields}>
+                    <div className={styles.inputBox}>
+                      <label htmlFor="inviteEmail">Card Number</label>
+                      <div>
+                        <Field type="text" name="card_number" onChange={(e: any) => addCardFieldHandler('card_number', e.target.value, props.setFieldValue)} />
+                        <ErrorMessage name="card_number">
+                          {(msg) => <p className={styles.error}>{msg}</p>}
+                        </ErrorMessage>
+                      </div>
+                      {
+                        cardType ?
+                          (
+                            cardType == 'mastercard' ? <FaCcMastercard /> : (cardType == 'visa' ? <FaCcVisa /> : (cardType == 'diners-club' ? <FaCcDinersClub /> : (cardType == 'jcb' ? <FaCcJcb /> : (cardType == 'discover' ? <FaCcDiscover /> : (cardType == 'american-express' ? <FaCcAmex /> : null)))))
+                          )
+                          :
+                          null
+                      }
+                    </div>
+                    <div className={styles.inputBox}>
+                      <label htmlFor="inviteName">Card holder name</label>
+                      <div>
+                        <Field type="text" name="Card_name" onChange={(e: any) => addCardFieldHandler('Card_name', e.target.value, props.setFieldValue)} />
+                        <ErrorMessage name="Card_name">
+                          {(msg) => <p className={styles.error}>{msg}</p>}
+                        </ErrorMessage>
+                      </div>
+                    </div>
+                    <div className={styles.inputBox}>
+                      <label htmlFor="expire_date">Expire Date</label>
+                      <div>
+                        <Field type="text" name="expire_date" onChange={(e: any) => addCardFieldHandler('expire_date', e.target.value, props.setFieldValue)} />
+                        <ErrorMessage name="expire_date">
+                          {(msg) => <p className={styles.error}>{msg}</p>}
+                        </ErrorMessage>
+                      </div>
+                    </div>
+                    <div className={styles.inputBox}>
+                      <label htmlFor="cvv">CVV</label>
+                      <div>
+                        <Field type="text" name="cvv" onChange={(e: any) => addCardFieldHandler('cvv', e.target.value, props.setFieldValue)} />
+                        <ErrorMessage name="cvv">
+                          {(msg) => <p className={styles.error}>{msg}</p>}
+                        </ErrorMessage>
+                      </div>
+                    </div>
+                    <div className={styles.inputBox}>
+                      <label htmlFor="is_primary">Make Primary</label>
+                      <div>
+                        <Checkbox inputId="is_primary" name="is_primary" checked={props.values.is_primary == "Y"} onChange={(e) => props.setFieldValue('is_primary', e.target.checked ? "Y" : "N")} />
+                      </div>
+                    </div>
+                    <div className="p-d-flex p-ai-center p-mt-3">
+                      <div className="p-m-auto">
+                        <button type="submit" className={layoutStyles.customBlueBgbtn}>
+                          {
+                            editId ? "Update Card" : "Add Card"
+                          }
+                        </button>
+                        <button type="button" onClick={cancelAddCardHandler} className={layoutStyles.customBluebtn}>Cancel</button>
+                      </div>
+                    </div>
+                  </div>
+                </form>
+              )}
+            </Formik>
+          </div>
+        </Dialog>
+
+      </DashboardLayout>
+    </>
   )
 }
 

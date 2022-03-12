@@ -233,7 +233,7 @@ const CsvCompare: NextPage = (props: any) => {
                 data: newCompareForm,
                 headers: { 'Content-Type': 'multipart/form-data', 'Authorization': JSON.parse(authToken) }
             });
-            
+
             if (data.status == "400") {
                 setNewCompareDataSpinner(false);
                 setCsvUploadError(data.message);
@@ -365,7 +365,7 @@ const CsvCompare: NextPage = (props: any) => {
                     headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
                 });
                 console.log(data);
-                
+
                 await fetchAllCompareRecord(currentPage, perPage);
                 setColumnMappingModal(false)
                 setColumnMappingModalSpinner(false);
@@ -406,7 +406,7 @@ const CsvCompare: NextPage = (props: any) => {
     }
 
     return (
-        <DashboardLayout sidebar={false}>
+        <>
             <ToastContainer
                 position="top-right"
                 autoClose={3000}
@@ -418,283 +418,285 @@ const CsvCompare: NextPage = (props: any) => {
                 draggable
                 pauseOnHover
             />
-            <div className={layoutStyles.topBar}>
-                <div className='p-d-flex p-ai-center p-jc-between'>
-                    <div>
-                        <p>Tools / <span>CSV Compare</span></p>
-                        <h5>CSV Compare</h5>
+            <DashboardLayout sidebar={false}>
+                <div className={layoutStyles.topBar}>
+                    <div className='p-d-flex p-ai-center p-jc-between'>
+                        <div>
+                            <p>Tools / <span>CSV Compare</span></p>
+                            <h5>CSV Compare</h5>
+                        </div>
+                        <button className={layoutStyles.customBlueBgbtn} onClick={() => setNewCompareModal(true)}>Start New Comparison</button>
                     </div>
-                    <button className={layoutStyles.customBlueBgbtn} onClick={() => setNewCompareModal(true)}>Start New Comparison</button>
                 </div>
-            </div>
-            <div className={layoutStyles.box}>
-                <div className={layoutStyles.headContentBox + " p-mb-5"}>
-                    <div className={layoutStyles.head}>
-                        <h4>Comparison Table</h4>
-                    </div>
-                    <div className={styles.comparisonTableBox}>
-                        <div className={styles.comparisonTableOverflow}>
-                            {
-                                compareCsvTableSpinner ? <div className={styles.formSpinner}>
-                                    <div className={styles.loading}></div>
-                                </div> : null
-                            }
-                            {
-                                <table className={styles.comparisonTable}>
-                                    <thead>
-                                        <tr>
-                                            <th>Compare Name</th>
-                                            <th>CSV File</th>
-                                            <th>Work Status</th>
-                                            <th>Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {
-                                            compareData && compareData.length ?
-                                                compareData.map((el, i) => {
-                                                    return <tr key={"compareTable" + i}>
-                                                        <td>
-                                                            {
-                                                                el.total_rows > el.fixed ?
-                                                                    el.compare_name
-                                                                    :
-                                                                    <>
-                                                                        {el.compare_name}
-                                                                        <span className={styles.completeTag}>Completed</span>
-                                                                    </>
-                                                            }
-                                                        </td>
-                                                        <td>{el.csv_name}</td>
-                                                        <td><MultiProgressBar complete={el.work_progress.complete} progress={el.work_progress.progress} ignored={el.work_progress.ignored} /></td>
-                                                        <td>
-                                                            <div className='p-d-flex'>
+                <div className={layoutStyles.box}>
+                    <div className={layoutStyles.headContentBox + " p-mb-5"}>
+                        <div className={layoutStyles.head}>
+                            <h4>Comparison Table</h4>
+                        </div>
+                        <div className={styles.comparisonTableBox}>
+                            <div className={styles.comparisonTableOverflow}>
+                                {
+                                    compareCsvTableSpinner ? <div className={styles.formSpinner}>
+                                        <div className={styles.loading}></div>
+                                    </div> : null
+                                }
+                                {
+                                    <table className={styles.comparisonTable}>
+                                        <thead>
+                                            <tr>
+                                                <th>Compare Name</th>
+                                                <th>CSV File</th>
+                                                <th>Work Status</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {
+                                                compareData && compareData.length ?
+                                                    compareData.map((el, i) => {
+                                                        return <tr key={"compareTable" + i}>
+                                                            <td>
                                                                 {
-                                                                    el.is_active == "Y" ?
-                                                                        <>
-                                                                            <button className={layoutStyles.blueTextBtn + " p-d-flex p-ai-center"} onClick={() => router.push(`/csvreport?id=${el._id}`)}><FaRegEye className='p-mr-1' /> <span>Reports</span></button>
-
-                                                                            {
-                                                                                el.total_rows > el.fixed ?
-                                                                                    <button className={layoutStyles.blueTextBtn + " p-d-flex p-ai-center"} onClick={() => compareCsvDialogHandler(el._id, el.is_active)}><MdDashboard className='p-mr-1' /> <span>Dashboard</span></button>
-                                                                                    : ""
-                                                                            }
-                                                                        </>
+                                                                    el.total_rows > el.fixed ?
+                                                                        el.compare_name
                                                                         :
-                                                                        <button className={layoutStyles.blueTextBtn + " p-d-flex p-ai-center"} onClick={() => compareCsvDialogHandler(el._id, el.is_active)}><MdCompare className='p-mr-1' /> <span>Continue comparing</span></button>
+                                                                        <>
+                                                                            {el.compare_name}
+                                                                            <span className={styles.completeTag}>Completed</span>
+                                                                        </>
                                                                 }
+                                                            </td>
+                                                            <td>{el.csv_name}</td>
+                                                            <td><MultiProgressBar complete={el.work_progress.complete} progress={el.work_progress.progress} ignored={el.work_progress.ignored} /></td>
+                                                            <td>
+                                                                <div className='p-d-flex'>
+                                                                    {
+                                                                        el.is_active == "Y" ?
+                                                                            <>
+                                                                                <button className={layoutStyles.blueTextBtn + " p-d-flex p-ai-center"} onClick={() => router.push(`/csvreport?id=${el._id}`)}><FaRegEye className='p-mr-1' /> <span>Reports</span></button>
 
-                                                                <button className={layoutStyles.customRedFontbtn + " p-d-flex p-ai-center"} onClick={() => deleteCsvDialogHandler(el._id)}><FaRegTrashAlt className='p-mr-1' /> <span>Delete</span></button>
-                                                            </div>
-                                                        </td>
+                                                                                {
+                                                                                    el.total_rows > el.fixed ?
+                                                                                        <button className={layoutStyles.blueTextBtn + " p-d-flex p-ai-center"} onClick={() => compareCsvDialogHandler(el._id, el.is_active)}><MdDashboard className='p-mr-1' /> <span>Dashboard</span></button>
+                                                                                        : ""
+                                                                                }
+                                                                            </>
+                                                                            :
+                                                                            <button className={layoutStyles.blueTextBtn + " p-d-flex p-ai-center"} onClick={() => compareCsvDialogHandler(el._id, el.is_active)}><MdCompare className='p-mr-1' /> <span>Continue comparing</span></button>
+                                                                    }
+
+                                                                    <button className={layoutStyles.customRedFontbtn + " p-d-flex p-ai-center"} onClick={() => deleteCsvDialogHandler(el._id)}><FaRegTrashAlt className='p-mr-1' /> <span>Delete</span></button>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    })
+                                                    :
+                                                    <tr>
+                                                        <td align='center' colSpan={4}>No record found</td>
                                                     </tr>
-                                                })
-                                                :
-                                                <tr>
-                                                    <td align='center' colSpan={4}>No record found</td>
-                                                </tr>
-                                        }
-                                    </tbody>
-                                </table>
-                            }
-                        </div>
+                                            }
+                                        </tbody>
+                                    </table>
+                                }
+                            </div>
 
-                        {
-                            Math.ceil(totalRecords / perPage) >= 1 && compareData.length ?
-                                <CustomPagination totalRecords={totalRecords} currentPage={currentPage} perPage={perPage} currentPageHandler={currentPageHandler} perPageHandler={perPageHandler} />
-                                : ''
-                        }
-                    </div>
-                </div>
-            </div>
-
-            {/* New Compare Modal */}
-            <Dialog showHeader={false} onMaskClick={newCompareCloseHandler} contentClassName={styles.modelsCustomStyles} maskClassName={styles.dialogMask} visible={newCompareModal} style={{ width: '500px', }} onHide={() => ''}>
-                <Formik
-                    enableReinitialize
-                    initialValues={{
-                        compare_name: '',
-                        registry: 'My Registry',
-                        csv_file: '',
-                        csv_name: ''
-                    }}
-                    validationSchema={newCompareSchema}
-                    onSubmit={(
-                        values: NewCompareFields,
-                        { setSubmitting }: FormikHelpers<NewCompareFields>
-                    ) => {
-                        newCompareSaveHandler(values);
-                        setSubmitting(false);
-                    }}
-                >
-                    {props => (
-                        <form onSubmit={props.handleSubmit}>
                             {
-                                newCompareDataSpinner ? <div className={styles.formSpinner}>
-                                    <div className={styles.loading}></div>
-                                </div> : null
+                                Math.ceil(totalRecords / perPage) >= 1 && compareData.length ?
+                                    <CustomPagination totalRecords={totalRecords} currentPage={currentPage} perPage={perPage} currentPageHandler={currentPageHandler} perPageHandler={perPageHandler} />
+                                    : ''
                             }
-                            <div className={styles.replaceDataModal}>
-                                <h5>New Compare</h5>
-                                <div className={styles.inputFields}>
-                                    <div className={styles.replaceFields}>
-                                        <div className={styles.inputBox}>
-                                            <label>Compare name</label>
-                                            <Field type="text" name="compare_name" />
-                                            <ErrorMessage name="compare_name">
-                                                {(msg) => <p className={styles.error}>{msg}</p>}
-                                            </ErrorMessage>
-                                        </div>
-                                    </div>
-                                    <div className={styles.replaceFields}>
-                                        <div className={styles.inputBox}>
-                                            <Field type="text" name="registry" placeholder="My Registry" readOnly />
-                                            <ErrorMessage name="registry">
-                                                {(msg) => <p className={styles.error}>{msg}</p>}
-                                            </ErrorMessage>
-                                        </div>
-                                        <AiOutlineSwap className={styles.swapIcon} />
-                                        <div className={styles.CSVUpload}>
-                                            <div className={styles.inputBox + " p-mb-3"}>
-                                                <label
-                                                    htmlFor="compareCSVFileUpload"
-                                                    className="button">
-                                                    Upload CSV
-                                                    <FiUpload className='p-ml-auto' />
-                                                </label>
-                                                <p className={styles.fileName}>{csvFileName(props.values.csv_file)}</p>
-                                                <input id="compareCSVFileUpload" name="csv_file" type="file" accept=".csv" onChange={(e) => csvFileUploadHandler(e, props.setFieldValue)} className={styles.CSVFileUpload} />
-
-                                                <ErrorMessage name="csv_file">
-                                                    {(msg) => <p className={styles.error}>{msg}</p>}
-                                                </ErrorMessage>
-                                            </div>
-                                            <div className={styles.inputBox}>
-                                                <Field type="text" name="csv_name" placeholder="CSV Name" />
-                                                <ErrorMessage name="csv_name">
-                                                    {(msg) => <p className={styles.error}>{msg}</p>}
-                                                </ErrorMessage>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    {
-                                        csvUploadError ?
-                                            <p className={styles.csvUploadError}>{csvUploadError}</p>
-                                            : ""
-                                    }
-                                    {/* <p className='error'>csvUploadError</p> */}
-
-                                    <div className="p-d-flex p-ai-center p-mt-4">
-                                        <div className="p-m-auto">
-                                            <button type='button' onClick={() => setNewCompareModal(false)} className={layoutStyles.customBluebtn}>Cancel</button>
-                                            <button type='submit' className={layoutStyles.customBlueBgbtn}>Column mapping</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </form>
-                    )}
-                </Formik>
-            </Dialog>
-
-            {/* Column Mapping Modal */}
-            <Dialog showHeader={false} contentClassName={styles.modelsCustomStyles} maskClassName={styles.dialogMask} visible={columnMappingModal} style={{ width: '500px', }} onHide={() => ''} onMaskClick={columnMappingCloseHandler}>
-                <div className={styles.replaceDataModal}>
-                    {
-                        columnMappingModalSpinner ? <div className={styles.formSpinner}>
-                            <div className={styles.loading}></div>
-                        </div> : null
-                    }
-                    <h5>Column Mapping (Match the Registry columns with CSV)</h5>
-                    <div className={styles.inputFields}>
-
-                        <div className={styles.columnMappingBox}>
-
-                            <div className={styles.columnsData}>
-                                <span className={styles.columnItem}>CSV Column</span>
-                                {
-                                    mappingCsvColumn ?
-                                        <DragSwapActive mappingCsvColumn={mappingCsvColumn} setMapppingTabledata={setMappingCsvColumn} dragBtn={styles.dragBtn} className={styles.columnItem} classNameIgnore={styles.columnItem + " " + styles.columnItemIgnore}
-                                            active={styles.active} activeBtn={styles.activeBtn} activeBtnRed={styles.activeBtnRed} csvColumnActiveHandler={csvColumnActiveHandler} />
-                                        : ''
-                                }
-                            </div>
-                            <div className={styles.columnsData}>
-                                <span className={styles.columnItem}>Registry Column</span>
-                                {
-                                    mappingRegistryColumnIndex ?
-                                        <DragSwap mappingRegistryColumn={mappingRegistryColumnIndex} setMapppingTabledata={setMappingRegistryColumnIndex} dragBtn={styles.dragBtn} className={styles.columnItem} classNameIgnore={styles.columnItem + " " + styles.columnItemIgnore} />
-                                        : ''
-                                }
-                            </div>
-                        </div>
-                        <div className='p-mt-3'>
-                            <button type='button' onClick={() => setAddNewFieldModal(true)} className={layoutStyles.customBluebtn + " p-d-flex p-ai-center p-ml-auto"}><FiPlus /> Add Field</button>
-                        </div>
-
-                        <div className="p-d-flex p-ai-center p-mt-4">
-                            <div className="p-m-auto">
-                                <button type='button' onClick={() => { setColumnMappingModal(false); setNewCompareModal(false) }} className={layoutStyles.customBluebtn}>Cancel</button>
-                                <button type='button' onClick={() => startMappingHandler()} className={layoutStyles.customBlueBgbtn}>Start Comparing</button>
-                            </div>
                         </div>
                     </div>
                 </div>
-            </Dialog>
 
-            {/* Add New Field-Modal */}
-            <Dialog showHeader={false} contentClassName={styles.addNewFieldModalCustomStyles} maskClassName={styles.dialogMask} visible={addNewFieldModal} style={{ width: '500px', }} onHide={() => ''} onMaskClick={addNewFieldCloseHandler}>
-                <div className={styles.addNewFieldModal}>
-                    <h5>Add new field</h5>
+                {/* New Compare Modal */}
+                <Dialog showHeader={false} onMaskClick={newCompareCloseHandler} contentClassName={styles.modelsCustomStyles} maskClassName={styles.dialogMask} visible={newCompareModal} style={{ width: '500px', }} onHide={() => ''}>
                     <Formik
                         enableReinitialize
                         initialValues={{
-                            column: '',
-                            dtype: 'text'
+                            compare_name: '',
+                            registry: 'My Registry',
+                            csv_file: '',
+                            csv_name: ''
                         }}
-                        validationSchema={validationSchema}
+                        validationSchema={newCompareSchema}
                         onSubmit={(
-                            values: AddNewFiled,
-                            { setSubmitting }: FormikHelpers<AddNewFiled>
+                            values: NewCompareFields,
+                            { setSubmitting }: FormikHelpers<NewCompareFields>
                         ) => {
-                            addNewFiledHandler(JSON.stringify(values, null, 2));
+                            newCompareSaveHandler(values);
                             setSubmitting(false);
                         }}
                     >
                         {props => (
                             <form onSubmit={props.handleSubmit}>
                                 {
-                                    addFiledSpinner ? <div className={styles.formSpinner}>
+                                    newCompareDataSpinner ? <div className={styles.formSpinner}>
                                         <div className={styles.loading}></div>
                                     </div> : null
                                 }
-                                <div className={styles.inputFields}>
-                                    <div className={styles.inputBox}>
-                                        <label htmlFor="column">Enter field name for new column</label>
-                                        <Field type="text" name="column" />
-                                        <ErrorMessage name="column">
-                                            {(msg) => <p className={styles.error}>{msg}</p>}
-                                        </ErrorMessage>
-                                    </div>
+                                <div className={styles.replaceDataModal}>
+                                    <h5>New Compare</h5>
+                                    <div className={styles.inputFields}>
+                                        <div className={styles.replaceFields}>
+                                            <div className={styles.inputBox}>
+                                                <label>Compare name</label>
+                                                <Field type="text" name="compare_name" />
+                                                <ErrorMessage name="compare_name">
+                                                    {(msg) => <p className={styles.error}>{msg}</p>}
+                                                </ErrorMessage>
+                                            </div>
+                                        </div>
+                                        <div className={styles.replaceFields}>
+                                            <div className={styles.inputBox}>
+                                                <Field type="text" name="registry" placeholder="My Registry" readOnly />
+                                                <ErrorMessage name="registry">
+                                                    {(msg) => <p className={styles.error}>{msg}</p>}
+                                                </ErrorMessage>
+                                            </div>
+                                            <AiOutlineSwap className={styles.swapIcon} />
+                                            <div className={styles.CSVUpload}>
+                                                <div className={styles.inputBox + " p-mb-3"}>
+                                                    <label
+                                                        htmlFor="compareCSVFileUpload"
+                                                        className="button">
+                                                        Upload CSV
+                                                        <FiUpload className='p-ml-auto' />
+                                                    </label>
+                                                    <p className={styles.fileName}>{csvFileName(props.values.csv_file)}</p>
+                                                    <input id="compareCSVFileUpload" name="csv_file" type="file" accept=".csv" onChange={(e) => csvFileUploadHandler(e, props.setFieldValue)} className={styles.CSVFileUpload} />
 
-                                    <div className={styles.inputBox}>
-                                        <label htmlFor="dataType">Select the data type</label>
-                                        <Dropdown id="inviteRole" className={styles.selectBox} name="dtype" value={props.values.dtype} options={dataType} onChange={(e: any) => props.setFieldValue('dtype', e.target.value)} />
-                                    </div>
-                                    <div className="p-d-flex p-ai-center p-mt-4">
-                                        <div className="p-m-auto">
-                                            <button type='submit' className={layoutStyles.customBlueBgbtn}>Save</button>
-                                            <button type='button' onClick={() => setAddNewFieldModal(false)} className={layoutStyles.customBluebtn}>Cancel</button>
+                                                    <ErrorMessage name="csv_file">
+                                                        {(msg) => <p className={styles.error}>{msg}</p>}
+                                                    </ErrorMessage>
+                                                </div>
+                                                <div className={styles.inputBox}>
+                                                    <Field type="text" name="csv_name" placeholder="CSV Name" />
+                                                    <ErrorMessage name="csv_name">
+                                                        {(msg) => <p className={styles.error}>{msg}</p>}
+                                                    </ErrorMessage>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {
+                                            csvUploadError ?
+                                                <p className={styles.csvUploadError}>{csvUploadError}</p>
+                                                : ""
+                                        }
+                                        {/* <p className='error'>csvUploadError</p> */}
+
+                                        <div className="p-d-flex p-ai-center p-mt-4">
+                                            <div className="p-m-auto">
+                                                <button type='button' onClick={() => setNewCompareModal(false)} className={layoutStyles.customBluebtn}>Cancel</button>
+                                                <button type='submit' className={layoutStyles.customBlueBgbtn}>Column mapping</button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </form>
                         )}
                     </Formik>
-                </div>
-            </Dialog>
+                </Dialog>
 
-        </DashboardLayout>
+                {/* Column Mapping Modal */}
+                <Dialog showHeader={false} contentClassName={styles.modelsCustomStyles} maskClassName={styles.dialogMask} visible={columnMappingModal} style={{ width: '500px', }} onHide={() => ''} onMaskClick={columnMappingCloseHandler}>
+                    <div className={styles.replaceDataModal}>
+                        {
+                            columnMappingModalSpinner ? <div className={styles.formSpinner}>
+                                <div className={styles.loading}></div>
+                            </div> : null
+                        }
+                        <h5>Column Mapping (Match the Registry columns with CSV)</h5>
+                        <div className={styles.inputFields}>
+
+                            <div className={styles.columnMappingBox}>
+
+                                <div className={styles.columnsData}>
+                                    <span className={styles.columnItem}>CSV Column</span>
+                                    {
+                                        mappingCsvColumn ?
+                                            <DragSwapActive mappingCsvColumn={mappingCsvColumn} setMapppingTabledata={setMappingCsvColumn} dragBtn={styles.dragBtn} className={styles.columnItem} classNameIgnore={styles.columnItem + " " + styles.columnItemIgnore}
+                                                active={styles.active} activeBtn={styles.activeBtn} activeBtnRed={styles.activeBtnRed} csvColumnActiveHandler={csvColumnActiveHandler} />
+                                            : ''
+                                    }
+                                </div>
+                                <div className={styles.columnsData}>
+                                    <span className={styles.columnItem}>Registry Column</span>
+                                    {
+                                        mappingRegistryColumnIndex ?
+                                            <DragSwap mappingRegistryColumn={mappingRegistryColumnIndex} setMapppingTabledata={setMappingRegistryColumnIndex} dragBtn={styles.dragBtn} className={styles.columnItem} classNameIgnore={styles.columnItem + " " + styles.columnItemIgnore} />
+                                            : ''
+                                    }
+                                </div>
+                            </div>
+                            <div className='p-mt-3'>
+                                <button type='button' onClick={() => setAddNewFieldModal(true)} className={layoutStyles.customBluebtn + " p-d-flex p-ai-center p-ml-auto"}><FiPlus /> Add Field</button>
+                            </div>
+
+                            <div className="p-d-flex p-ai-center p-mt-4">
+                                <div className="p-m-auto">
+                                    <button type='button' onClick={() => { setColumnMappingModal(false); setNewCompareModal(false) }} className={layoutStyles.customBluebtn}>Cancel</button>
+                                    <button type='button' onClick={() => startMappingHandler()} className={layoutStyles.customBlueBgbtn}>Start Comparing</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </Dialog>
+
+                {/* Add New Field-Modal */}
+                <Dialog showHeader={false} contentClassName={styles.addNewFieldModalCustomStyles} maskClassName={styles.dialogMask} visible={addNewFieldModal} style={{ width: '500px', }} onHide={() => ''} onMaskClick={addNewFieldCloseHandler}>
+                    <div className={styles.addNewFieldModal}>
+                        <h5>Add new field</h5>
+                        <Formik
+                            enableReinitialize
+                            initialValues={{
+                                column: '',
+                                dtype: 'text'
+                            }}
+                            validationSchema={validationSchema}
+                            onSubmit={(
+                                values: AddNewFiled,
+                                { setSubmitting }: FormikHelpers<AddNewFiled>
+                            ) => {
+                                addNewFiledHandler(JSON.stringify(values, null, 2));
+                                setSubmitting(false);
+                            }}
+                        >
+                            {props => (
+                                <form onSubmit={props.handleSubmit}>
+                                    {
+                                        addFiledSpinner ? <div className={styles.formSpinner}>
+                                            <div className={styles.loading}></div>
+                                        </div> : null
+                                    }
+                                    <div className={styles.inputFields}>
+                                        <div className={styles.inputBox}>
+                                            <label htmlFor="column">Enter field name for new column</label>
+                                            <Field type="text" name="column" />
+                                            <ErrorMessage name="column">
+                                                {(msg) => <p className={styles.error}>{msg}</p>}
+                                            </ErrorMessage>
+                                        </div>
+
+                                        <div className={styles.inputBox}>
+                                            <label htmlFor="dataType">Select the data type</label>
+                                            <Dropdown id="inviteRole" className={styles.selectBox} name="dtype" value={props.values.dtype} options={dataType} onChange={(e: any) => props.setFieldValue('dtype', e.target.value)} />
+                                        </div>
+                                        <div className="p-d-flex p-ai-center p-mt-4">
+                                            <div className="p-m-auto">
+                                                <button type='submit' className={layoutStyles.customBlueBgbtn}>Save</button>
+                                                <button type='button' onClick={() => setAddNewFieldModal(false)} className={layoutStyles.customBluebtn}>Cancel</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                            )}
+                        </Formik>
+                    </div>
+                </Dialog>
+
+            </DashboardLayout>
+        </>
     )
 }
 

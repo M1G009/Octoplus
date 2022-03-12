@@ -47,7 +47,7 @@ const CsvCompare: NextPage = (props: any) => {
             }
             setTableSpinner(true)
             let query;
-            if(assigneeCurrent){
+            if (assigneeCurrent) {
                 query = { csv_id, assignee: assigneeCurrent };
             } else {
                 query = { csv_id }
@@ -92,7 +92,7 @@ const CsvCompare: NextPage = (props: any) => {
     }
 
     return (
-        <DashboardLayout sidebar={false}>
+        <>
             <ToastContainer
                 position="top-right"
                 autoClose={3000}
@@ -104,66 +104,68 @@ const CsvCompare: NextPage = (props: any) => {
                 draggable
                 pauseOnHover
             />
-            <div className={layoutStyles.topBar}>
-                <div className='p-d-flex p-ai-center p-jc-between'>
-                    <div>
-                        <h5 className={styles.backBar}><button className={styles.backBtn} onClick={() => router.back()}><FiArrowLeft /></button> Progress Details</h5>
+            <DashboardLayout sidebar={false}>
+                <div className={layoutStyles.topBar}>
+                    <div className='p-d-flex p-ai-center p-jc-between'>
+                        <div>
+                            <h5 className={styles.backBar}><button className={styles.backBtn} onClick={() => router.back()}><FiArrowLeft /></button> Progress Details</h5>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div className={layoutStyles.box}>
-                <div className={layoutStyles.headContentBox + " p-mb-5"}>
-                    <div className={layoutStyles.head}>
-                        <div className={'p-d-flex p-ai-center ' + styles.reportHead}>
-                            <div className={styles.reportSelect}>
-                                <label htmlFor=""><FiUser /> Assignee</label>
-                                <Dropdown id="compareId" className={styles.selectBox} name="column" value={assigneeCurrent} options={assigneeIds} onChange={(e) => setAssigneeCurrent(e.target.value)} />
+                <div className={layoutStyles.box}>
+                    <div className={layoutStyles.headContentBox + " p-mb-5"}>
+                        <div className={layoutStyles.head}>
+                            <div className={'p-d-flex p-ai-center ' + styles.reportHead}>
+                                <div className={styles.reportSelect}>
+                                    <label htmlFor=""><FiUser /> Assignee</label>
+                                    <Dropdown id="compareId" className={styles.selectBox} name="column" value={assigneeCurrent} options={assigneeIds} onChange={(e) => setAssigneeCurrent(e.target.value)} />
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <div className={styles.comparisonTableBox}>
-                        <div className={styles.comparisonTableOverflow}>
-                            {
-                                tableSpinner ? <div className={styles.formSpinner}>
-                                    <div className={styles.loading}></div>
-                                </div> : null
-                            }
-                            {
-                                assignData && assignData.length ?
-                                <table className={styles.comparisonTable}>
-                                    <thead>
-                                        <tr>
-                                            <th>Assignee Name</th>
-                                            <th>Total Contacts Assigned</th>
-                                            <th>Total Contacts Fixed</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {
-                                            assignData?.map((el, i) => {
-                                                return <tr key={"asssignData" + i}>
-                                                    <td>{el.username}</td>
-                                                    <td>{el.total}</td>
-                                                    <td>{el.fix} ({el.Perc_Com}%)</td>
+                        <div className={styles.comparisonTableBox}>
+                            <div className={styles.comparisonTableOverflow}>
+                                {
+                                    tableSpinner ? <div className={styles.formSpinner}>
+                                        <div className={styles.loading}></div>
+                                    </div> : null
+                                }
+                                {
+                                    assignData && assignData.length ?
+                                        <table className={styles.comparisonTable}>
+                                            <thead>
+                                                <tr>
+                                                    <th>Assignee Name</th>
+                                                    <th>Total Contacts Assigned</th>
+                                                    <th>Total Contacts Fixed</th>
                                                 </tr>
-                                            })
-                                        }
-                                    </tbody>
-                                </table>
-                                : <p className='p-text-center'>No data found</p>
+                                            </thead>
+                                            <tbody>
+                                                {
+                                                    assignData?.map((el, i) => {
+                                                        return <tr key={"asssignData" + i}>
+                                                            <td>{el.username}</td>
+                                                            <td>{el.total}</td>
+                                                            <td>{el.fix} ({el.Perc_Com}%)</td>
+                                                        </tr>
+                                                    })
+                                                }
+                                            </tbody>
+                                        </table>
+                                        : <p className='p-text-center'>No data found</p>
+                                }
+                            </div>
+
+                            {
+                                Math.ceil(totalRecords / perPage) >= 1 && contacts.length ?
+                                    <CustomPagination totalRecords={totalRecords} currentPage={currentPage} perPage={perPage} currentPageHandler={currentPageHandler} perPageHandler={perPageHandler} />
+                                    : ''
                             }
                         </div>
-
-                        {
-                            Math.ceil(totalRecords / perPage) >= 1 && contacts.length ?
-                                <CustomPagination totalRecords={totalRecords} currentPage={currentPage} perPage={perPage} currentPageHandler={currentPageHandler} perPageHandler={perPageHandler} />
-                                : ''
-                        }
                     </div>
                 </div>
-            </div>
 
-        </DashboardLayout>
+            </DashboardLayout>
+        </>
     )
 }
 

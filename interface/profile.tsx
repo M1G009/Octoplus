@@ -89,6 +89,7 @@ export interface ILoginUserData {
     username: string;
     email: string;
     country: string;
+    location: any;
     profile_photo: string;
     IS_BLOCKED: string;
     phone_number: string;

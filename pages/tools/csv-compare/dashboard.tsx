@@ -15,7 +15,7 @@ import { confirmDialog } from 'primereact/confirmdialog';
 
 // 3rd Party Imports
 import { ToastContainer } from "react-toastify";
-import { FaRegEdit, FaRegSave } from "react-icons/fa";
+import { FaRegEdit, FaRegSave, FaArrowLeft } from "react-icons/fa";
 import { Formik, FieldArray, FormikHelpers } from 'formik';
 import { BsExclamationCircleFill } from "react-icons/bs";
 import toast from "../../../components/Toast";
@@ -103,7 +103,7 @@ const CsvCompare: NextPage = (props: any) => {
                 headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
             });
             console.log("SubColumnData", data);
-            
+
             if (data.data) {
                 setRegistryEntries(data.data.registry)
                 setRegistryEntriesCopy(data.data.registry)
@@ -150,11 +150,11 @@ const CsvCompare: NextPage = (props: any) => {
             if (data.data.length) {
                 let subColumnsDataArray = [...data.data];
                 subColumnsDataArray.map((el, i) => {
-                    if(!el.value){
-                        subColumnsDataArray.splice(i,1);
+                    if (!el.value) {
+                        subColumnsDataArray.splice(i, 1);
                     }
                 })
-                
+
                 let activeVal = '';
                 let newArray;
 
@@ -432,23 +432,23 @@ const CsvCompare: NextPage = (props: any) => {
                 }
             })
 
-            let filterDatas = {...data.data[0]}
+            let filterDatas = { ...data.data[0] }
             Object.keys(filterDatas).map((key: any) => {
                 let newArray: any = [];
                 filterDatas[key].map((el: any) => {
-                    if(el && el != "0" && el != "Null" && el != "null"){
+                    if (el && el != "0" && el != "Null" && el != "null") {
                         return newArray.push(el)
                     }
                 })
 
-                if(newArray.length){
+                if (newArray.length) {
                     return filterDatas[key] = newArray;
                 } else {
                     delete filterDatas[key]
                 }
             })
-            
-            
+
+
             setAssignFiltersData(filterDatas);
             setInitialAssignFiltersData(newObj);
             setAssignContactModalSpinner(false)
@@ -517,7 +517,7 @@ const CsvCompare: NextPage = (props: any) => {
     }
 
     return (
-        <DashboardLayout sidebar={false}>
+        <>
             <ToastContainer
                 position="top-right"
                 autoClose={3000}
@@ -529,294 +529,296 @@ const CsvCompare: NextPage = (props: any) => {
                 draggable
                 pauseOnHover
             />
-            <div className={layoutStyles.topBar}>
-                <div className='p-d-flex p-ai-center p-jc-between'>
-                    <div>
-                        <p className={styles.breadcrumButtons}><Link href="/tools/csv-compare">CSV Compare</Link> / <span>Dashboard</span></p>
-                        <h5>Dashboard</h5>
+            <DashboardLayout sidebar={false}>
+                <div className={layoutStyles.topBar}>
+                    <div className='p-d-flex p-ai-center p-jc-between'>
+                        <div>
+                            <p className={styles.breadcrumButtons}><Link href="/tools/csv-compare">CSV Compare</Link> / <span>Dashboard</span></p>
+                            <h5><FaArrowLeft className={styles.backButtonDashboard} onClick={() => router.push('/tools/csv-compare')} /> Dashboard</h5>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div className={layoutStyles.box}>
-                <div className={layoutStyles.headContentBox}>
-                    <div className={layoutStyles.textBox}>
-                        <div className={'p-d-flex p-flex-column p-flex-md-row ' + styles.dashboardContainer}>
-                            {
-                                dashBoardSpinner ? <div className={styles.formSpinner}>
-                                    <div className={styles.loading}></div>
-                                </div> : null
-                            }
-                            <div className={styles.columnsBox}>
+                <div className={layoutStyles.box}>
+                    <div className={layoutStyles.headContentBox}>
+                        <div className={layoutStyles.textBox}>
+                            <div className={'p-d-flex p-flex-column p-flex-md-row ' + styles.dashboardContainer}>
                                 {
-                                    mainColumns && mainColumns.length ?
-                                        mainColumns.map((el, i) => {
-                                            if (el.duplicate == 0) {
-                                                return <button key={"mainColumns" + i} className={styles.columnText} disabled>
-                                                    <h6>{el.name}</h6>
-                                                    <p><span className={styles.deblicateData}>({el.duplicate} duplicates)</span><span>•</span><span className={styles.unique}>({el.unique} are unique)</span></p>
-                                                </button>
-                                            }
-                                            if (el.is_active) {
-                                                return <button key={"mainColumns" + i} className={styles.columnText + " " + styles.active} onClick={() => mainColumnActiveHandler(el.name)}>
-                                                    <h6>{el.name}</h6>
-                                                    <p><span className={styles.deblicateData}>({el.duplicate} duplicates)</span><span>•</span><span className={styles.unique}>({el.unique} are unique)</span></p>
-                                                </button>
-                                            } else {
-                                                return <button key={"mainColumns" + i} className={styles.columnText} onClick={() => mainColumnActiveHandler(el.name)}>
-                                                    <h6>{el.name}</h6>
-                                                    <p><span className={styles.deblicateData}>({el.duplicate} duplicates)</span><span>•</span><span className={styles.unique}>({el.unique} are unique)</span></p>
-                                                </button>
-                                            }
-                                        })
-                                        :
-                                        ""
+                                    dashBoardSpinner ? <div className={styles.formSpinner}>
+                                        <div className={styles.loading}></div>
+                                    </div> : null
                                 }
-                            </div>
-                            <div className={styles.singleColumnBox}>
-                                <div className={"p-inputgroup " + styles.searchInput}>
-                                    <InputText placeholder="Search..." value={searchVal} onChange={(e) => setSearchVal(e.target.value)} />
-                                    <Button icon="pi pi-search" />
-                                </div>
-                                <div className={styles.searchContentBox}>
+                                <div className={styles.columnsBox}>
                                     {
-                                        subColumns && subColumns.length ?
-                                            subColumns.filter((el) => {
-                                                if (searchVal) {
-                                                    return el.value.toLowerCase().includes(searchVal);
-                                                } else {
-                                                    return true;
+                                        mainColumns && mainColumns.length ?
+                                            mainColumns.map((el, i) => {
+                                                if (el.duplicate == 0) {
+                                                    return <button key={"mainColumns" + i} className={styles.columnText} disabled>
+                                                        <h6>{el.name}</h6>
+                                                        <p><span className={styles.deblicateData}>({el.duplicate} duplicates)</span><span>•</span><span className={styles.unique}>({el.unique} are unique)</span></p>
+                                                    </button>
                                                 }
-                                            }).map((el, i) => {
-                                                if (el.value || el.value == "0") {
-                                                    if (el.active) {
-                                                        return <button key={"subcolumns" + i} className={styles.columnText + " " + styles.active} onClick={() => subColumnActiveHandler(el.value)}>
-                                                            <h6>{el.value}</h6>
-                                                            <p>{el.registry} in Registry, {el.csv} in CSV</p>
-                                                        </button>
-                                                    } else {
-                                                        return <button key={"subcolumns" + i} className={styles.columnText} onClick={() => subColumnActiveHandler(el.value)}>
-                                                            <h6>{el.value}</h6>
-                                                            <p>{el.registry} in Registry, {el.csv} in CSV</p>
-                                                        </button>
-                                                    }
+                                                if (el.is_active) {
+                                                    return <button key={"mainColumns" + i} className={styles.columnText + " " + styles.active} onClick={() => mainColumnActiveHandler(el.name)}>
+                                                        <h6>{el.name}</h6>
+                                                        <p><span className={styles.deblicateData}>({el.duplicate} duplicates)</span><span>•</span><span className={styles.unique}>({el.unique} are unique)</span></p>
+                                                    </button>
+                                                } else {
+                                                    return <button key={"mainColumns" + i} className={styles.columnText} onClick={() => mainColumnActiveHandler(el.name)}>
+                                                        <h6>{el.name}</h6>
+                                                        <p><span className={styles.deblicateData}>({el.duplicate} duplicates)</span><span>•</span><span className={styles.unique}>({el.unique} are unique)</span></p>
+                                                    </button>
                                                 }
                                             })
                                             :
                                             ""
                                     }
                                 </div>
-                            </div>
-                            <div className={styles.detailsBox + " customCheckBox"}>
-                                <div className={styles.textBox}>
-                                    <div className={styles.headBox + " p-d-flex p-ai-center p-jc-between"}>
-                                        <div className={styles.columnHead}>
-                                            <div className='p-d-flex p-ai-center p-mb-3'>
-                                                <h4>{subActiveColumnValue.value}</h4>
-                                                <p className='p-ml-2'>{subActiveColumnValue.registry} Registry, {subActiveColumnValue.csv} CSV</p>
-                                            </div>
-                                            <p className={styles.text}>Kindly select below data to perform desire action</p>
-                                        </div>
+                                <div className={styles.singleColumnBox}>
+                                    <div className={"p-inputgroup " + styles.searchInput}>
+                                        <InputText placeholder="Search..." value={searchVal} onChange={(e) => setSearchVal(e.target.value)} />
+                                        <Button icon="pi pi-search" />
+                                    </div>
+                                    <div className={styles.searchContentBox}>
                                         {
-                                            registryEntries && registryEntries.length && csvEntries && csvEntries.length ?
-                                                <button className={layoutStyles.customBluebtn} onClick={() => assignContactModalHandler()} >Assign Contact Fixing</button>
-                                                : ""
+                                            subColumns && subColumns.length ?
+                                                subColumns.filter((el) => {
+                                                    if (searchVal) {
+                                                        return el.value.toLowerCase().includes(searchVal);
+                                                    } else {
+                                                        return true;
+                                                    }
+                                                }).map((el, i) => {
+                                                    if (el.value || el.value == "0") {
+                                                        if (el.active) {
+                                                            return <button key={"subcolumns" + i} className={styles.columnText + " " + styles.active} onClick={() => subColumnActiveHandler(el.value)}>
+                                                                <h6>{el.value}</h6>
+                                                                <p>{el.registry} in Registry, {el.csv} in CSV</p>
+                                                            </button>
+                                                        } else {
+                                                            return <button key={"subcolumns" + i} className={styles.columnText} onClick={() => subColumnActiveHandler(el.value)}>
+                                                                <h6>{el.value}</h6>
+                                                                <p>{el.registry} in Registry, {el.csv} in CSV</p>
+                                                            </button>
+                                                        }
+                                                    }
+                                                })
+                                                :
+                                                ""
                                         }
                                     </div>
-                                    {
-                                        mergeEntriesDis ?
-                                            <div className={styles.bottomBox}>
-                                                <div className={styles.titleText}>
-                                                    <h6>
-                                                        Registry Database
-                                                    </h6>
+                                </div>
+                                <div className={styles.detailsBox + " customCheckBox"}>
+                                    <div className={styles.textBox}>
+                                        <div className={styles.headBox + " p-d-flex p-ai-center p-jc-between"}>
+                                            <div className={styles.columnHead}>
+                                                <div className='p-d-flex p-ai-center p-mb-3'>
+                                                    <h4>{subActiveColumnValue.value}</h4>
+                                                    <p className='p-ml-2'>{subActiveColumnValue.registry} Registry, {subActiveColumnValue.csv} CSV</p>
                                                 </div>
-                                                <div className={styles.dataBox + " customDashboardRadio " + styles.registryDataBox}>
-                                                    <div className='p-mx-3'>
-                                                        {
-                                                            registryEntries && registryEntries.length && subActiveColumnValue && subActiveColumnValue.value ?
-                                                                registryEntries.map((obj, i) => {
-                                                                    let keys: any = Object.keys(obj);
-                                                                    return <div key={"registryEntries" + i} className={styles.registryPaddingBox}>
-                                                                        {
-                                                                            keys.map((el: string, index: number) => {
-                                                                                if (activeColumn == el) {
-                                                                                    return <div key={"csvdata" + i} className='p-d-flex p-ai-center p-mb-2 uniqueRegistryColumn'>
+                                                <p className={styles.text}>Kindly select below data to perform desire action</p>
+                                            </div>
+                                            {
+                                                registryEntries && registryEntries.length && csvEntries && csvEntries.length ?
+                                                    <button className={layoutStyles.customBluebtn} onClick={() => assignContactModalHandler()} >Assign Contact Fixing</button>
+                                                    : ""
+                                            }
+                                        </div>
+                                        {
+                                            mergeEntriesDis ?
+                                                <div className={styles.bottomBox}>
+                                                    <div className={styles.titleText}>
+                                                        <h6>
+                                                            Registry Database
+                                                        </h6>
+                                                    </div>
+                                                    <div className={styles.dataBox + " customDashboardRadio " + styles.registryDataBox}>
+                                                        <div className='p-mx-3'>
+                                                            {
+                                                                registryEntries && registryEntries.length && subActiveColumnValue && subActiveColumnValue.value ?
+                                                                    registryEntries.map((obj, i) => {
+                                                                        let keys: any = Object.keys(obj);
+                                                                        return <div key={"registryEntries" + i} className={styles.registryPaddingBox}>
+                                                                            {
+                                                                                keys.map((el: string, index: number) => {
+                                                                                    if (activeColumn == el) {
+                                                                                        return <div key={"csvdata" + i} className='p-d-flex p-ai-center p-mb-2 uniqueRegistryColumn'>
+                                                                                            <RadioButton className='p-mr-1' value={obj[el]} name={el} checked={obj[el] == mergeEntries[el]} onChange={(e) => mergeColumnCheckHandler(e.target.value, e.target.name)} />
+                                                                                            <label htmlFor="">{el}</label>
+                                                                                            <p>{obj[el] == "null" ? '' : obj[el]}</p>
+                                                                                        </div>
+                                                                                    }
+                                                                                    return <div key={"registrydata" + index} className='p-d-flex p-ai-center p-mb-2'>
                                                                                         <RadioButton className='p-mr-1' value={obj[el]} name={el} checked={obj[el] == mergeEntries[el]} onChange={(e) => mergeColumnCheckHandler(e.target.value, e.target.name)} />
                                                                                         <label htmlFor="">{el}</label>
-                                                                                        <p>{obj[el] == "null" ? '' : obj[el]}</p>
+                                                                                        {
+                                                                                            !editFieldStatus ?
+                                                                                                <p>{obj[el] == "null" ? '' : obj[el]}</p>
+                                                                                                :
+                                                                                                <input type="text" name={el} value={obj[el]} onChange={(e) => registryColumnEditHandler(el, e.target.value, i)} />
+                                                                                        }
+                                                                                    </div>
+                                                                                })
+                                                                            }
+                                                                        </div>
+                                                                    })
+                                                                    : "No registry data found"
+                                                            }
+                                                        </div>
+                                                        {
+                                                            subActiveColumnValue && subActiveColumnValue.value ?
+                                                                !editFieldStatus ?
+                                                                    <button className={layoutStyles.blueTextBtn + " p-ml-auto p-as-start p-d-flex " + styles.columnEditBtn} onClick={() => setEditFieldStatus(true)}><FaRegEdit className='p-mr-1' />Edit</button>
+                                                                    :
+                                                                    <button className={layoutStyles.blueTextBtn + " p-ml-auto p-as-start p-d-flex"} onClick={() => setEditFieldStatus(false)}><FaRegSave className='p-mr-1' />Save</button>
+                                                                : ""
+                                                        }
+                                                    </div>
+                                                    <div className={styles.titleText}>
+                                                        <h6>
+                                                            CSV File Data
+                                                        </h6>
+                                                    </div>
+                                                    <div className={styles.dataBox + " customDashboardRadio " + styles.csvDataBox}>
+                                                        {
+                                                            csvEntries && csvEntries.length && subActiveColumnValue && subActiveColumnValue.value && registryEntries && registryEntries.length ?
+                                                                csvEntries.map((obj, i) => {
+                                                                    let keys: any = Object.keys(obj);
+                                                                    return <div className='p-mx-3' key={"csvdatas" + i}>
+                                                                        {
+                                                                            keys.map((el: any, i: number) => {
+                                                                                if (obj[el] != registryEntries[0][el] && obj[el]) {
+                                                                                    {
+                                                                                        !mergeBtnToggle ?
+                                                                                            setMergeBtnToggle(true)
+                                                                                            : ""
+                                                                                    }
+                                                                                    return <div key={"csvdata" + i} className='p-d-flex p-ai-center p-mb-2'>
+                                                                                        <RadioButton className='p-mr-1' value={obj[el]} name={el} checked={obj[el] == mergeEntries[el]} onChange={(e) => mergeColumnCheckHandler(e.target.value, e.target.name)} />
+                                                                                        <label htmlFor="">{el}</label>
+                                                                                        <p>{obj[el]}</p>
                                                                                     </div>
                                                                                 }
-                                                                                return <div key={"registrydata" + index} className='p-d-flex p-ai-center p-mb-2'>
-                                                                                    <RadioButton className='p-mr-1' value={obj[el]} name={el} checked={obj[el] == mergeEntries[el]} onChange={(e) => mergeColumnCheckHandler(e.target.value, e.target.name)} />
-                                                                                    <label htmlFor="">{el}</label>
-                                                                                    {
-                                                                                        !editFieldStatus ?
-                                                                                            <p>{obj[el] == "null" ? '' : obj[el]}</p>
-                                                                                            :
-                                                                                            <input type="text" name={el} value={obj[el]} onChange={(e) => registryColumnEditHandler(el, e.target.value, i)} />
+                                                                                else {
+                                                                                    if (activeColumn == el) {
+
+                                                                                        return <div key={"csvdata" + i} className='p-d-flex p-ai-center p-mb-2 duplicatesColumnId'>
+                                                                                            <RadioButton className='p-mr-1' value={obj[el]} name={el} checked={obj[el] == mergeEntries[el]} disabled={true} />
+                                                                                            <label htmlFor="">{el}</label>
+                                                                                            <p>{obj[el]}</p>
+                                                                                        </div>
+                                                                                    } else {
+
+                                                                                        return <div key={"csvdata" + i} className='p-d-flex p-ai-center p-mb-2'>
+                                                                                            <RadioButton className={'p-mr-1 duplicateBtn'} value={obj[el]} name={el} checked={obj[el] == mergeEntries[el]} disabled={true} />
+                                                                                            <label htmlFor="">{el}</label>
+                                                                                            <p>{obj[el]}</p>
+                                                                                        </div>
                                                                                     }
-                                                                                </div>
+
+                                                                                }
                                                                             })
                                                                         }
                                                                     </div>
                                                                 })
-                                                                : "No registry data found"
+                                                                : <p>No CSV data found</p>
                                                         }
                                                     </div>
-                                                    {
-                                                        subActiveColumnValue && subActiveColumnValue.value ?
-                                                            !editFieldStatus ?
-                                                                <button className={layoutStyles.blueTextBtn + " p-ml-auto p-as-start p-d-flex " + styles.columnEditBtn} onClick={() => setEditFieldStatus(true)}><FaRegEdit className='p-mr-1' />Edit</button>
-                                                                :
-                                                                <button className={layoutStyles.blueTextBtn + " p-ml-auto p-as-start p-d-flex"} onClick={() => setEditFieldStatus(false)}><FaRegSave className='p-mr-1' />Save</button>
-                                                            : ""
-                                                    }
-                                                </div>
-                                                <div className={styles.titleText}>
-                                                    <h6>
-                                                        CSV File Data
-                                                    </h6>
-                                                </div>
-                                                <div className={styles.dataBox + " customDashboardRadio " + styles.csvDataBox}>
-                                                    {
-                                                        csvEntries && csvEntries.length && subActiveColumnValue && subActiveColumnValue.value && registryEntries && registryEntries.length ?
-                                                            csvEntries.map((obj, i) => {
-                                                                let keys: any = Object.keys(obj);
-                                                                return <div className='p-mx-3' key={"csvdatas" + i}>
-                                                                    {
-                                                                        keys.map((el: any, i: number) => {
-                                                                            if (obj[el] != registryEntries[0][el] && obj[el]) {
-                                                                                {
-                                                                                    !mergeBtnToggle ?
-                                                                                        setMergeBtnToggle(true)
-                                                                                        : ""
-                                                                                }
-                                                                                return <div key={"csvdata" + i} className='p-d-flex p-ai-center p-mb-2'>
-                                                                                    <RadioButton className='p-mr-1' value={obj[el]} name={el} checked={obj[el] == mergeEntries[el]} onChange={(e) => mergeColumnCheckHandler(e.target.value, e.target.name)} />
-                                                                                    <label htmlFor="">{el}</label>
-                                                                                    <p>{obj[el]}</p>
-                                                                                </div>
-                                                                            }
-                                                                            else {
-                                                                                if (activeColumn == el) {
-
-                                                                                    return <div key={"csvdata" + i} className='p-d-flex p-ai-center p-mb-2 duplicatesColumnId'>
-                                                                                        <RadioButton className='p-mr-1' value={obj[el]} name={el} checked={obj[el] == mergeEntries[el]} disabled={true} />
-                                                                                        <label htmlFor="">{el}</label>
-                                                                                        <p>{obj[el]}</p>
-                                                                                    </div>
-                                                                                } else {
-
-                                                                                    return <div key={"csvdata" + i} className='p-d-flex p-ai-center p-mb-2'>
-                                                                                        <RadioButton className={'p-mr-1 duplicateBtn'} value={obj[el]} name={el} checked={obj[el] == mergeEntries[el]} disabled={true} />
-                                                                                        <label htmlFor="">{el}</label>
-                                                                                        <p>{obj[el]}</p>
-                                                                                    </div>
-                                                                                }
-
-                                                                            }
-                                                                        })
-                                                                    }
-                                                                </div>
-                                                            })
-                                                            : <p>No CSV data found</p>
-                                                    }
-                                                </div>
-                                            </div> : ''
-                                    }
-                                </div>
-                                <div className="p-mt-3 p-text-right">
-                                    {
-                                        registryEntries && registryEntries.length && csvEntries && csvEntries.length ?
-                                            <button type='button' className={layoutStyles.customDarkBgbtn} onClick={() => { setMergeCheck(false); ignoreMappingDialogHandler() }} >Ignore</button>
-                                            : ""
-                                    }
-                                    {
-                                        mergeBtnToggle ?
-                                            <button type='button' onClick={() => { setMergeCheck(true); setSaveContactModal(true) }} className={layoutStyles.customBlueBgbtn}>Merge</button>
-                                            : ""
-                                    }
+                                                </div> : ''
+                                        }
+                                    </div>
+                                    <div className="p-mt-3 p-text-right">
+                                        {
+                                            registryEntries && registryEntries.length && csvEntries && csvEntries.length ?
+                                                <button type='button' className={layoutStyles.customDarkBgbtn} onClick={() => { setMergeCheck(false); ignoreMappingDialogHandler() }} >Ignore</button>
+                                                : ""
+                                        }
+                                        {
+                                            mergeBtnToggle ?
+                                                <button type='button' onClick={() => { setMergeCheck(true); setSaveContactModal(true) }} className={layoutStyles.customBlueBgbtn}>Merge</button>
+                                                : ""
+                                        }
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            {/* Assign Contact Fixing-Modal */}
-            <Dialog showHeader={false} onMaskClick={assignContactCloseHandler} contentClassName={styles.modelsCustomStyles} maskClassName={styles.dialogMask} visible={assignContactFixingModal} style={{ width: '500px', }} onHide={() => ''}>
-                <div className={styles.replaceDataModal}>
-                    {
-                        assignContactModalSpinner ? <div className={styles.formSpinner}>
-                            <div className={styles.loading}></div>
-                        </div> : null
-                    }
-                    <h5>Assign Contact Fixing</h5>
-                    <Formik
-                        enableReinitialize={true}
-                        initialValues={initialAssignFiltersData}
-                        onSubmit={(
-                            values: DynamicFields,
-                            { setSubmitting }: FormikHelpers<DynamicFields>
-                        ) => {
-                            contactFixingHandler(values);
-                            setSubmitting(false);
-                        }}
-                    >
-                        {props => (
-                            <form onSubmit={props.handleSubmit}>
-                                <FieldArray
-                                    name="contact"
-                                    render={arrayHelpers => (
-                                        <div className={styles.inputFields + " " + styles.contactFixingModal}>
-                                            {
-                                                assignFilterModalSpinner ? <div className={styles.formSpinner}>
-                                                    <div className={styles.loading}></div>
-                                                </div> : null
-                                            }
-                                            {
-                                                Object.keys(props.values).map(function (key, index) {
-                                                    return <div className={styles.inputBox} key={"assignFilterModal" + index}>
-                                                        <label htmlFor={key}>{key}</label>
-                                                        <Dropdown id={key} className={styles.selectBox} name={key} value={props.values[key]} options={assignFiltersData[key]} onChange={(e: any) => props.setFieldValue(key, e.target.value)} />
-                                                    </div>
-                                                })
-                                            }
+                {/* Assign Contact Fixing-Modal */}
+                <Dialog showHeader={false} onMaskClick={assignContactCloseHandler} contentClassName={styles.modelsCustomStyles} maskClassName={styles.dialogMask} visible={assignContactFixingModal} style={{ width: '500px', }} onHide={() => ''}>
+                    <div className={styles.replaceDataModal}>
+                        {
+                            assignContactModalSpinner ? <div className={styles.formSpinner}>
+                                <div className={styles.loading}></div>
+                            </div> : null
+                        }
+                        <h5>Assign Contact Fixing</h5>
+                        <Formik
+                            enableReinitialize={true}
+                            initialValues={initialAssignFiltersData}
+                            onSubmit={(
+                                values: DynamicFields,
+                                { setSubmitting }: FormikHelpers<DynamicFields>
+                            ) => {
+                                contactFixingHandler(values);
+                                setSubmitting(false);
+                            }}
+                        >
+                            {props => (
+                                <form onSubmit={props.handleSubmit}>
+                                    <FieldArray
+                                        name="contact"
+                                        render={arrayHelpers => (
+                                            <div className={styles.inputFields + " " + styles.contactFixingModal}>
+                                                {
+                                                    assignFilterModalSpinner ? <div className={styles.formSpinner}>
+                                                        <div className={styles.loading}></div>
+                                                    </div> : null
+                                                }
+                                                {
+                                                    Object.keys(props.values).map(function (key, index) {
+                                                        return <div className={styles.inputBox} key={"assignFilterModal" + index}>
+                                                            <label htmlFor={key}>{key}</label>
+                                                            <Dropdown id={key} className={styles.selectBox} name={key} value={props.values[key]} options={assignFiltersData[key]} onChange={(e: any) => props.setFieldValue(key, e.target.value)} />
+                                                        </div>
+                                                    })
+                                                }
+                                            </div>
+                                        )}
+                                    />
+                                    <div className="p-d-flex p-ai-center p-my-3">
+                                        <div className="p-m-auto">
+                                            <button type='submit' className={layoutStyles.customBlueBgbtn}>Assign</button>
+                                            <button type='button' onClick={() => setAssignContactFixingModal(false)} className={layoutStyles.customBluebtn}>Cancel</button>
                                         </div>
-                                    )}
-                                />
-                                <div className="p-d-flex p-ai-center p-my-3">
-                                    <div className="p-m-auto">
-                                        <button type='submit' className={layoutStyles.customBlueBgbtn}>Assign</button>
-                                        <button type='button' onClick={() => setAssignContactFixingModal(false)} className={layoutStyles.customBluebtn}>Cancel</button>
                                     </div>
-                                </div>
-                            </form>
-                        )}
-                    </Formik>
-                </div>
-            </Dialog>
+                                </form>
+                            )}
+                        </Formik>
+                    </div>
+                </Dialog>
 
-            {/* Save Contact Details Modal */}
-            <Dialog showHeader={false} onMaskClick={saveContactCloseHandler} contentClassName={styles.modelsCustomStyles} maskClassName={styles.dialogMask} visible={saveContactModal} style={{ width: '500px', }} onHide={() => ''}>
-                <div className={styles.replaceDataModal}>
-                    <h5>Save Contact Details</h5>
-                    <div className={styles.contactDetails}>
-                        <div className={styles.textBox}>
-                            <BsExclamationCircleFill />
-                            <p>
-                                Merging the duplicates will replace the current contact data. Do you want to save a copy of the current data?
-                            </p>
-                        </div>
-                        <div className='p-mt-4'>
-                            <button className={layoutStyles.customBluebtn} onClick={() => mergeColumnHandler()}>Yes, save a copy</button>
-                            <button className={layoutStyles.customBlueBgbtn} onClick={() => mergeColumnHandler()}>Replace current data</button>
+                {/* Save Contact Details Modal */}
+                <Dialog showHeader={false} onMaskClick={saveContactCloseHandler} contentClassName={styles.modelsCustomStyles} maskClassName={styles.dialogMask} visible={saveContactModal} style={{ width: '500px', }} onHide={() => ''}>
+                    <div className={styles.replaceDataModal}>
+                        <h5>Save Contact Details</h5>
+                        <div className={styles.contactDetails}>
+                            <div className={styles.textBox}>
+                                <BsExclamationCircleFill />
+                                <p>
+                                    Merging the duplicates will replace the current contact data. Do you want to save a copy of the current data?
+                                </p>
+                            </div>
+                            <div className='p-mt-4'>
+                                <button className={layoutStyles.customBluebtn} onClick={() => mergeColumnHandler()}>Yes, save a copy</button>
+                                <button className={layoutStyles.customBlueBgbtn} onClick={() => mergeColumnHandler()}>Replace current data</button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </Dialog>
+                </Dialog>
 
-        </DashboardLayout>
+            </DashboardLayout>
+        </>
     )
 }
 

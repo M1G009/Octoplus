@@ -38,7 +38,7 @@ const Account: NextPage = () => {
   useEffect(() => {
     let userData = window.localStorage.getItem('loginUserdata');
     if (userData) {
-      let parseData = JSON.parse(userData);
+      let parseData = JSON.parse(userData);      
       setLoginUserData(parseData);
     }
   }, [])
@@ -130,7 +130,7 @@ const Account: NextPage = () => {
 
 
   return (
-    <DashboardLayout sidebar={true}>
+    <>
       <ToastContainer
         position="top-right"
         autoClose={3000}
@@ -142,168 +142,171 @@ const Account: NextPage = () => {
         draggable
         pauseOnHover
       />
-      <div className={layoutStyles.topBar}>
-        <p>Home / Proflie / <span>Account</span></p>
-        <h5>Account Overview</h5>
-      </div>
-      <div className={layoutStyles.box}>
-        <div className={layoutStyles.contentBox}>
-          <div className={styles.profilePic}>
-            <div className={styles.imgBox}>
-              <div className={styles.userImg}>
-                <Image
-                  src={User}
-                  alt="User"
-                  width={96}
-                  height={96}
-                />
+      <DashboardLayout sidebar={true}>
+        <div className={layoutStyles.topBar}>
+          <p>Home / Proflie / <span>Account</span></p>
+          <h5>Account Overview</h5>
+        </div>
+        <div className={layoutStyles.box}>
+          <div className={layoutStyles.contentBox}>
+            <div className={styles.profilePic}>
+              <div className={styles.imgBox}>
+                <div className={styles.userImg}>
+                  <Image
+                    src={User}
+                    alt="User"
+                    width={96}
+                    height={96}
+                  />
+                </div>
+                <div className={styles.textBox}>
+                  <h5>{loginUserData ? loginUserData.username : ''}</h5>
+                  <p>{loginUserData ? loginUserData.email : ''}</p>
+                </div>
               </div>
-              <div className={styles.textBox}>
-                <h5>{loginUserData ? loginUserData.username : ''}</h5>
-                <p>{loginUserData ? loginUserData.email : ''}</p>
-              </div>
+              <input type="file" className="p-d-none"
+                ref={imageFileRef}
+                accept="image/jpeg, image/png"
+                onChange={imageFileChangeHandler} />
+              <button className={styles.userImgChange} onClick={imageFileBtnHandler}><FaCamera className="p-mr-1" /> Change Photo Profile</button>
             </div>
-            <input type="file" className="p-d-none"
-              ref={imageFileRef}
-              accept="image/jpeg, image/png"
-              onChange={imageFileChangeHandler} />
-            <button className={styles.userImgChange} onClick={imageFileBtnHandler}><FaCamera className="p-mr-1" /> Change Photo Profile</button>
+          </div>
+          <div className={layoutStyles.headContentBox}>
+            
+            <Formik
+              enableReinitialize
+              initialValues={{
+                username: loginUserData ? loginUserData.username : '',
+                Company: loginUserData ? loginUserData.Company : '',
+                email: loginUserData ? loginUserData.email : '',
+                country: (loginUserData && loginUserData.location.country_name) ? loginUserData.location.country_name : 'Italy',
+                phone_number: loginUserData ? loginUserData.phone_number : '',
+                Language: loginUserData ? loginUserData.Language : 'English',
+              }}
+              validationSchema={validationSchema}
+              onSubmit={(
+                values: updatedData,
+                { setSubmitting }: FormikHelpers<updatedData>
+              ) => {
+                updateProfileHandler(JSON.stringify(values, null, 2));
+                setSubmitting(false);
+              }}
+            >
+              {props => (
+                <form onSubmit={props.handleSubmit}>
+                  {
+                    formSpinner ? <div className={styles.formSpinner}>
+                      <div className={styles.loading}></div>
+                    </div> : null
+                  }
+                  <div className={layoutStyles.head}>
+                    <h4>Profile Detail</h4>
+                    <div className={layoutStyles.editButtons}>
+                      {
+                        !editProfile ?
+                          <button type="button" onClick={() => setEditProfile(true)} className={layoutStyles.blueBgBtn}>Edit Profle</button>
+                          :
+                          <>
+                            <button type="button" onClick={discardHandler} className={layoutStyles.blueBtn}>Discard</button>
+                            <button type="submit" className={layoutStyles.blueBgBtn}>Save Change</button>
+                          </>
+                      }
+                    </div>
+                  </div>
+                  <div className={layoutStyles.textBox}>
+                    <div className={styles.profileForm}>
+                      <div className={styles.inputBox}>
+                        <label htmlFor="Name">Name</label>
+                        {
+                          editProfile ?
+                            <div>
+                              <Field type="text" name="username" />
+                              <ErrorMessage name="username">
+                                {(msg) => <p className={styles.error}>{msg}</p>}
+                              </ErrorMessage>
+                            </div>
+                            : <p>{loginUserData ? loginUserData.username : ''}</p>
+                        }
+                      </div>
+                      <div className={styles.inputBox}>
+                        <label htmlFor="Company">Company</label>
+                        {
+                          editProfile ?
+                            <div>
+                              <Field type="text" name="Company" />
+                              <ErrorMessage name="Company">
+                                {(msg) => <p className={styles.error}>{msg}</p>}
+                              </ErrorMessage>
+                            </div>
+                            :
+                            <p>{loginUserData ? loginUserData.Company : ''}</p>
+                        }
+                      </div>
+                      <div className={styles.inputBox}>
+                        <label htmlFor="emailAdress">Email Address</label>
+                        {
+                          editProfile ?
+                            <div>
+                              <Field type="email" name="email" readOnly />
+                              <ErrorMessage name="email">
+                                {(msg) => <p className={styles.error}>{msg}</p>}
+                              </ErrorMessage>
+                            </div>
+                            :
+                            <p>{loginUserData ? loginUserData.email : ''}</p>
+                        }
+                      </div>
+                      <div className={styles.inputBox}>
+                        <label htmlFor="Country">Country</label>
+                        {
+                          editProfile ?
+                            <div>
+                              <Dropdown id="text" name="country" className={styles.dropDown} value={props.values.country} options={countriesData} onChange={(e: any) => props.setFieldValue('country', e.target.value)} />
+                              <ErrorMessage name="country">
+                                {(msg) => <p className={styles.error}>{msg}</p>}
+                              </ErrorMessage>
+                            </div>
+                            :
+                            <p>{loginUserData ? loginUserData.location.country_name : ''}</p>
+                        }
+                      </div>
+                      <div className={styles.inputBox}>
+                        <label htmlFor="phone_number">Phone Number</label>
+                        {
+                          editProfile ?
+                            <div>
+                              <Field type="phone_number" name="phone_number" />
+                              <ErrorMessage name="phone_number">
+                                {(msg) => <p className={styles.error}>{msg}</p>}
+                              </ErrorMessage>
+                            </div>
+                            :
+                            <p>{loginUserData ? loginUserData.phone_number : ''}</p>
+                        }
+                      </div>
+                      <div className={styles.inputBox}>
+                        <label htmlFor="Language">Language</label>
+                        {
+                          editProfile ?
+                            <div>
+                              <Dropdown id="Language" name="Language" className={styles.dropDown} value={props.values.Language} options={languages} onChange={(e) => props.setFieldValue('Language', e.target.value)} />
+                              <ErrorMessage name="Language">
+                                {(msg) => <p className={styles.error}>{msg}</p>}
+                              </ErrorMessage>
+                            </div>
+                            :
+                            <p>{loginUserData ? loginUserData.Language : ''}</p>
+                        }
+                      </div>
+                    </div>
+                  </div>
+                </form>
+              )}
+            </Formik>
           </div>
         </div>
-        <div className={layoutStyles.headContentBox}>
-          <Formik
-            enableReinitialize
-            initialValues={{
-              username: loginUserData ? loginUserData.username : '',
-              Company: loginUserData ? loginUserData.Company : '',
-              email: loginUserData ? loginUserData.email : '',
-              country: loginUserData ? loginUserData.country : 'Italy',
-              phone_number: loginUserData ? loginUserData.phone_number : '',
-              Language: loginUserData ? loginUserData.Language : 'English',
-            }}
-            validationSchema={validationSchema}
-            onSubmit={(
-              values: updatedData,
-              { setSubmitting }: FormikHelpers<updatedData>
-            ) => {
-              updateProfileHandler(JSON.stringify(values, null, 2));
-              setSubmitting(false);
-            }}
-          >
-            {props => (
-              <form onSubmit={props.handleSubmit}>
-                {
-                  formSpinner ? <div className={styles.formSpinner}>
-                    <div className={styles.loading}></div>
-                  </div> : null
-                }
-                <div className={layoutStyles.head}>
-                  <h4>Profile Detail</h4>
-                  <div className={layoutStyles.editButtons}>
-                    {
-                      !editProfile ?
-                        <button type="button" onClick={() => setEditProfile(true)} className={layoutStyles.blueBgBtn}>Edit Profle</button>
-                        :
-                        <>
-                          <button type="button" onClick={discardHandler} className={layoutStyles.blueBtn}>Discard</button>
-                          <button type="submit" className={layoutStyles.blueBgBtn}>Save Change</button>
-                        </>
-                    }
-                  </div>
-                </div>
-                <div className={layoutStyles.textBox}>
-                  <div className={styles.profileForm}>
-                    <div className={styles.inputBox}>
-                      <label htmlFor="Name">Name</label>
-                      {
-                        editProfile ?
-                          <div>
-                            <Field type="text" name="username" />
-                            <ErrorMessage name="username">
-                              {(msg) => <p className={styles.error}>{msg}</p>}
-                            </ErrorMessage>
-                          </div>
-                          : <p>{loginUserData ? loginUserData.username : ''}</p>
-                      }
-                    </div>
-                    <div className={styles.inputBox}>
-                      <label htmlFor="Company">Company</label>
-                      {
-                        editProfile ?
-                          <div>
-                            <Field type="text" name="Company" />
-                            <ErrorMessage name="Company">
-                              {(msg) => <p className={styles.error}>{msg}</p>}
-                            </ErrorMessage>
-                          </div>
-                          :
-                          <p>{loginUserData ? loginUserData.Company : ''}</p>
-                      }
-                    </div>
-                    <div className={styles.inputBox}>
-                      <label htmlFor="emailAdress">Email Address</label>
-                      {
-                        editProfile ?
-                          <div>
-                            <Field type="email" name="email" readOnly />
-                            <ErrorMessage name="email">
-                              {(msg) => <p className={styles.error}>{msg}</p>}
-                            </ErrorMessage>
-                          </div>
-                          :
-                          <p>{loginUserData ? loginUserData.email : ''}</p>
-                      }
-                    </div>
-                    <div className={styles.inputBox}>
-                      <label htmlFor="Country">Country</label>
-                      {
-                        editProfile ?
-                          <div>
-                            <Dropdown id="text" name="country" className={styles.dropDown} value={props.values.country} options={countriesData} onChange={(e: any) => props.setFieldValue('country', e.target.value)} />
-                            <ErrorMessage name="country">
-                              {(msg) => <p className={styles.error}>{msg}</p>}
-                            </ErrorMessage>
-                          </div>
-                          :
-                          <p>{loginUserData ? loginUserData.country : ''}</p>
-                      }
-                    </div>
-                    <div className={styles.inputBox}>
-                      <label htmlFor="phone_number">Phone Number</label>
-                      {
-                        editProfile ?
-                          <div>
-                            <Field type="phone_number" name="phone_number" />
-                            <ErrorMessage name="phone_number">
-                              {(msg) => <p className={styles.error}>{msg}</p>}
-                            </ErrorMessage>
-                          </div>
-                          :
-                          <p>{loginUserData ? loginUserData.phone_number : ''}</p>
-                      }
-                    </div>
-                    <div className={styles.inputBox}>
-                      <label htmlFor="Language">Language</label>
-                      {
-                        editProfile ?
-                          <div>
-                            <Dropdown id="Language" name="Language" className={styles.dropDown} value={props.values.Language} options={languages} onChange={(e) => props.setFieldValue('Language', e.target.value)} />
-                            <ErrorMessage name="Language">
-                              {(msg) => <p className={styles.error}>{msg}</p>}
-                            </ErrorMessage>
-                          </div>
-                          :
-                          <p>{loginUserData ? loginUserData.Language : ''}</p>
-                      }
-                    </div>
-                  </div>
-                </div>
-              </form>
-            )}
-          </Formik>
-        </div>
-      </div>
-    </DashboardLayout>
+      </DashboardLayout>
+    </>
   )
 }
 

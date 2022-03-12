@@ -34,7 +34,7 @@ const ForgotPassword: NextPage = () => {
   const [authSpinner, setAuthSpinner] = useState(false);
 
   const validationSchema = yup.object().shape({
-    email: yup.string().required('Please enter email').email("Please enter valid email"),
+    email: yup.string().required('Please enter email').email("Please enter the email id associated with your account"),
   });
 
   const handleSubmit = async (userData: any) => {
@@ -42,7 +42,7 @@ const ForgotPassword: NextPage = () => {
       setAuthSpinner(true)
 
       const { data } = await service({
-        url: `${process.env.API_BASE_URL}/user/sendmail`,
+        url: `${process.env.API_BASE_URL}/sendmail`,
         method: 'POST',
         data: userData,
         headers: { 'Content-Type': 'application/json' }
@@ -50,14 +50,19 @@ const ForgotPassword: NextPage = () => {
 
       if (data.status != 200) {
         setErrorMessage(data.message)
+        setTimeout(() => {setErrorMessage(false)}, 3000)
         return setAuthSpinner(false)
       }
+      setTimeout(() => {setErrorMessage(false)}, 3000)
       setAuthSpinner(false)
       await toast({ type: "success", message: "Please check your mail" });
 
     } catch (err: any) {
+      console.log(err.message);
+      
       setErrorMessage(err.message)
       setAuthSpinner(false);
+      setTimeout(() => { setErrorMessage(false)}, 3000)
     }
   }
 
@@ -66,7 +71,7 @@ const ForgotPassword: NextPage = () => {
   }
 
   return (
-    <Layout header={false}>
+    <>
       <ToastContainer
         position="top-right"
         autoClose={3000}
@@ -78,62 +83,64 @@ const ForgotPassword: NextPage = () => {
         draggable
         pauseOnHover
       />
-      <div className={styles.authContainer}>
-        <div className={styles.logo}>
-          <Image
-            src={Logo}
-            alt="Octoplus"
-            width={198}
-            height={48}
-          />
+      <Layout header={false}>
+        <div className={styles.authContainer}>
+          <div className={styles.logo}>
+            <Image
+              src={Logo}
+              alt="Octoplus"
+              width={198}
+              height={48}
+            />
+          </div>
+          <div className={styles.authForm}>
+            <Formik
+              initialValues={{
+                email: ''
+              }}
+              validationSchema={validationSchema}
+              onSubmit={(
+                values: Values,
+                { setSubmitting }: FormikHelpers<Values>
+              ) => {
+                handleSubmit(JSON.stringify(values, null, 2));
+                setSubmitting(false);
+              }}
+            >
+              {props => (
+                <form onSubmit={props.handleSubmit}>
+                  {
+                    authSpinner ? <div className={styles.formSpinner}>
+                      <div className={styles.loading}></div>
+                    </div> : null
+                  }
+                  <div className={styles.titleBox}>
+                    <h3>Forgot Password ?</h3>
+                    <p>
+                      Enter your email to reset your password.
+                    </p>
+                  </div>
+                  <div className={styles.inputBox}>
+                    <label htmlFor="email">Email</label>
+                    <Field type="email" name="email" autoComplete="false" />
+                    <ErrorMessage name="email">
+                      {(msg) => <p className={styles.error}>{msg}</p>}
+                    </ErrorMessage>
+                  </div>
+                  {
+                    errorMessage ? <p className={styles.formError + " p-mt-0"}>{errorMessage}</p> : null
+                  }
+                  <div className={styles.btnGroup}>
+                    <button type="submit">Submit</button>
+                    <button type="button" className={styles.cancelBtn} onClick={() => routerPushHandler('/auth')}>Cancel</button>
+                  </div>
+                </form>
+              )}
+            </Formik>
+          </div>
         </div>
-        <div className={styles.authForm}>
-          <Formik
-            initialValues={{
-              email: ''
-            }}
-            validationSchema={validationSchema}
-            onSubmit={(
-              values: Values,
-              { setSubmitting }: FormikHelpers<Values>
-            ) => {
-              handleSubmit(JSON.stringify(values, null, 2));
-              setSubmitting(false);
-            }}
-          >
-            {props => (
-              <form onSubmit={props.handleSubmit}>
-                {
-                  authSpinner ? <div className={styles.formSpinner}>
-                    <div className={styles.loading}></div>
-                  </div> : null
-                }
-                <div className={styles.titleBox}>
-                  <h3>Forgot Password ?</h3>
-                  <p>
-                    Enter your email to reset your password.
-                  </p>
-                </div>
-                <div className={styles.inputBox}>
-                  <label htmlFor="email">Email</label>
-                  <Field type="email" name="email" autoComplete="false" />
-                  <ErrorMessage name="email">
-                    {(msg) => <p className={styles.error}>{msg}</p>}
-                  </ErrorMessage>
-                </div>
-                {
-                  errorMessage ? <p className={styles.formError + " p-mt-0"}>{errorMessage}</p> : null
-                }
-                <div className={styles.btnGroup}>
-                  <button type="submit">Submit</button>
-                  <button type="button" className={styles.cancelBtn} onClick={() => routerPushHandler('/auth')}>Cancel</button>
-                </div>
-              </form>
-            )}
-          </Formik>
-        </div>
-      </div>
-    </Layout>
+      </Layout>
+    </>
   )
 }
 

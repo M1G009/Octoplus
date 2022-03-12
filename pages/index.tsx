@@ -305,10 +305,10 @@ const Dashboard: NextPage = () => {
         data: { "format": "csv" },
         headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
       });
-      
+
       var link = window.document.createElement("a");
       link.setAttribute("href", "data:text/csv;charset=utf-8," + encodeURI(data.data));
-      link.setAttribute("download", "Registry.csv");      
+      link.setAttribute("download", "Registry.csv");
       link.click();
 
     } catch (err) {
@@ -415,6 +415,7 @@ const Dashboard: NextPage = () => {
         }
         if (Object.keys(filterObj).length) {
           setCheckFilter(true);
+          setCurrentPage(1);
           setRoutingQuery(filterObj, searchField, sortingField);
           setCheckFilter(true);
         }
@@ -431,9 +432,9 @@ const Dashboard: NextPage = () => {
             });
             await fetchAllContact(currentPage, perPage, filterFields, searchField, sortingField);
           } else {
-            
+
             Object.keys(parseData).map(el => {
-              
+
               if (`${parseData[el]}`.trim() == "") {
                 delete parseData[el];
               }
@@ -444,7 +445,7 @@ const Dashboard: NextPage = () => {
               data: { insert: [parseData] },
               headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
             });
-            
+
             setRoutingQuery(filterFields, '', sortingField);
             await fetchAllContact(currentPage, perPage, filterFields, '', sortingField);
           }
@@ -860,8 +861,15 @@ const Dashboard: NextPage = () => {
     return router.push(`/tools/csv-compare/restore?registry_id=${registryId}&row_id=${editContactRowId}`);
   }
 
+  const searchEnterHandler = (e: any) => {
+    if (e.key === 'Enter') {
+      setRemoveSearch(searchInput);
+      setRoutingQuery(filterFields, searchInput, sortingField);
+    }
+  }
+
   return (
-    <DashboardLayout sidebar={false}>
+    <>
       <ToastContainer
         position="top-right"
         autoClose={3000}
@@ -873,428 +881,430 @@ const Dashboard: NextPage = () => {
         draggable
         pauseOnHover
       />
-      <div className={styles.topBar}>
-        <h5>My Registry</h5>
-        <div className={styles.btnGroup}>
-          {
-            contacts.length ? <Menubar
-              model={items}
-              className={styles.menubar}
-            /> : ''
-          }
-        </div>
-      </div>
-      <div className={layoutStyles.box}>
-        <div className={layoutStyles.headContentBox}>
-          <div className={layoutStyles.head}>
-            <h4>Table of Contact</h4>
-            <div className={layoutStyles.editButtons}>
-              <div className={"p-inputgroup " + styles.searchFilter}>
-                <InputText placeholder="Search" value={searchInput} onChange={(e) => setSearchInput(e.target.value)} />
-                {
-                  removeSearch && removeSearch == searchInput ?
-                    <button onClick={() => {
-                      setSearchInput(''); setRemoveSearch('');
-                      setRoutingQuery(filterFields, '', sortingField);
-                    }}><MdClose /></button>
-                    :
-                    <button onClick={() => {
-                      setRemoveSearch(searchInput);
-                      setRoutingQuery(filterFields, searchInput, sortingField);
-                    }}><FaSearch /></button>
-                }
-              </div>
-              {
-                checkFilter ?
-                  <div className={'p-d-flex ' + styles.filterBtnGroup}>
-                    <button onClick={updateFilterHandler} className={styles.filterBtn}>Update <FiFilter /></button>
-                    <button onClick={() => setRoutingQuery('', searchField, sortingField)} className={styles.filterBtn}><RiCloseLine /></button>
-                  </div>
-                  :
-                  <button onClick={() => { setFilterData(true); setCreateNewContactModal(true) }} className={layoutStyles.blueBtn + " " + styles.filterBtn}>Filter <FiFilter /></button>
-              }
-              <button onClick={() => setSettingDataModal(true)} className={layoutStyles.blueTextBtn}>Table Settings <FaCog/></button>
-              <button onClick={() => setAddNewFieldModal(true)} className={layoutStyles.blueBgBtn}>Add New Field</button>
-            </div>
-          </div>
-          <div className={styles.contectTableBox}>
-            <div className={styles.contectTableOverflow}>
-              {
-                createContactTableSpinner ? <div className={styles.formSpinner}>
-                  <div className={styles.loading}></div>
-                </div> : null
-              }
-              {
-                showFieldsData ?
-                  <DataTable className='registryDataTable' value={contacts} removableSort responsiveLayout="scroll" sortField={sortField} sortOrder={sortOrder} onSort={onSortHandler}>
-                    <Column header="Id" body={idRegistryHandler}></Column>
-                    {
-                      Object.keys(showFieldsData).map((el, i) => {
-                        if (el === "id") {
-                          return false;
-                        }
-                        return <Column key={"registrycolumn" + i} field={el} header={el} body={(e) => editRegistryTextHandler(e, el)} sortable></Column>
-                      })
-                    }
-                    <Column header="Actions" body={editRegistryHandler}></Column>
-                  </DataTable>
-                  : <p className='p-text-center'>No data found</p>
-              }
-            </div>
-
+      <DashboardLayout sidebar={false}>
+        <div className={styles.topBar}>
+          <h5>My Registry</h5>
+          <div className={styles.btnGroup}>
             {
-              Math.ceil(totalRecords / perPage) >= 1 && contacts.length ?
-                <CustomPagination totalRecords={totalRecords} currentPage={currentPage} perPage={perPage} currentPageHandler={currentPageHandler} perPageHandler={perPageHandler} />
-                : ''
+              contacts.length ? <Menubar
+                model={items}
+                className={styles.menubar}
+              /> : ''
             }
-
-
-            <Dialog showHeader={false} onMaskClick={createContactDialogCloseHandler} className={styles.createNewContactCustomStyles} maskClassName={styles.dialogMask} position={'right'} visible={createNewContactModal} style={{ width: '500px', }} onHide={() => ''}>
-              <div className={styles.createContactModal}>
-                <h5>{editData ? "Edit Contact" : (viewData ? "View Data" : (filterData ? "Filter Data" : "Create New Contact"))}</h5>
+          </div>
+        </div>
+        <div className={layoutStyles.box}>
+          <div className={layoutStyles.headContentBox}>
+            <div className={layoutStyles.head}>
+              <h4>Table of Contact</h4>
+              <div className={layoutStyles.editButtons}>
+                <div className={"p-inputgroup " + styles.searchFilter}>
+                  <InputText placeholder="Search" value={searchInput} onChange={(e) => setSearchInput(e.target.value)} onKeyDown={searchEnterHandler} />
+                  {
+                    removeSearch && removeSearch == searchInput ?
+                      <button onClick={() => {
+                        setSearchInput(''); setRemoveSearch('');
+                        setRoutingQuery(filterFields, '', sortingField);
+                      }}><MdClose /></button>
+                      :
+                      <button onClick={() => {
+                        setRemoveSearch(searchInput);
+                        setRoutingQuery(filterFields, searchInput, sortingField);
+                      }}><FaSearch /></button>
+                  }
+                </div>
                 {
-                  initialValues && types ?
-                    <Formik
-                      enableReinitialize={!viewData}
-                      initialValues={initialValues}
-                      validate={(values) => {
-                        let error: any = {};
-                        if (filterData || editData) {
-                          return
-                        } else {
-                          if (!viewData) {
-                            Object.keys(values).map(el => {
-                              if (el == "First Name" || el == "Last Name" || el == "Email" || el == "Contact") {
-                                if (!values[el]) {
-                                  if (el == "First Name") {
-                                    error[el] = "Please enter first name";
-                                  } else if (el == "Last Name") {
-                                    error[el] = "Please enter last name";
-                                  } else if (el == "Email") {
-                                    error[el] = "Please enter email";
-                                  } else if (el == "Contact") {
-                                    error[el] = "Please enter contact";
-                                  } else {
-                                    error[el] = "Please enter valid value";
-                                  }
-                                } else if (el == "Email") {
-                                  var emailPattern = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-                                  if (!emailPattern.test(values[el])) {
-                                    error[el] = "Please enter valid email 2";
-                                  }
-                                } else if (el == "First Name" || el == "Last Name") {
-                                  var namePattern = /^[A-Za-z ]*$/;
-                                  if (!namePattern.test(values[el])) {
-                                    error[el] = "Please enter valid value";
-                                  }
-                                } else if (el == "Contact") {
-                                  var contactPattern = /^[0-9\.\-\.\+\.\)\.\(\/]+$/;
-                                  if (!contactPattern.test(values[el])) {
-                                    error[el] = "Please enter valid contact";
-                                  }
-                                }
-                              }
-                            })
-                            return error;
+                  checkFilter ?
+                    <div className={'p-d-flex ' + styles.filterBtnGroup}>
+                      <button onClick={updateFilterHandler} className={styles.filterBtn}>Update <FiFilter /></button>
+                      <button onClick={() => setRoutingQuery('', searchField, sortingField)} className={styles.filterBtn}><RiCloseLine /></button>
+                    </div>
+                    :
+                    <button onClick={() => { setFilterData(true); setCreateNewContactModal(true) }} className={layoutStyles.blueBtn + " " + styles.filterBtn}>Filter <FiFilter /></button>
+                }
+                <button onClick={() => setSettingDataModal(true)} className={layoutStyles.blueTextBtn}>Table Settings <FaCog /></button>
+                <button onClick={() => setAddNewFieldModal(true)} className={layoutStyles.blueBgBtn}>Add New Field</button>
+              </div>
+            </div>
+            <div className={styles.contectTableBox}>
+              <div className={styles.contectTableOverflow}>
+                {
+                  createContactTableSpinner ? <div className={styles.formSpinner}>
+                    <div className={styles.loading}></div>
+                  </div> : null
+                }
+                {
+                  showFieldsData ?
+                    <DataTable className='registryDataTable' value={contacts} removableSort responsiveLayout="scroll" sortField={sortField} sortOrder={sortOrder} onSort={onSortHandler}>
+                      <Column header="Id" body={idRegistryHandler}></Column>
+                      {
+                        Object.keys(showFieldsData).map((el, i) => {
+                          if (el === "id") {
+                            return false;
                           }
-                        }
-                      }}
-                      onSubmit={(
-                        values: DynamicFields,
-                        { setSubmitting }: FormikHelpers<DynamicFields>
-                      ) => {
-                        createNewContactHanler(JSON.stringify(values, null, 2));
-                        setSubmitting(false);
-                      }}
-                    >
-                      {props => (
-                        <form onSubmit={props.handleSubmit}>
-                          <FieldArray
-                            name="contact"
-                            render={arrayHelpers => (
-                              <div className={styles.contactFields}>
-                                {
-                                  createContactSpinner ? <div className={styles.formSpinner}>
-                                    <div className={styles.loading}></div>
-                                  </div> : null
-                                }
-                                {
-                                  Object.keys(props.values).map(function (key, index) {
-                                    if (key.toLowerCase() == "id") {
-                                      return false
-                                    }
-                                    return <div className={styles.inputBox} key={"contactField" + index}>
-                                      <label>{key}</label>
-                                      {
-                                        contactFieldsTypeHandler(key)
-                                      }
-                                    </div>
-                                  })
-                                }
-                              </div>
-                            )}
-                          />
-                          <div className="p-d-flex p-ai-center p-mt-4 p-jc-end">
-                            {
-                              viewData && restoreCheck ? <button type="button" className={layoutStyles.customBluebtn} onClick={() => originalDetailsHandler()}>See Version History</button> : null
-                            }
-                            <div className="">
-                              {
-                                !viewData ? (filterData ? <button type='submit' className={layoutStyles.customBlueBgbtn}>Apply Filter</button> : <button type='submit' className={layoutStyles.customBlueBgbtn}>Save</button>) : ''
-                              }
-                              <button type='button' onClick={emptyContactFiledHandler} className={layoutStyles.customDarkBgbtn}>{viewData ? "Close" : "Cancel"}</button>
-                            </div>
-                          </div>
-                        </form>
-                      )}
-                    </Formik> : null
+                          return <Column key={"registrycolumn" + i} field={el} header={el} body={(e) => editRegistryTextHandler(e, el)} sortable></Column>
+                        })
+                      }
+                      <Column header="Actions" body={editRegistryHandler}></Column>
+                    </DataTable>
+                    : <p className='p-text-center'>No data found</p>
                 }
               </div>
-            </Dialog>
 
-            {/* Add New Field-Modal */}
-            <Dialog showHeader={false} onMaskClick={addNewFieldDialogCloseHandler} contentClassName={styles.addNewFieldModalCustomStyles} maskClassName={styles.dialogMask} visible={addNewFieldModal} style={{ width: '500px', }} onHide={() => ''}>
-              <div className={styles.addNewFieldModal}>
-                <h5>Add new field</h5>
-                <Formik
-                  enableReinitialize
-                  initialValues={{
-                    column: '',
-                    dtype: 'text'
-                  }}
-                  validationSchema={validationSchema}
-                  onSubmit={(
-                    values: AddNewFiled,
-                    { setSubmitting }: FormikHelpers<AddNewFiled>
-                  ) => {
-                    addNewFiledHandler(JSON.stringify(values, null, 2));
-                    setSubmitting(false);
-                  }}
-                >
-                  {props => (
-                    <form onSubmit={props.handleSubmit}>
-                      {
-                        addFiledSpinner ? <div className={styles.formSpinner}>
-                          <div className={styles.loading}></div>
-                        </div> : null
-                      }
-                      <div className={styles.inputFields}>
-                        <div className={styles.inputBox}>
-                          <label htmlFor="column">Enter field name for new column</label>
-                          <Field type="text" name="column" />
-                          <ErrorMessage name="column">
-                            {(msg) => <p className={styles.error}>{msg}</p>}
-                          </ErrorMessage>
-                        </div>
+              {
+                Math.ceil(totalRecords / perPage) >= 1 && contacts.length ?
+                  <CustomPagination totalRecords={totalRecords} currentPage={currentPage} perPage={perPage} currentPageHandler={currentPageHandler} perPageHandler={perPageHandler} />
+                  : ''
+              }
 
-                        <div className={styles.inputBox}>
-                          <label htmlFor="dataType">Select the data type</label>
-                          <Dropdown id="inviteRole" className={styles.selectBox} name="dtype" value={props.values.dtype} options={dataType} onChange={(e: any) => props.setFieldValue('dtype', e.target.value)} />
-                        </div>
-                        <div className="p-d-flex p-ai-center p-mt-4">
-                          <div className="p-m-auto">
-                            <button type='submit' className={layoutStyles.customBlueBgbtn}>Save</button>
-                            <button type='button' onClick={() => setAddNewFieldModal(false)} className={layoutStyles.customBluebtn}>Cancel</button>
-                          </div>
-                        </div>
-                      </div>
-                    </form>
-                  )}
-                </Formik>
-              </div>
-            </Dialog>
 
-            {/* Replace data-Modal */}
-            <Dialog showHeader={false} onMaskClick={replaceDataDialogCloseHandler} contentClassName={styles.addNewFieldModalCustomStyles} maskClassName={styles.dialogMask} visible={replaceDataModal} style={{ width: '500px', }} onHide={() => ''}>
-              <div className={styles.addNewFieldModal}>
-                <Formik
-                  enableReinitialize
-                  initialValues={{
-                    replace_from: '',
-                    replace_to: '',
-                    column: contacts[0] ? Object.keys(contacts[0])[0] : ''
-                  }}
-                  validationSchema={replaceValueSchema}
-                  onSubmit={(
-                    values: ReplaceData,
-                    { setSubmitting }: FormikHelpers<ReplaceData>
-                  ) => {
-                    replacedataSaveBtnHandler(JSON.stringify(values, null, 2));
-                    setSubmitting(false);
-                  }}
-                >
-                  {props => (
-                    <form onSubmit={props.handleSubmit}>
-                      {
-                        replaceDataSpinner ? <div className={styles.formSpinner}>
-                          <div className={styles.loading}></div>
-                        </div> : null
-                      }
-                      <div className={styles.replaceDataModal}>
-                        <h5>Replace Data</h5>
-                        <div className={styles.inputFields}>
-                          <div className={styles.replaceFields}>
-                            <div className={styles.inputBox}>
-                              <label htmlFor="selectdata">Select data</label>
-                              <Field type="text" name="replace_from" />
-                              <ErrorMessage name="replace_from">
-                                {(msg) => <p className={styles.error}>{msg}</p>}
-                              </ErrorMessage>
-                            </div>
-                            <AiOutlineSwap className={styles.swapIcon} />
-                            <div className={styles.inputBox}>
-                              <label htmlFor="changeto">Change to</label>
-                              <Field type="text" name="replace_to" />
-                              <ErrorMessage name="replace_to">
-                                {(msg) => <p className={styles.error}>{msg}</p>}
-                              </ErrorMessage>
-                            </div>
-                          </div>
-                          <div className={styles.inputBox + ' ' + styles.radioBox}>
-                            <div className="p-d-flex p-ai-center p-mr-2">
-                              <RadioButton className={styles.checkBoxes} inputId="specificcolumn" name="replacedata" value="specificcolumn" checked={replaceColumn} onChange={(e) => { setReplaceColumn(true); props.setFieldValue('column', Object.keys(contacts[0])[0]) }} />
-                              <label htmlFor="specificcolumn">Replace data on specific column</label>
-                            </div>
-                            <div className="p-d-flex p-ai-center">
-                              <RadioButton className={styles.checkBoxes} inputId="wholeregistry" name="replacedata" value="wholeregistry" checked={!replaceColumn} onChange={(e) => { setReplaceColumn(false); props.setFieldValue('column', '') }} />
-                              <label htmlFor="wholeregistry">Replace data on whole registry</label>
-                            </div>
-                          </div>
-                          {
-                            replaceColumn ? <div className={styles.inputBox}>
-                              <Dropdown id="inviteRole" className={styles.selectBox} name="column" value={props.values.column} options={Object.keys(contacts[0])} onChange={(e: any) => props.setFieldValue('column', e.target.value)} />
-                              <ErrorMessage name="column">
-                                {(msg) => <p className={styles.error}>{msg}</p>}
-                              </ErrorMessage>
-                            </div> : null
+              <Dialog showHeader={false} onMaskClick={createContactDialogCloseHandler} className={styles.createNewContactCustomStyles} maskClassName={styles.dialogMask} position={'right'} visible={createNewContactModal} style={{ width: '500px', }} onHide={() => ''}>
+                <div className={styles.createContactModal}>
+                  <h5>{editData ? "Edit Contact" : (viewData ? "View Data" : (filterData ? "Filter Data" : "Create New Contact"))}</h5>
+                  {
+                    initialValues && types ?
+                      <Formik
+                        enableReinitialize={!viewData}
+                        initialValues={initialValues}
+                        validate={(values) => {
+                          let error: any = {};
+                          if (filterData || editData) {
+                            return
+                          } else {
+                            if (!viewData) {
+                              Object.keys(values).map(el => {
+                                if (el == "First Name" || el == "Last Name" || el == "Email" || el == "Contact") {
+                                  if (!values[el]) {
+                                    if (el == "First Name") {
+                                      error[el] = "Please enter first name";
+                                    } else if (el == "Last Name") {
+                                      error[el] = "Please enter last name";
+                                    } else if (el == "Email") {
+                                      error[el] = "Please enter email";
+                                    } else if (el == "Contact") {
+                                      error[el] = "Please enter contact";
+                                    } else {
+                                      error[el] = "Please enter valid value";
+                                    }
+                                  } else if (el == "Email") {
+                                    var emailPattern = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+                                    if (!emailPattern.test(values[el])) {
+                                      error[el] = "Please enter valid email 2";
+                                    }
+                                  } else if (el == "First Name" || el == "Last Name") {
+                                    var namePattern = /^[A-Za-z ]*$/;
+                                    if (!namePattern.test(values[el])) {
+                                      error[el] = "Please enter valid value";
+                                    }
+                                  } else if (el == "Contact") {
+                                    var contactPattern = /^[0-9\.\-\.\+\.\)\.\(\/]+$/;
+                                    if (!contactPattern.test(values[el])) {
+                                      error[el] = "Please enter valid contact";
+                                    }
+                                  }
+                                }
+                              })
+                              return error;
+                            }
                           }
+                        }}
+                        onSubmit={(
+                          values: DynamicFields,
+                          { setSubmitting }: FormikHelpers<DynamicFields>
+                        ) => {
+                          createNewContactHanler(JSON.stringify(values, null, 2));
+                          setSubmitting(false);
+                        }}
+                      >
+                        {props => (
+                          <form onSubmit={props.handleSubmit}>
+                            <FieldArray
+                              name="contact"
+                              render={arrayHelpers => (
+                                <div className={styles.contactFields}>
+                                  {
+                                    createContactSpinner ? <div className={styles.formSpinner}>
+                                      <div className={styles.loading}></div>
+                                    </div> : null
+                                  }
+                                  {
+                                    Object.keys(props.values).map(function (key, index) {
+                                      if (key.toLowerCase() == "id") {
+                                        return false
+                                      }
+                                      return <div className={styles.inputBox} key={"contactField" + index}>
+                                        <label>{key}</label>
+                                        {
+                                          contactFieldsTypeHandler(key)
+                                        }
+                                      </div>
+                                    })
+                                  }
+                                </div>
+                              )}
+                            />
+                            <div className="p-d-flex p-ai-center p-mt-4 p-jc-end">
+                              {
+                                viewData && restoreCheck ? <button type="button" className={layoutStyles.customBluebtn} onClick={() => originalDetailsHandler()}>See Version History</button> : null
+                              }
+                              <div className="">
+                                {
+                                  !viewData ? (filterData ? <button type='submit' className={layoutStyles.customBlueBgbtn}>Apply Filter</button> : <button type='submit' className={layoutStyles.customBlueBgbtn}>Save</button>) : ''
+                                }
+                                <button type='button' onClick={emptyContactFiledHandler} className={layoutStyles.customDarkBgbtn}>{viewData ? "Close" : "Cancel"}</button>
+                              </div>
+                            </div>
+                          </form>
+                        )}
+                      </Formik> : null
+                  }
+                </div>
+              </Dialog>
 
+              {/* Add New Field-Modal */}
+              <Dialog showHeader={false} onMaskClick={addNewFieldDialogCloseHandler} contentClassName={styles.addNewFieldModalCustomStyles} maskClassName={styles.dialogMask} visible={addNewFieldModal} style={{ width: '500px', }} onHide={() => ''}>
+                <div className={styles.addNewFieldModal}>
+                  <h5>Add new field</h5>
+                  <Formik
+                    enableReinitialize
+                    initialValues={{
+                      column: '',
+                      dtype: 'text'
+                    }}
+                    validationSchema={validationSchema}
+                    onSubmit={(
+                      values: AddNewFiled,
+                      { setSubmitting }: FormikHelpers<AddNewFiled>
+                    ) => {
+                      addNewFiledHandler(JSON.stringify(values, null, 2));
+                      setSubmitting(false);
+                    }}
+                  >
+                    {props => (
+                      <form onSubmit={props.handleSubmit}>
+                        {
+                          addFiledSpinner ? <div className={styles.formSpinner}>
+                            <div className={styles.loading}></div>
+                          </div> : null
+                        }
+                        <div className={styles.inputFields}>
+                          <div className={styles.inputBox}>
+                            <label htmlFor="column">Enter field name for new column</label>
+                            <Field type="text" name="column" />
+                            <ErrorMessage name="column">
+                              {(msg) => <p className={styles.error}>{msg}</p>}
+                            </ErrorMessage>
+                          </div>
+
+                          <div className={styles.inputBox}>
+                            <label htmlFor="dataType">Select the data type</label>
+                            <Dropdown id="inviteRole" className={styles.selectBox} name="dtype" value={props.values.dtype} options={dataType} onChange={(e: any) => props.setFieldValue('dtype', e.target.value)} />
+                          </div>
                           <div className="p-d-flex p-ai-center p-mt-4">
                             <div className="p-m-auto">
                               <button type='submit' className={layoutStyles.customBlueBgbtn}>Save</button>
-                              <button type='button' onClick={() => setReplaceDataModal(false)} className={layoutStyles.customBluebtn}>Cancel</button>
+                              <button type='button' onClick={() => setAddNewFieldModal(false)} className={layoutStyles.customBluebtn}>Cancel</button>
                             </div>
                           </div>
                         </div>
-                      </div>
-                    </form>
-                  )}
-                </Formik>
-              </div>
-            </Dialog>
-
-            {/* Table Setting data-Modal */}
-            <Dialog showHeader={false} onMaskClick={tableSettingDialogCloseHandler} contentClassName={styles.addNewFieldModalCustomStyles} maskClassName={styles.dialogMask} visible={settingDataModal} style={{ width: '600px', }} onHide={() => ''}>
-              <div className={styles.addNewFieldModal}>
-                {
-                  editColumnModalSpinner ? <div className={styles.formSpinner}>
-                    <div className={styles.loading}></div>
-                  </div> : null
-                }
-                <div className={styles.replaceDataModal + " " + styles.tableSettings}>
-                  <h5>
-                    Table Setting
-                  </h5>
-                  <DragDrop tasks={columns} setColumns={setColumns} editHandler={columnEditHandler} setEditNameHandler={setEditNameHandler} saveColumnHandler={saveColumnHandler} setDeleteColumnModal={setDeleteColumnModal} setDeleteColumnName={setDeleteColumnName} hideShowColumnHandler={hideShowColumnHandler} />
+                      </form>
+                    )}
+                  </Formik>
                 </div>
-              </div>
-            </Dialog>
+              </Dialog>
 
-            {/* column delete modal */}
-            <Dialog showHeader={false} onMaskClick={columnDeleteDialogCloseHandler} contentClassName={styles.addNewFieldModalCustomStyles} maskClassName={styles.dialogMask} visible={deleteColumnModal} style={{ width: '600px', }} onHide={() => ''}>
-              <div className={styles.addNewFieldModal}>
-                {
-                  deleteColumnModalSpinner ? <div className={styles.formSpinner}>
-                    <div className={styles.loading}></div>
-                  </div> : null
-                }
-                <div className={styles.deleteColumn}>
-                  <h5>Delete Column</h5>
-                  <div className={styles.inputFields}>
-                    <div className="p-text-center">
-                      <h3 className='p-mt-0'>Are you sure you want to delete the column ?</h3>
-                      <div className={styles.radioBox}>
-                        <Checkbox inputId='deleteCheck' className={styles.deleteCheckbox + " p-deleteCheckbox"} onChange={e => setDeleteFromDatabase(e.checked)} checked={deleteFromDatabase}></Checkbox>
-                        <label htmlFor="deleteCheck">Delete specific column data from database as well</label>
+              {/* Replace data-Modal */}
+              <Dialog showHeader={false} onMaskClick={replaceDataDialogCloseHandler} contentClassName={styles.addNewFieldModalCustomStyles} maskClassName={styles.dialogMask} visible={replaceDataModal} style={{ width: '500px', }} onHide={() => ''}>
+                <div className={styles.addNewFieldModal}>
+                  <Formik
+                    enableReinitialize
+                    initialValues={{
+                      replace_from: '',
+                      replace_to: '',
+                      column: contacts[0] ? Object.keys(contacts[0])[0] : ''
+                    }}
+                    validationSchema={replaceValueSchema}
+                    onSubmit={(
+                      values: ReplaceData,
+                      { setSubmitting }: FormikHelpers<ReplaceData>
+                    ) => {
+                      replacedataSaveBtnHandler(JSON.stringify(values, null, 2));
+                      setSubmitting(false);
+                    }}
+                  >
+                    {props => (
+                      <form onSubmit={props.handleSubmit}>
+                        {
+                          replaceDataSpinner ? <div className={styles.formSpinner}>
+                            <div className={styles.loading}></div>
+                          </div> : null
+                        }
+                        <div className={styles.replaceDataModal}>
+                          <h5>Replace Data</h5>
+                          <div className={styles.inputFields}>
+                            <div className={styles.replaceFields}>
+                              <div className={styles.inputBox}>
+                                <label htmlFor="selectdata">Select data</label>
+                                <Field type="text" name="replace_from" />
+                                <ErrorMessage name="replace_from">
+                                  {(msg) => <p className={styles.error}>{msg}</p>}
+                                </ErrorMessage>
+                              </div>
+                              <AiOutlineSwap className={styles.swapIcon} />
+                              <div className={styles.inputBox}>
+                                <label htmlFor="changeto">Change to</label>
+                                <Field type="text" name="replace_to" />
+                                <ErrorMessage name="replace_to">
+                                  {(msg) => <p className={styles.error}>{msg}</p>}
+                                </ErrorMessage>
+                              </div>
+                            </div>
+                            <div className={styles.inputBox + ' ' + styles.radioBox}>
+                              <div className="p-d-flex p-ai-center p-mr-2">
+                                <RadioButton className={styles.checkBoxes} inputId="specificcolumn" name="replacedata" value="specificcolumn" checked={replaceColumn} onChange={(e) => { setReplaceColumn(true); props.setFieldValue('column', Object.keys(contacts[0])[0]) }} />
+                                <label htmlFor="specificcolumn">Replace data on specific column</label>
+                              </div>
+                              <div className="p-d-flex p-ai-center">
+                                <RadioButton className={styles.checkBoxes} inputId="wholeregistry" name="replacedata" value="wholeregistry" checked={!replaceColumn} onChange={(e) => { setReplaceColumn(false); props.setFieldValue('column', '') }} />
+                                <label htmlFor="wholeregistry">Replace data on whole registry</label>
+                              </div>
+                            </div>
+                            {
+                              replaceColumn ? <div className={styles.inputBox}>
+                                <Dropdown id="inviteRole" className={styles.selectBox} name="column" value={props.values.column} options={Object.keys(contacts[0])} onChange={(e: any) => props.setFieldValue('column', e.target.value)} />
+                                <ErrorMessage name="column">
+                                  {(msg) => <p className={styles.error}>{msg}</p>}
+                                </ErrorMessage>
+                              </div> : null
+                            }
+
+                            <div className="p-d-flex p-ai-center p-mt-4">
+                              <div className="p-m-auto">
+                                <button type='submit' className={layoutStyles.customBlueBgbtn}>Save</button>
+                                <button type='button' onClick={() => setReplaceDataModal(false)} className={layoutStyles.customBluebtn}>Cancel</button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </form>
+                    )}
+                  </Formik>
+                </div>
+              </Dialog>
+
+              {/* Table Setting data-Modal */}
+              <Dialog showHeader={false} onMaskClick={tableSettingDialogCloseHandler} contentClassName={styles.addNewFieldModalCustomStyles} maskClassName={styles.dialogMask} visible={settingDataModal} style={{ width: '600px', }} onHide={() => ''}>
+                <div className={styles.addNewFieldModal}>
+                  {
+                    editColumnModalSpinner ? <div className={styles.formSpinner}>
+                      <div className={styles.loading}></div>
+                    </div> : null
+                  }
+                  <div className={styles.replaceDataModal + " " + styles.tableSettings}>
+                    <h5>
+                      Table Setting
+                    </h5>
+                    <DragDrop tasks={columns} setColumns={setColumns} editHandler={columnEditHandler} setEditNameHandler={setEditNameHandler} saveColumnHandler={saveColumnHandler} setDeleteColumnModal={setDeleteColumnModal} setDeleteColumnName={setDeleteColumnName} hideShowColumnHandler={hideShowColumnHandler} />
+                  </div>
+                </div>
+              </Dialog>
+
+              {/* column delete modal */}
+              <Dialog showHeader={false} onMaskClick={columnDeleteDialogCloseHandler} contentClassName={styles.addNewFieldModalCustomStyles} maskClassName={styles.dialogMask} visible={deleteColumnModal} style={{ width: '600px', }} onHide={() => ''}>
+                <div className={styles.addNewFieldModal}>
+                  {
+                    deleteColumnModalSpinner ? <div className={styles.formSpinner}>
+                      <div className={styles.loading}></div>
+                    </div> : null
+                  }
+                  <div className={styles.deleteColumn}>
+                    <h5>Delete Column</h5>
+                    <div className={styles.inputFields}>
+                      <div className="p-text-center">
+                        <h3 className='p-mt-0'>Are you sure you want to delete the column ?</h3>
+                        <div className={styles.radioBox}>
+                          <Checkbox inputId='deleteCheck' className={styles.deleteCheckbox + " p-deleteCheckbox"} onChange={e => setDeleteFromDatabase(e.checked)} checked={deleteFromDatabase}></Checkbox>
+                          <label htmlFor="deleteCheck">Delete specific column data from database as well</label>
+                        </div>
                       </div>
-                    </div>
-                    <div className="p-d-flex p-ai-center p-mt-4">
-                      <div className="p-m-auto">
-                        <button type='button' onClick={() => { setDeleteColumnName(null); setDeleteFromDatabase(false); setDeleteColumnModal(false) }} className={layoutStyles.customBluebtn} >Cancel</button>
-                        <button type='button' onClick={deleteColumnHandler} className={layoutStyles.customBlueBgbtn}>Delete</button>
+                      <div className="p-d-flex p-ai-center p-mt-4">
+                        <div className="p-m-auto">
+                          <button type='button' onClick={() => { setDeleteColumnName(null); setDeleteFromDatabase(false); setDeleteColumnModal(false) }} className={layoutStyles.customBluebtn} >Cancel</button>
+                          <button type='button' onClick={deleteColumnHandler} className={layoutStyles.customBlueBgbtn}>Delete</button>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            </Dialog>
+              </Dialog>
 
-            {/* No data upload csv modal */}
-            <Dialog showHeader={false} onMaskClick={noDataDialogCloseHandler} contentClassName={styles.addNewFieldModalCustomStyles} maskClassName={styles.dialogMask} visible={noDataModal} style={{ width: '600px', }} onHide={() => ''}>
-              <div className={styles.addNewFieldModal}>
-                {
-                  noDataModalSpinner ? <div className={styles.formSpinner}>
-                    <div className={styles.loading}></div>
-                  </div> : null
-                }
-                <Formik
-                  enableReinitialize
-                  validationSchema={yup.object().shape({
-                    file: yup.mixed().required("Please upload CSV file").test("type", "Only CSV format is accepted", (value) => {
-                      return value && (
-                        value.type === "application/vnd.ms-excel" || value.type === "text/csv"
-                      );
-                    }),
-                  })}
-                  initialValues={{ file: null }}
-                  onSubmit={(
-                    values: CSVUpload | null,
-                    { setSubmitting }: FormikHelpers<CSVUpload>
-                  ) => {
-                    CSVUploadSubmitHandler(values);
-                    setSubmitting(false);
-                  }}
-                >
-                  {props => (
-                    <form onSubmit={props.handleSubmit}>
-                      <div className={styles.CSVUpload}>
-                        <h5>Upload CSV</h5>
-                        <div className={styles.inputFields}>
-                          <p className={styles.exclaWarning}><FaExclamationTriangle /> Please upload a CSV file to create your first Registry database.</p>
-                          <div className="p-text-center">
-                            <label
-                              htmlFor="CSVFileUpload"
-                              className="button">
-                              <FiUpload />
-                              Upload a CSV
-                            </label>
-                            <p className={styles.fileName}>{csvFileName(props.values)}</p>
-                            <input id="CSVFileUpload" name="file" type="file" accept=".csv" onChange={(e) => csvFileUploadHandler(e, props.setFieldValue)} className={styles.CSVFileUpload} />
+              {/* No data upload csv modal */}
+              <Dialog showHeader={false} onMaskClick={noDataDialogCloseHandler} contentClassName={styles.addNewFieldModalCustomStyles} maskClassName={styles.dialogMask} visible={noDataModal} style={{ width: '600px', }} onHide={() => ''}>
+                <div className={styles.addNewFieldModal}>
+                  {
+                    noDataModalSpinner ? <div className={styles.formSpinner}>
+                      <div className={styles.loading}></div>
+                    </div> : null
+                  }
+                  <Formik
+                    enableReinitialize
+                    validationSchema={yup.object().shape({
+                      file: yup.mixed().required("Please upload CSV file").test("type", "Only CSV format is accepted", (value) => {
+                        return value && (
+                          value.type === "application/vnd.ms-excel" || value.type === "text/csv"
+                        );
+                      }),
+                    })}
+                    initialValues={{ file: null }}
+                    onSubmit={(
+                      values: CSVUpload | null,
+                      { setSubmitting }: FormikHelpers<CSVUpload>
+                    ) => {
+                      CSVUploadSubmitHandler(values);
+                      setSubmitting(false);
+                    }}
+                  >
+                    {props => (
+                      <form onSubmit={props.handleSubmit}>
+                        <div className={styles.CSVUpload}>
+                          <h5>Upload CSV</h5>
+                          <div className={styles.inputFields}>
+                            <p className={styles.exclaWarning}><FaExclamationTriangle /> Please upload a CSV file to create your first Registry database.</p>
+                            <div className="p-text-center">
+                              <label
+                                htmlFor="CSVFileUpload"
+                                className="button">
+                                <FiUpload />
+                                Upload a CSV
+                              </label>
+                              <p className={styles.fileName}>{csvFileName(props.values)}</p>
+                              <input id="CSVFileUpload" name="file" type="file" accept=".csv" onChange={(e) => csvFileUploadHandler(e, props.setFieldValue)} className={styles.CSVFileUpload} />
 
-                            <ErrorMessage name="file">
-                              {(msg) => <p className={styles.error}>{msg}</p>}
-                            </ErrorMessage>
-                            {
-                              noCsvError ? <p className={styles.error}>Please upload an CSV to upload data into the registry</p> : ""
-                            }
-                          </div>
-                          <div className="p-d-flex p-ai-center p-mt-4">
-                            <div className="p-m-auto">
-                              {/* <button type='button' onClick={() => { setDeleteColumnName(null); setDeleteFromDatabase(false); setNoDataModal(false) }} className={layoutStyles.customBluebtn} >Cancel</button> */}
-                              <button type='submit' className={layoutStyles.customBlueBgbtn}>Upload</button>
+                              <ErrorMessage name="file">
+                                {(msg) => <p className={styles.error}>{msg}</p>}
+                              </ErrorMessage>
+                              {
+                                noCsvError ? <p className={styles.error}>Please upload an CSV to upload data into the registry</p> : ""
+                              }
+                            </div>
+                            <div className="p-d-flex p-ai-center p-mt-4">
+                              <div className="p-m-auto">
+                                {/* <button type='button' onClick={() => { setDeleteColumnName(null); setDeleteFromDatabase(false); setNoDataModal(false) }} className={layoutStyles.customBluebtn} >Cancel</button> */}
+                                <button type='submit' className={layoutStyles.customBlueBgbtn}>Upload</button>
+                              </div>
                             </div>
                           </div>
                         </div>
-                      </div>
-                    </form>
-                  )}
-                </Formik>
-              </div>
-            </Dialog>
+                      </form>
+                    )}
+                  </Formik>
+                </div>
+              </Dialog>
+            </div>
           </div>
         </div>
-      </div>
-    </DashboardLayout >
+      </DashboardLayout >
+    </>
   )
 }
 
