@@ -81,7 +81,8 @@ const Dashboard: NextPage = () => {
   const [filterFields, setFilterFields] = useState('');
   const [searchField, setSearchField] = useState('');
   const [perPage, setPerPage] = useState(10);
-  const [dataType, setDataType] = useState(["text", "email", "date", "number", "textarea", "checkbox", "radio", "select"])
+  const [dataType, setDataType] = useState(["text", "email", "date", "number", "textarea", "checkbox"])
+  // const [dataType, setDataType] = useState(["text", "email", "date", "number", "textarea", "checkbox", "radio", "select"])
   const [contacts, setContacts] = useState<any[]>([]);
   const [showFieldsData, setShowFieldsData] = useState<any>(null);
   const [replaceColumn, setReplaceColumn] = useState(true)
@@ -1105,10 +1106,10 @@ const Dashboard: NextPage = () => {
                             <Dropdown id="inviteRole" className={styles.selectBox} name="dtype" value={props.values.dtype} options={dataType} onChange={(e: any) => props.setFieldValue('dtype', e.target.value)} />
                           </div>
 
-                          <div className={styles.inputBox}>
+                          {/* <div className={styles.inputBox}>
                             <label htmlFor="dataType">Select the data type</label>
                             <Dropdown id="inviteRole" className={styles.selectBox} name="dtype" value={props.values.dtype} options={dataType} onChange={(e: any) => props.setFieldValue('dtype', e.target.value)} />
-                          </div>
+                          </div> */}
 
                           <div className="p-d-flex p-ai-center p-mt-4">
                             <div className="p-m-auto">
