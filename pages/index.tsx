@@ -71,6 +71,9 @@ const Dashboard: NextPage = () => {
   const [searchInput, setSearchInput] = useState('');
   const [removeSearch, setRemoveSearch] = useState('');
 
+  // Types Values
+  const [checkBoxOptions, setCheckBoxOptions] = useState([]);
+
   // Paginations and Filter States
   const [totalRecords, setTotalRecords] = useState(1);
   const [currentPage, setCurrentPage] = useState(1);
@@ -78,7 +81,7 @@ const Dashboard: NextPage = () => {
   const [filterFields, setFilterFields] = useState('');
   const [searchField, setSearchField] = useState('');
   const [perPage, setPerPage] = useState(10);
-  const [dataType, setDataType] = useState(["text", "email", "date", "number", "textarea", "checkbox"])
+  const [dataType, setDataType] = useState(["text", "email", "date", "number", "textarea", "checkbox", "radio", "select"])
   const [contacts, setContacts] = useState<any[]>([]);
   const [showFieldsData, setShowFieldsData] = useState<any>(null);
   const [replaceColumn, setReplaceColumn] = useState(true)
@@ -119,10 +122,12 @@ const Dashboard: NextPage = () => {
         method: 'GET',
         headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
       });
-      console.log(data);
       if (data) {
-        if (!data.data && !data.data.registry && !data.data.registry.length) {
+        if(data.message == "No registry available"){
           setNoDataModal(true)
+        }
+        if (!data.data || !data.data.registry || !data.data.registry.length) {
+
         } else if (data.data.registry.length == 1) {
           let singleData = { ...data.data.registry[0] }
           Object.keys(singleData).map(el => {
@@ -789,7 +794,6 @@ const Dashboard: NextPage = () => {
         data: newCSVForm,
         headers: { 'Content-Type': 'multipart/form-data', 'Authorization': JSON.parse(authToken) }
       });
-      console.log(data);
 
       setNoDataModalSpinner(false);
       setNoDataModal(false)
@@ -1100,6 +1104,12 @@ const Dashboard: NextPage = () => {
                             <label htmlFor="dataType">Select the data type</label>
                             <Dropdown id="inviteRole" className={styles.selectBox} name="dtype" value={props.values.dtype} options={dataType} onChange={(e: any) => props.setFieldValue('dtype', e.target.value)} />
                           </div>
+
+                          <div className={styles.inputBox}>
+                            <label htmlFor="dataType">Select the data type</label>
+                            <Dropdown id="inviteRole" className={styles.selectBox} name="dtype" value={props.values.dtype} options={dataType} onChange={(e: any) => props.setFieldValue('dtype', e.target.value)} />
+                          </div>
+
                           <div className="p-d-flex p-ai-center p-mt-4">
                             <div className="p-m-auto">
                               <button type='submit' className={layoutStyles.customBlueBgbtn}>Save</button>
