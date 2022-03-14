@@ -65,7 +65,19 @@ const Header = (props: any) => {
                 </div>
                 <Button className={"p-button-text " + styles.searchIcon} ><FaRegQuestionCircle /></Button>
                 <Button className={styles.bellIcon}><i className="pi pi-bell p-overlay-badge" style={{ fontSize: '18px' }}><Badge value="2" severity="danger" ></Badge></i></Button> */}
-                <div className={styles.userProfile} onClick={() => props.profile(true)} ref={props.userRef}>
+                {/* <div className={styles.userProfile} onClick={() => props.profile(true)} ref={props.userRef}>
+                    <Image
+                        src={User}
+                        className={styles.userImage}
+                        alt="Octoplus"
+                        width={40}
+                        height={40}
+                    />
+                    {
+                        userName ? <h6>{userName}</h6> : ''
+                    }
+                </div> */}
+                <div className={styles.userProfile} onClick={() => router.push('/profile/account')}>
                     <Image
                         src={User}
                         className={styles.userImage}
