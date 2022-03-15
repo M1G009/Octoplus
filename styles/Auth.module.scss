@@ -120,6 +120,10 @@ $XXLarge: 1600px;
                     &:focus {
                         border-color: $lightBlue;
                     }
+
+                    &:disabled{
+                        background: #d0d3d6;
+                    }
                 }
 
                 input.blue,
