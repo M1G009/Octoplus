@@ -189,8 +189,6 @@ const CsvCompare: NextPage = (props: any) => {
         let el = document.getElementById('forPdf')
         if (el) {
             html2canvas(el).then(canvas => {
-                console.log(canvas);
-
                 const imgData: any = canvas.toDataURL();
                 const pdf = new jsPDF();
                 pdf.addImage(imgData, 'JPEG', 0, 0, 210, 297);

@@ -364,7 +364,6 @@ const CsvCompare: NextPage = (props: any) => {
                     data: JSON.stringify({ "csv_id": csvId, "columns": mainMappingColumns, "is_active": "Y" }),
                     headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
                 });
-                console.log(data);
 
                 await fetchAllCompareRecord(currentPage, perPage);
                 setColumnMappingModal(false)

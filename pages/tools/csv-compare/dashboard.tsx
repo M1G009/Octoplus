@@ -102,7 +102,6 @@ const CsvCompare: NextPage = (props: any) => {
                 data: JSON.stringify({ "column": columnName, "value": columnValue, csv_id }),
                 headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
             });
-            console.log("SubColumnData", data);
 
             if (data.data) {
                 setRegistryEntries(data.data.registry)
@@ -146,7 +145,6 @@ const CsvCompare: NextPage = (props: any) => {
                 data: JSON.stringify({ "column": columnName, csv_id }),
                 headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
             });
-            console.log("SubColumn", data);
             if (data.data.length) {
                 let subColumnsDataArray = [...data.data];
                 subColumnsDataArray.map((el, i) => {
@@ -228,7 +226,6 @@ const CsvCompare: NextPage = (props: any) => {
                 data: JSON.stringify({ csv_id }),
                 headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
             });
-            console.log("AllColumns", data);
             if (data.status == "400") {
                 setDashBoardSpinner(false);
                 return await toast({ type: "error", message: data.message });

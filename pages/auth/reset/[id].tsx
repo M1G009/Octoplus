@@ -46,7 +46,6 @@ const Login: NextPage = () => {
   // LoginSubmitHandler
   const ResetSubmitHandler = async (userData: any) => {
     try {
-      // console.log(router);
       if (router.query && router.query.id) {
         let token = router.query.id;
         if (token) {

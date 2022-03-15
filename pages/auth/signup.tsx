@@ -1,10 +1,10 @@
 // React Module Imports
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 // Next Module Imports
 import type { NextPage } from 'next'
 import Link from 'next/link'
-import { setCookies, getCookie } from 'cookies-next';
+import { setCookies } from 'cookies-next';
 import { useRouter } from 'next/router'
 import Image from 'next/image'
 
@@ -42,6 +42,43 @@ const Signup: NextPage = () => {
     const router = useRouter();
     const [errorMessage, setErrorMessage] = useState('');
     const [authSpinner, setAuthSpinner] = useState(false);
+    const [emailDisable, setEmailDisable] = useState(false);
+    const [nameDisable, setNameDisable] = useState(false);
+    const [initialValues, setInitialValues] = useState({
+        username: '',
+        email: '',
+        password: '',
+        confirmpassword: '',
+        location: { "name": "Select your country", "code": "" },
+        termscheck: false
+    })
+
+    useEffect(() => {
+        if (window.location) {
+            const urlSearchParams = new URLSearchParams(window.location.search);
+            const queryObj = Object.fromEntries(urlSearchParams.entries())
+
+            if (queryObj) {
+                if (queryObj.email && queryObj.name) {
+                    console.log({...initialValues, email: queryObj.email, username: queryObj.name});
+                    
+                    setInitialValues({...initialValues, email: queryObj.email, username: queryObj.name})
+                    setEmailDisable(true)
+                    setNameDisable(true)
+                } else {
+                    setEmailDisable(false)
+                    setNameDisable(false)
+                }
+
+            } else {
+                setEmailDisable(false)
+                setNameDisable(false)
+            }
+        }
+    }, [])
+
+    console.log(initialValues);
+    
 
     const countriesData = [
         { "name": "Select your country", "code": "" },
@@ -977,15 +1014,15 @@ const Signup: NextPage = () => {
 
     const validationSchema = yup.object().shape({
         username: yup
-      .string()
-      .matches(/^[A-Za-z ]*$/, 'Please enter valid user name')
-      .max(40)
-      .required('Please enter user name'),
+            .string()
+            .matches(/^[A-Za-z ]*$/, 'Please enter valid user name')
+            .max(40)
+            .required('Please enter user name'),
         email: yup.string().required('Please enter email').email("Please enter valid email"),
         password: yup.string().required('Please enter password').min(8, 'Password is too short - should be 8 chars minimum').matches(
             /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])(?=.{8,})/,
             "Password must have uppercase, lowercase, number and special case character"
-          ),
+        ),
         confirmpassword: yup.string().required('Please enter confirm password').oneOf([yup.ref('password'), null], 'Passwords must match'),
         location: yup.object().shape({
             name: yup.string().required("Please select country"),
@@ -1010,7 +1047,7 @@ const Signup: NextPage = () => {
                 data: JSON.stringify(newUser),
                 headers: { 'Content-Type': 'application/json' }
             });
-            
+
             if (data.status != 200) {
                 setErrorMessage(data.message)
                 return setAuthSpinner(false);
@@ -1044,15 +1081,11 @@ const Signup: NextPage = () => {
                     />
                 </div>
                 <div className={styles.authForm}>
+                    {console.log(initialValues)}
+                    
                     <Formik
-                        initialValues={{
-                            username: '',
-                            email: '',
-                            password: '',
-                            confirmpassword: '',
-                            location: { "name": "Select your country", "code": "" },
-                            termscheck: false
-                        }}
+                    enableReinitialize
+                        initialValues={initialValues}
                         validationSchema={validationSchema}
                         onSubmit={(
                             values: Values,
@@ -1081,7 +1114,7 @@ const Signup: NextPage = () => {
                                 <div className={styles.inputBox}>
                                     <label htmlFor="username">Full Name</label>
 
-                                    <Field type="text" name="username" />
+                                    <Field type="text" name="username" disabled={nameDisable} />
                                     <ErrorMessage name="username">
                                         {(msg) => <p className={styles.error}>{msg}</p>}
                                     </ErrorMessage>
@@ -1089,7 +1122,7 @@ const Signup: NextPage = () => {
 
                                 <div className={styles.inputBox}>
                                     <label htmlFor="email">Email address</label>
-                                    <Field type="email" name="email" autoComplete="false" />
+                                    <Field type="email" name="email" autoComplete="false" disabled={emailDisable} />
                                     <ErrorMessage name="email">
                                         {(msg) => <p className={styles.error}>{msg}</p>}
                                     </ErrorMessage>
