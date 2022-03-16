@@ -124,7 +124,7 @@ const Dashboard: NextPage = () => {
         headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
       });
       if (data) {
-        if(data.message == "No registry available"){
+        if (data.message == "No registry available") {
           setNoDataModal(true)
         }
         if (!data.data || !data.data.registry || !data.data.registry.length) {
@@ -962,7 +962,7 @@ const Dashboard: NextPage = () => {
                   : ''
               }
 
-
+              {/* Edit View Filter Data Field-Modal */}
               <Dialog showHeader={false} onMaskClick={createContactDialogCloseHandler} className={styles.createNewContactCustomStyles} maskClassName={styles.dialogMask} position={'right'} visible={createNewContactModal} style={{ width: '500px', }} onHide={() => ''}>
                 <div className={styles.createContactModal}>
                   <h5>{editData ? "Edit Contact" : (viewData ? "View Data" : (filterData ? "Filter Data" : "Create New Contact"))}</h5>

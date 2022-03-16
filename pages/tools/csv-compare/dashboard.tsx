@@ -636,6 +636,11 @@ const CsvCompare: NextPage = (props: any) => {
                                                                         let keys: any = Object.keys(obj);
                                                                         return <div key={"registryEntries" + i} className={styles.registryPaddingBox}>
                                                                             {
+                                                                                registryEntries.length > 1 ?
+                                                                                <h6 className={styles.rowIndex}>Data - {i+1}</h6>
+                                                                                : ""
+                                                                            }
+                                                                            {
                                                                                 keys.map((el: string, index: number) => {
                                                                                     if (activeColumn == el) {
                                                                                         return <div key={"csvdata" + i} className='p-d-flex p-ai-center p-mb-2 uniqueRegistryColumn'>
@@ -683,35 +688,37 @@ const CsvCompare: NextPage = (props: any) => {
                                                                     return <div className='p-mx-3' key={"csvdatas" + i}>
                                                                         {
                                                                             keys.map((el: any, i: number) => {
-                                                                                if (obj[el] != registryEntries[0][el] && obj[el]) {
-                                                                                    {
-                                                                                        !mergeBtnToggle ?
-                                                                                            setMergeBtnToggle(true)
-                                                                                            : ""
-                                                                                    }
-                                                                                    return <div key={"csvdata" + i} className='p-d-flex p-ai-center p-mb-2'>
-                                                                                        <RadioButton className='p-mr-1' value={obj[el]} name={el} checked={obj[el] == mergeEntries[el]} onChange={(e) => mergeColumnCheckHandler(e.target.value, e.target.name)} />
-                                                                                        <label htmlFor="">{el}</label>
-                                                                                        <p>{obj[el]}</p>
-                                                                                    </div>
-                                                                                }
-                                                                                else {
-                                                                                    if (activeColumn == el) {
-
-                                                                                        return <div key={"csvdata" + i} className='p-d-flex p-ai-center p-mb-2 duplicatesColumnId'>
-                                                                                            <RadioButton className='p-mr-1' value={obj[el]} name={el} checked={obj[el] == mergeEntries[el]} disabled={true} />
-                                                                                            <label htmlFor="">{el}</label>
-                                                                                            <p>{obj[el]}</p>
-                                                                                        </div>
-                                                                                    } else {
-
+                                                                                if(obj[el]){
+                                                                                    if (obj[el] != registryEntries[0][el]) {
+                                                                                        {
+                                                                                            !mergeBtnToggle ?
+                                                                                                setMergeBtnToggle(true)
+                                                                                                : ""
+                                                                                        }
                                                                                         return <div key={"csvdata" + i} className='p-d-flex p-ai-center p-mb-2'>
-                                                                                            <RadioButton className={'p-mr-1 duplicateBtn'} value={obj[el]} name={el} checked={obj[el] == mergeEntries[el]} disabled={true} />
+                                                                                            <RadioButton className='p-mr-1' value={obj[el]} name={el} checked={obj[el] == mergeEntries[el]} onChange={(e) => mergeColumnCheckHandler(e.target.value, e.target.name)} />
                                                                                             <label htmlFor="">{el}</label>
                                                                                             <p>{obj[el]}</p>
                                                                                         </div>
                                                                                     }
-
+                                                                                    else {
+                                                                                        if (activeColumn == el) {
+    
+                                                                                            return <div key={"csvdata" + i} className='p-d-flex p-ai-center p-mb-2 duplicatesColumnId'>
+                                                                                                <RadioButton className='p-mr-1' value={obj[el]} name={el} checked={obj[el] == mergeEntries[el]} disabled={true} />
+                                                                                                <label htmlFor="">{el}</label>
+                                                                                                <p>{obj[el]}</p>
+                                                                                            </div>
+                                                                                        } else {
+    
+                                                                                            return <div key={"csvdata" + i} className='p-d-flex p-ai-center p-mb-2'>
+                                                                                                <RadioButton className={'p-mr-1 duplicateBtn'} value={obj[el]} name={el} checked={obj[el] == mergeEntries[el]} disabled={true} />
+                                                                                                <label htmlFor="">{el}</label>
+                                                                                                <p>{obj[el]}</p>
+                                                                                            </div>
+                                                                                        }
+    
+                                                                                    }
                                                                                 }
                                                                             })
                                                                         }

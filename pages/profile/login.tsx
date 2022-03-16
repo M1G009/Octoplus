@@ -157,7 +157,7 @@ const Login: NextPage = () => {
       />
       <DashboardLayout sidebar={true}>
         <div className={layoutStyles.topBar}>
-          <p>Home / Proflie / <span>Login</span></p>
+          <p>Home / Profile / <span>Login</span></p>
           <h5>Login {`&`} Security</h5>
         </div>
         <div className={layoutStyles.box}>

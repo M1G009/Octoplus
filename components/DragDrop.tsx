@@ -7,8 +7,9 @@ import React, { useState } from "react";
 import { InputText } from 'primereact/inputtext';
 
 // 3rd Party Imports
-import { BsThreeDotsVertical, BsFillDashCircleFill, BsCheckLg } from "react-icons/bs";
+import { BsFillDashCircleFill, BsCheckLg } from "react-icons/bs";
 import { BiEditAlt } from "react-icons/bi";
+import { GrDrag } from "react-icons/gr";
 
 // Style and Component Imports
 import styles from "../components/DragDrop.module.scss"
@@ -169,7 +170,7 @@ const DragDrop = (props: any) => {
           >
             {
               task.name != "First Name" && task.name != "Last Name" && task.name != "Email" && task.name != "Contact"   ?
-              <button className={styles.threeDot} ><BsThreeDotsVertical /></button> : <button className={styles.threeDot+" "+styles.notDrag} ><BsThreeDotsVertical /></button>
+              <button className={styles.threeDot} ><GrDrag /></button> : <button className={styles.threeDot+" "+styles.notDrag} ><GrDrag /></button>
             }
             <div className={className(task.readonly)}>
               <InputText readOnly={task.readonly} value={task.editedName} placeholder="Keyword" onChange={(e) => setEditNameHandler(e.target.value, task.id)} />
@@ -207,7 +208,7 @@ const DragDrop = (props: any) => {
             onDragStart={e => onDragStart(e)}
             onDragEnd={e => onDragEnd(e)}
           >
-            <button className={styles.threeDot} ><BsThreeDotsVertical /></button>
+            <button className={styles.threeDot} ><GrDrag /></button>
             <div className={className(task.readonly)}>
               <InputText readOnly={task.readonly} value={task.editedName} placeholder="Keyword" onChange={(e) => setEditNameHandler(e.target.value, task.id)} />
               {

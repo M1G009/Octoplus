@@ -283,7 +283,7 @@ const Billing: NextPage = () => {
       />
       <DashboardLayout sidebar={true}>
         <div className={layoutStyles.topBar}>
-          <p>Home / Proflie / <span>Billing</span></p>
+          <p>Home / Profile / <span>Billing</span></p>
           <h5>Billing Information</h5>
         </div>
         <div className={layoutStyles.box}>
@@ -333,7 +333,7 @@ const Billing: NextPage = () => {
           </div>
           <div className={layoutStyles.headContentBox + " p-mb-5"}>
             <div className={layoutStyles.head}>
-              <h4>Subcription Plan</h4>
+              <h4>Subscription Plan</h4>
             </div>
             <div className={layoutStyles.textBox + " " + styles.subPlan}>
               <div className="p-d-flex p-ai-center p-jc-between">

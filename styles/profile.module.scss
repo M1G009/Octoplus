@@ -92,6 +92,7 @@ $lightBlue: #2236f1;
         font-weight: 500;
         font-size: 16px;
         color: $darkBlue;
+        word-break: break-word;
 
         &.error {
             font-size: 15px;

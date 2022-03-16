@@ -551,6 +551,14 @@ $lightBlue: #2236f1;
                         border-bottom: 1px solid #e0dede;
                         padding: 10px 0px;
 
+                         .rowIndex{
+                            margin: 0px;
+                            margin-bottom: 5px;
+                            padding-bottom: 2px;
+                            font-size: 15px;
+                            border-bottom: 1px solid #e0dede;
+                        }
+
                         &:last-child {
                             border-bottom: 0px;
                         }
@@ -832,7 +840,6 @@ $lightBlue: #2236f1;
     }
 }
 
-
-.backButtonDashboard{
+.backButtonDashboard {
     cursor: pointer;
 }

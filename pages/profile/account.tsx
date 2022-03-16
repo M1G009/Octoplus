@@ -68,7 +68,10 @@ const Account: NextPage = () => {
   const validationSchema = yup.object().shape({
     username: yup.string().required('Please enter user name'),
     email: yup.string().required('Please enter email').email("Please enter valid email"),
-    phone_number: yup.string().required('Please enter phone number'),
+    phone_number: yup.string().matches(
+      /^[0-9\.\-\.\+\.\)\.\(\/]+$/,
+      "Please enter valid numbers"
+    ),
     Language: yup.string().required('Please select language')
   });
 
@@ -144,7 +147,7 @@ const Account: NextPage = () => {
       />
       <DashboardLayout sidebar={true}>
         <div className={layoutStyles.topBar}>
-          <p>Home / Proflie / <span>Account</span></p>
+          <p>Home / Profile / <span>Account</span></p>
           <h5>Account Overview</h5>
         </div>
         <div className={layoutStyles.box}>

@@ -470,7 +470,7 @@ const Team: NextPage = (props: any) => {
       />
       <DashboardLayout sidebar={true}>
         <div className={layoutStyles.topBar}>
-          <p>Home / Proflie / <span>Team</span></p>
+          <p>Home / Profile / <span>Team</span></p>
           <h5>Manage Team</h5>
         </div>
         <div className={layoutStyles.box}>
