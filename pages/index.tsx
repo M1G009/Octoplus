@@ -123,8 +123,6 @@ const Dashboard: NextPage = () => {
         method: 'GET',
         headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
       });
-      console.log(data);
-      
       if (data) {
         if (data.message == "No registry available") {
           setNoDataModal(true)
@@ -182,7 +180,6 @@ const Dashboard: NextPage = () => {
       }
       setCreateContactTableSpinner(false)
     } catch (err) {
-      console.log(err);
       setCreateContactTableSpinner(false)
       return await toast({ type: "error", message: err });
     }
@@ -314,14 +311,12 @@ const Dashboard: NextPage = () => {
         data: { "format": "csv" },
         headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
       });
-      console.log(data);
       var link = window.document.createElement("a");
       link.setAttribute("href", "data:text/csv;charset=utf-8," + encodeURI(data.data));
       link.setAttribute("download", "Registry.csv");
       link.click();
 
     } catch (err) {
-      console.log(err);
       return await toast({ type: "error", message: err });
     }
   }
@@ -440,7 +435,6 @@ const Dashboard: NextPage = () => {
               data: editObj,
               headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
             });
-            console.log(data);
             await fetchAllContact(currentPage, perPage, filterFields, searchField, sortingField);
           } else {
 
@@ -455,7 +449,6 @@ const Dashboard: NextPage = () => {
               data: { insert: [parseData] },
               headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
             });
-            console.log(data);
             setRoutingQuery(filterFields, '', sortingField);
             await fetchAllContact(currentPage, perPage, filterFields, '', sortingField);
           }
@@ -467,7 +460,6 @@ const Dashboard: NextPage = () => {
       setEditContactRowId(null);
 
     } catch (err) {
-      console.log(err);
       setCreateContactSpinner(false)
       setCreateNewContactModal(false)
       setEditContactRowId(null);
@@ -494,15 +486,13 @@ const Dashboard: NextPage = () => {
         data: getData,
         headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
       });
-      console.log(data);
       setAddFiledSpinner(false)
       setAddNewFieldModal(false)
       return await fetchAllContact(currentPage, perPage, filterFields, searchField, sortingField);
     } catch (err) {
-      console.log(err);
       setAddFiledSpinner(false)
-      await toast({ type: "error", message: err });
-      return setAddNewFieldModal(false)
+      setAddNewFieldModal(false)
+      return await toast({ type: "error", message: err });
     }
   }
 
@@ -529,12 +519,10 @@ const Dashboard: NextPage = () => {
         data: replacedata,
         headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
       });
-      console.log(data);
       setReplaceDataSpinner(false)
       setReplaceDataModal(false)
       return await fetchAllContact(currentPage, perPage, filterFields, searchField, sortingField);
     } catch (err) {
-      console.log(err);
       setReplaceDataSpinner(false)
       setReplaceDataModal(false)
       return await toast({ type: "error", message: err });
@@ -576,7 +564,6 @@ const Dashboard: NextPage = () => {
           data: JSON.stringify({ registry_id: registryId, row_id: id }),
           headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
         });
-        console.log(data);
         if (data.data) {
           if (data.data[0].previous.length && data.data[0].current) {
             setRestoreCheck(true);
@@ -585,7 +572,6 @@ const Dashboard: NextPage = () => {
         setCreateContactSpinner(false)
       }
     } catch (err) {
-      console.log(err);
       setCreateContactSpinner(false)
       return await toast({ type: "error", message: err });
     }
@@ -643,13 +629,11 @@ const Dashboard: NextPage = () => {
             data: { "column": findObj.name, "rename": findObj.editedName },
             headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
           });
-          console.log(data);
           setEditColumnModalSpinner(false);
           return await fetchAllContact(currentPage, perPage, filterFields, searchField, sortingField);
         }
       }
     } catch (err) {
-      console.log(err);
       setEditColumnModalSpinner(false);
       return await toast({ type: "error", message: err });
     }
@@ -678,7 +662,6 @@ const Dashboard: NextPage = () => {
           data: { column: columnsObj },
           headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
         });
-        console.log(getdata);
         let columnsOrder: String[] = [];
         dataColumn.map((el: any) => {
           if (!el.hide) {
@@ -692,12 +675,10 @@ const Dashboard: NextPage = () => {
           data: { columns: columnsOrder },
           headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
         });
-        console.log(columndata);
       }
       setEditColumnModalSpinner(false);
       return await fetchAllContact(currentPage, perPage, filterFields, searchField, sortingField);
     } catch (err) {
-      console.log(err);
       setEditColumnModalSpinner(false)
       return await toast({ type: "error", message: err });
     }
@@ -724,7 +705,6 @@ const Dashboard: NextPage = () => {
           data: columnName,
           headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
         });
-        console.log(deletedata);
       }
 
       setDeleteColumnName(null);
@@ -732,7 +712,6 @@ const Dashboard: NextPage = () => {
       setDeleteColumnModal(false);
       return await fetchAllContact(currentPage, perPage, filterFields, searchField, sortingField);
     } catch (err) {
-      console.log(err);
       setDeleteColumnModalSpinner(true);
       setDeleteColumnModal(false);
       return await toast({ type: "error", message: err });
@@ -806,13 +785,11 @@ const Dashboard: NextPage = () => {
         data: newCSVForm,
         headers: { 'Content-Type': 'multipart/form-data', 'Authorization': JSON.parse(authToken) }
       });
-      console.log(data);
       setNoDataModalSpinner(false);
       setNoDataModal(false)
       return await fetchAllContact(currentPage, perPage, filterFields, searchField, sortingField);
 
     } catch (err) {
-      console.log(err);
       setNoDataModalSpinner(false);
       setNoDataModal(false)
       return await toast({ type: "error", message: err });

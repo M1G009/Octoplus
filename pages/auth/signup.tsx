@@ -60,8 +60,6 @@ const Signup: NextPage = () => {
 
             if (queryObj) {
                 if (queryObj.email && queryObj.name) {
-                    console.log({...initialValues, email: queryObj.email, username: queryObj.name});
-                    
                     setInitialValues({...initialValues, email: queryObj.email, username: queryObj.name})
                     setEmailDisable(true)
                     setNameDisable(true)
@@ -76,9 +74,6 @@ const Signup: NextPage = () => {
             }
         }
     }, [])
-
-    console.log(initialValues);
-    
 
     const countriesData = [
         { "name": "Select your country", "code": "" },
@@ -1081,8 +1076,6 @@ const Signup: NextPage = () => {
                     />
                 </div>
                 <div className={styles.authForm}>
-                    {console.log(initialValues)}
-                    
                     <Formik
                     enableReinitialize
                         initialValues={initialValues}
