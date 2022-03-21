@@ -1155,7 +1155,7 @@ const Dashboard: NextPage = () => {
                                 <ul className={styles.newFieldsOptionsBox}>
                                   {
                                     newFieldsOption.map((el, i) => {
-                                      return <li className={styles.options}>{el} <Button type="button" icon="pi pi-times" className={"p-button-rounded p-button-danger " + styles.deleteOptionBtn} onClick={() => deleteNewFieldsOptionHandler(i)} /></li>
+                                      return <li key={"newfieldsArray"+i} className={styles.options}>{el} <Button type="button" icon="pi pi-times" className={"p-button-rounded p-button-danger " + styles.deleteOptionBtn} onClick={() => deleteNewFieldsOptionHandler(i)} /></li>
                                     })
                                   }
                                 </ul>
