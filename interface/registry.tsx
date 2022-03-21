@@ -10,7 +10,10 @@ export interface ReplaceData {
 }
 
 export interface DynamicFields {
-    [key: string]: string
+    [key: string]: {
+        type: string,
+        options: []
+    }
 }
 
 export interface columnsHideShowFileds {

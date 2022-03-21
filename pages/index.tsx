@@ -14,6 +14,7 @@ import { Dialog } from 'primereact/dialog';
 import { FiUpload } from 'react-icons/fi';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
+import { Button } from 'primereact/button';
 
 // 3rd Party Imports
 import * as yup from 'yup';
@@ -70,9 +71,10 @@ const Dashboard: NextPage = () => {
   const [checkFilter, setCheckFilter] = useState(false);
   const [searchInput, setSearchInput] = useState('');
   const [removeSearch, setRemoveSearch] = useState('');
+  const [newFieldsOption, setNewFieldsOption] = useState([])
 
   // Types Values
-  const [checkBoxOptions, setCheckBoxOptions] = useState([]);
+  const [addOptionInputValue, setAddOptionInputValue] = useState('')
 
   // Paginations and Filter States
   const [totalRecords, setTotalRecords] = useState(1);
@@ -81,7 +83,7 @@ const Dashboard: NextPage = () => {
   const [filterFields, setFilterFields] = useState('');
   const [searchField, setSearchField] = useState('');
   const [perPage, setPerPage] = useState(10);
-  const [dataType, setDataType] = useState(["text", "email", "date", "number", "textarea", "checkbox"])
+  const [dataType, setDataType] = useState(["text", "email", "date", "number", "textarea", "radio", "select"])
   // const [dataType, setDataType] = useState(["text", "email", "date", "number", "textarea", "checkbox", "radio", "select"])
   const [contacts, setContacts] = useState<any[]>([]);
   const [showFieldsData, setShowFieldsData] = useState<any>(null);
@@ -105,7 +107,7 @@ const Dashboard: NextPage = () => {
       if (filter && Object.keys(filter).length) {
         let checkString = filter;
         for (const key in checkString) {
-          if (types && types[key] == "number") {
+          if (types && types[key].type == "number") {
             checkString[key] = checkString[key] * 1;
           }
         }
@@ -321,10 +323,10 @@ const Dashboard: NextPage = () => {
     }
   }
 
-  const contactFieldsTypeHandler = (key: string) => {
+  const contactFieldsTypeHandler = (key: string, props: any) => {
     if (types) {
 
-      if (types[key].toLowerCase() == "textarea") {
+      if (types[key].type.toLowerCase() == "textarea") {
         return <div>
           <Field name={key}>
             {({ field }: any) => (
@@ -335,11 +337,28 @@ const Dashboard: NextPage = () => {
             {(msg) => <p className={styles.error}>{msg}</p>}
           </ErrorMessage>
         </div>
-      } else if (types[key].toLowerCase() == "checkbox") {
+      } else if (types[key].type.toLowerCase() == "radio") {
+        return <div>
+          {
+            types[key].options.map((el, i) => {
+              return <Field name={key} key={el + i}>
+                {({ field }: any) => (
+                  <>
+                    {el}
+                    <Checkbox className='p-mr-2 p-ml-1' {...field} checked={field.value == el} readOnly={viewData} value={el} onChange={(e) => props.setFieldValue(key, e.target.value)} ></Checkbox></>
+                )}
+              </Field>
+            })
+          }
+          <ErrorMessage name={key}>
+            {(msg) => <p className={styles.error}>{msg}</p>}
+          </ErrorMessage>
+        </div>
+      } else if (types[key].type.toLowerCase() == "select") {
         return <div>
           <Field name={key}>
             {({ field }: any) => (
-              <Checkbox {...field} checked={field.value} readOnly={viewData}></Checkbox>
+              <Dropdown {...field} value={field.value} options={types[key].options} className='p-mr-2 p-ml-1' onChange={(e) => props.setFieldValue(key, e.target.value)} />
             )}
           </Field>
           <ErrorMessage name={key}>
@@ -348,7 +367,7 @@ const Dashboard: NextPage = () => {
         </div>
       }
       return <div>
-        <Field type={types[key].toLowerCase()} readOnly={viewData} name={key} />
+        <Field type={types[key].type.toLowerCase()} readOnly={viewData} name={key} />
         <ErrorMessage name={key}>
           {(msg) => <p className={styles.error}>{msg}</p>}
         </ErrorMessage>
@@ -479,19 +498,31 @@ const Dashboard: NextPage = () => {
         return router.push('/auth');
       }
 
+      let newData = { ...getData };
+
+      if (newData.dtype == "select" || newData.dtype == "radio" || newData.dtype == "checkbox") {
+        newData.dtype = { type: newData.dtype, options: newFieldsOption }
+        if (!newFieldsOption.length) {
+          return await toast({ type: "error", message: "Please enter options" })
+        }
+      } else {
+        newData.dtype = { type: newData.dtype, options: [] }
+      }
       setAddFiledSpinner(true)
       let { data } = await service({
         url: `https://octoplusapi.herokuapp.com/add_feild`,
         method: 'POST',
-        data: getData,
+        data: JSON.stringify(newData),
         headers: { 'Content-Type': 'application/json', 'Authorization': JSON.parse(authToken) }
       });
       setAddFiledSpinner(false)
       setAddNewFieldModal(false)
+      setNewFieldsOption([])
       return await fetchAllContact(currentPage, perPage, filterFields, searchField, sortingField);
     } catch (err) {
       setAddFiledSpinner(false)
       setAddNewFieldModal(false)
+      setNewFieldsOption([])
       return await toast({ type: "error", message: err });
     }
   }
@@ -543,6 +574,8 @@ const Dashboard: NextPage = () => {
       var checkId = Object.assign({}, copyObj);
       setEditContactRowId(id);
       delete checkId.id;
+      console.log(copyObj);
+
       setInitialValues(checkId);
       setCreateNewContactModal(true);
 
@@ -862,6 +895,19 @@ const Dashboard: NextPage = () => {
     }
   }
 
+  const addOptionsInNewFields = () => {
+    let optionsCopy: any = [...newFieldsOption];
+    optionsCopy.push(addOptionInputValue);
+    setNewFieldsOption(optionsCopy)
+    setAddOptionInputValue('')
+  }
+
+  const deleteNewFieldsOptionHandler = (i: number) => {
+    let optionsCopy: any = [...newFieldsOption];
+    optionsCopy.splice(i, 1);
+    setNewFieldsOption(optionsCopy)
+  }
+
   return (
     <>
       <ToastContainer
@@ -955,18 +1001,19 @@ const Dashboard: NextPage = () => {
               <Dialog showHeader={false} onMaskClick={createContactDialogCloseHandler} className={styles.createNewContactCustomStyles} maskClassName={styles.dialogMask} position={'right'} visible={createNewContactModal} style={{ width: '500px', }} onHide={() => ''}>
                 <div className={styles.createContactModal}>
                   <h5>{editData ? "Edit Contact" : (viewData ? "View Data" : (filterData ? "Filter Data" : "Create New Contact"))}</h5>
+                  {console.log(initialValues)}
                   {
                     initialValues && types ?
                       <Formik
                         enableReinitialize={!viewData}
                         initialValues={initialValues}
-                        validate={(values) => {
+                        validate={(values: any) => {
                           let error: any = {};
                           if (filterData || editData) {
                             return
                           } else {
                             if (!viewData) {
-                              Object.keys(values).map(el => {
+                              Object.keys(values).map((el: any) => {
                                 if (el == "First Name" || el == "Last Name" || el == "Email" || el == "Contact") {
                                   if (!values[el]) {
                                     if (el == "First Name") {
@@ -1012,6 +1059,7 @@ const Dashboard: NextPage = () => {
                       >
                         {props => (
                           <form onSubmit={props.handleSubmit}>
+                            {console.log(props)}
                             <FieldArray
                               name="contact"
                               render={arrayHelpers => (
@@ -1029,7 +1077,7 @@ const Dashboard: NextPage = () => {
                                       return <div className={styles.inputBox} key={"contactField" + index}>
                                         <label>{key}</label>
                                         {
-                                          contactFieldsTypeHandler(key)
+                                          contactFieldsTypeHandler(key, props)
                                         }
                                       </div>
                                     })
@@ -1070,7 +1118,7 @@ const Dashboard: NextPage = () => {
                       values: AddNewFiled,
                       { setSubmitting }: FormikHelpers<AddNewFiled>
                     ) => {
-                      addNewFiledHandler(JSON.stringify(values, null, 2));
+                      addNewFiledHandler(values);
                       setSubmitting(false);
                     }}
                   >
@@ -1094,11 +1142,26 @@ const Dashboard: NextPage = () => {
                             <label htmlFor="dataType">Select the data type</label>
                             <Dropdown id="inviteRole" className={styles.selectBox} name="dtype" value={props.values.dtype} options={dataType} onChange={(e: any) => props.setFieldValue('dtype', e.target.value)} />
                           </div>
-
-                          {/* <div className={styles.inputBox}>
-                            <label htmlFor="dataType">Select the data type</label>
-                            <Dropdown id="inviteRole" className={styles.selectBox} name="dtype" value={props.values.dtype} options={dataType} onChange={(e: any) => props.setFieldValue('dtype', e.target.value)} />
-                          </div> */}
+                          {
+                            (props.values.dtype == "select" || props.values.dtype == "radio" || props.values.dtype == "checkbox") ?
+                              <div className={styles.inputBox}>
+                                <label htmlFor="dataType">Options</label>
+                                <div className="col-12">
+                                  <div className="p-inputgroup">
+                                    <InputText placeholder="Add Option" value={addOptionInputValue} onChange={(e) => setAddOptionInputValue(e.target.value)} />
+                                    <Button type="button" label="ADD" onClick={addOptionsInNewFields} />
+                                  </div>
+                                </div>
+                                <ul className={styles.newFieldsOptionsBox}>
+                                  {
+                                    newFieldsOption.map((el, i) => {
+                                      return <li className={styles.options}>{el} <Button type="button" icon="pi pi-times" className={"p-button-rounded p-button-danger " + styles.deleteOptionBtn} onClick={() => deleteNewFieldsOptionHandler(i)} /></li>
+                                    })
+                                  }
+                                </ul>
+                              </div>
+                              : null
+                          }
 
                           <div className="p-d-flex p-ai-center p-mt-4">
                             <div className="p-m-auto">

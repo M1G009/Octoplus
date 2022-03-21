@@ -165,13 +165,13 @@ $lightBlue: #2236f1;
         font-size: 16px;
         cursor: pointer;
 
-        &:first-child{
+        &:first-child {
             padding-right: 7px;
         }
 
         &:nth-child(2) {
             padding: 2px 7px;
-            &:hover{
+            &:hover {
                 background-color: #0000000f;
             }
             svg {
@@ -366,6 +366,26 @@ $lightBlue: #2236f1;
                     color: #ff0000;
                 }
             }
+
+            .newFieldsOptionsBox {
+                padding: 0px;
+                width: 40%;
+                li {
+                    list-style: none;
+                    display: flex;
+                    justify-content: space-between;
+                    margin-bottom: 5px;
+
+                    button {
+                        padding: 0px;
+                        height: 25px;
+                        width: 25px;
+                        span {
+                            font-size: 10px;
+                        }
+                    }
+                }
+            }
         }
     }
 }
@@ -555,7 +575,7 @@ $lightBlue: #2236f1;
     }
 }
 
-.exclaWarning{
+.exclaWarning {
     text-align: center;
     margin-top: 0px;
     display: flex;
@@ -565,7 +585,7 @@ $lightBlue: #2236f1;
     font-size: 18px;
     color: #000000;
 
-    svg{
+    svg {
         color: #fbc02d;
         font-size: 22px;
         margin-right: 10px;

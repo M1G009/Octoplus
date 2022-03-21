@@ -57,7 +57,7 @@ const ForgotPassword: NextPage = () => {
       setAuthSpinner(false)
       await toast({ type: "success", message: "Please check your mail" });
 
-    } catch (err: any) {
+    } catch (err: any) {      
       setErrorMessage(err.message)
       setAuthSpinner(false);
       setTimeout(() => { setErrorMessage(false)}, 3000)

@@ -22,6 +22,15 @@ const DashboardLayout = (props: any) => {
     const [profileModal, setProfileModal] = useState(false);
     const [emailVariValue, setEmailVariValue] = useState(15);
     const [addressVariValue, setAddressVariValue] = useState(50);
+    const [restrictions, setRestrictions] = useState('')
+
+    useEffect(() => {
+        let userData = window.localStorage.getItem('loginUserdata');
+        if (userData) {
+            let parseData = JSON.parse(userData);
+            setRestrictions(parseData.restrictions)
+        }
+    }, [])
 
     useEffect(() => {
         function handleClickOutside(event: any) {
@@ -55,7 +64,7 @@ const DashboardLayout = (props: any) => {
             <Head>
                 <title>Octoplus</title>
             </Head>
-            <Header profile={setProfileModal} userRef={userRef} />
+            <Header profile={setProfileModal} userRef={userRef} restrictions={restrictions} />
             <div className="p-d-flex">
                 {
                     props.sidebar ? <Sidebar /> : null
