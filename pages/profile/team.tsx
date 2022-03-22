@@ -40,7 +40,7 @@ const Team: NextPage = (props: any) => {
   const [teamMemberSpinner, setTeamMemberSpinner] = useState(false);
   const [createRoleName, setCreateRoleName] = useState('');
   const [selectRoleName, setSelectRoleName] = useState({ label: '', id: '' });
-  const [selectScopeName, setSelectScopeName] = useState(["Reports access", "Merge access", "CSV upload access", "Registry access"]);
+  const [selectScopeName, setSelectScopeName] = useState(["User", "Registry", "CSV Compare Tool", "Reports"]);
   const [saveRoleBtn, setSaveRoleBtn] = useState(false);
   const [createRoleScopeData, setCreateRoleScopeData] = useState<ICreateRoleScopeData>(
     {
@@ -134,7 +134,11 @@ const Team: NextPage = (props: any) => {
   }, [])
 
   const validationSchema = yup.object().shape({
-    name: yup.string().required('Please enter name'),
+    name: yup
+      .string()
+      .matches(/^[A-Za-z ]*$/, 'Please enter valid user name')
+      .max(40)
+      .required('Please enter user name'),
     email: yup.string().required('Please enter email').email("Please enter valid email")
   });
 

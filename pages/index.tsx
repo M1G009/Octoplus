@@ -83,7 +83,7 @@ const Dashboard: NextPage = () => {
   const [filterFields, setFilterFields] = useState('');
   const [searchField, setSearchField] = useState('');
   const [perPage, setPerPage] = useState(10);
-  const [dataType, setDataType] = useState(["text", "email", "date", "number", "textarea", "radio", "select"])
+  const [dataType, setDataType] = useState(["text", "email", "date", "number", "textarea", "radio", "select", "checkbox"])
   // const [dataType, setDataType] = useState(["text", "email", "date", "number", "textarea", "checkbox", "radio", "select"])
   const [contacts, setContacts] = useState<any[]>([]);
   const [showFieldsData, setShowFieldsData] = useState<any>(null);
@@ -361,6 +361,23 @@ const Dashboard: NextPage = () => {
               <Dropdown {...field} value={field.value} options={types[key].options} className='p-mr-2 p-ml-1' onChange={(e) => props.setFieldValue(key, e.target.value)} />
             )}
           </Field>
+          <ErrorMessage name={key}>
+            {(msg) => <p className={styles.error}>{msg}</p>}
+          </ErrorMessage>
+        </div>
+      } else if (types[key].type.toLowerCase() == "checkbox") {
+        return <div>
+          {
+            types[key].options.map((el, i) => {
+              return <Field name={key} key={el + i}>
+                {({ field }: any) => (
+                  <>
+                    {el}
+                    <Checkbox className='p-mr-2 p-ml-1' {...field} checked={field.value.includes(el)} readOnly={viewData} value={el} onChange={(e) => props.setFieldValue(key, e.target.value)} ></Checkbox></>
+                )}
+              </Field>
+            })
+          }
           <ErrorMessage name={key}>
             {(msg) => <p className={styles.error}>{msg}</p>}
           </ErrorMessage>
