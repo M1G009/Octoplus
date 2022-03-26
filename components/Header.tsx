@@ -52,7 +52,10 @@ const Header = (props: any) => {
                 </Button>
             </div>
             <div className={styles.left_navlist}>
-                {
+                <Link href="/">My Registry</Link>
+                <Link href="/tools/csv-compare">Tools</Link>
+                <Link href="/report">Reports</Link>
+                {/* {
                     props.restrictions && props.restrictions.registry ? 
                     <Link href="/">My Registry</Link> : null
                 }
@@ -63,8 +66,8 @@ const Header = (props: any) => {
                 {
                     props.restrictions && props.restrictions.report ? 
                     <Link href="/report">Reports</Link> : null
-                }
-                
+                } */}
+
             </div>
             <div className={styles.right_list}>
                 {/* <div className={styles.searchBox}>
