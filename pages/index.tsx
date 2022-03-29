@@ -74,7 +74,7 @@ const Dashboard: NextPage = () => {
   const [newFieldsOption, setNewFieldsOption] = useState([])
 
   // Types Values
-  const [addOptionInputValue, setAddOptionInputValue] = useState('')
+  const [addOptionInputValue, setAddOptionInputValue] = useState<string>('')
 
   // Paginations and Filter States
   const [totalRecords, setTotalRecords] = useState(1);
@@ -323,6 +323,18 @@ const Dashboard: NextPage = () => {
     }
   }
 
+  const checkBoxHandler = (setHandler: any, key: any, event: any, prevVal: any) => {
+    let previousArray = [...prevVal]
+    if(event.target.checked){
+      previousArray.push(event.target.value);
+    } else {
+      let index = previousArray.indexOf(event.target.value);
+      previousArray.splice(index, 1)
+    }
+    setHandler(key, previousArray)
+    
+  }
+
   const contactFieldsTypeHandler = (key: string, props: any) => {
     if (types) {
 
@@ -345,7 +357,8 @@ const Dashboard: NextPage = () => {
                 {({ field }: any) => (
                   <>
                     {el}
-                    <Checkbox className='p-mr-2 p-ml-1' {...field} checked={field.value == el} readOnly={viewData} value={el} onChange={(e) => props.setFieldValue(key, e.target.value)} ></Checkbox></>
+                    <RadioButton className='p-mr-2 p-ml-1' {...field} checked={field.value == el} readOnly={viewData} value={el} onChange={(e) => props.setFieldValue(key, e.target.value)} ></RadioButton>
+                  </>
                 )}
               </Field>
             })
@@ -373,7 +386,7 @@ const Dashboard: NextPage = () => {
                 {({ field }: any) => (
                   <>
                     {el}
-                    <Checkbox className='p-mr-2 p-ml-1' {...field} checked={field.value.includes(el)} readOnly={viewData} value={el} onChange={(e) => props.setFieldValue(key, e.target.value)} ></Checkbox></>
+                    <Checkbox className='p-mr-2 p-ml-1' {...field} checked={field.value.includes(el)} readOnly={viewData} value={el} onChange={(e) => checkBoxHandler(props.setFieldValue, key, e, field.value)} ></Checkbox></>
                 )}
               </Field>
             })
@@ -591,7 +604,6 @@ const Dashboard: NextPage = () => {
       var checkId = Object.assign({}, copyObj);
       setEditContactRowId(id);
       delete checkId.id;
-      console.log(copyObj);
 
       setInitialValues(checkId);
       setCreateNewContactModal(true);
@@ -913,10 +925,14 @@ const Dashboard: NextPage = () => {
   }
 
   const addOptionsInNewFields = () => {
-    let optionsCopy: any = [...newFieldsOption];
-    optionsCopy.push(addOptionInputValue);
-    setNewFieldsOption(optionsCopy)
-    setAddOptionInputValue('')
+    if (addOptionInputValue) {
+      let optionsCopy: any = [...newFieldsOption];
+      if(!optionsCopy.includes(addOptionInputValue)){
+        optionsCopy.push(addOptionInputValue);
+        setNewFieldsOption(optionsCopy)
+        setAddOptionInputValue('')
+      }
+    }
   }
 
   const deleteNewFieldsOptionHandler = (i: number) => {
@@ -1018,7 +1034,6 @@ const Dashboard: NextPage = () => {
               <Dialog showHeader={false} onMaskClick={createContactDialogCloseHandler} className={styles.createNewContactCustomStyles} maskClassName={styles.dialogMask} position={'right'} visible={createNewContactModal} style={{ width: '500px', }} onHide={() => ''}>
                 <div className={styles.createContactModal}>
                   <h5>{editData ? "Edit Contact" : (viewData ? "View Data" : (filterData ? "Filter Data" : "Create New Contact"))}</h5>
-                  {console.log(initialValues)}
                   {
                     initialValues && types ?
                       <Formik
@@ -1076,7 +1091,6 @@ const Dashboard: NextPage = () => {
                       >
                         {props => (
                           <form onSubmit={props.handleSubmit}>
-                            {console.log(props)}
                             <FieldArray
                               name="contact"
                               render={arrayHelpers => (
@@ -1157,7 +1171,7 @@ const Dashboard: NextPage = () => {
 
                           <div className={styles.inputBox}>
                             <label htmlFor="dataType">Select the data type</label>
-                            <Dropdown id="inviteRole" className={styles.selectBox} name="dtype" value={props.values.dtype} options={dataType} onChange={(e: any) => props.setFieldValue('dtype', e.target.value)} />
+                            <Dropdown id="inviteRole" className={styles.selectBox} name="dtype" value={props.values.dtype} options={dataType} onChange={(e: any) => { props.setFieldValue('dtype', e.target.value); setNewFieldsOption([]); setAddOptionInputValue(''); }} />
                           </div>
                           {
                             (props.values.dtype == "select" || props.values.dtype == "radio" || props.values.dtype == "checkbox") ?
@@ -1172,7 +1186,7 @@ const Dashboard: NextPage = () => {
                                 <ul className={styles.newFieldsOptionsBox}>
                                   {
                                     newFieldsOption.map((el, i) => {
-                                      return <li key={"newfieldsArray"+i} className={styles.options}>{el} <Button type="button" icon="pi pi-times" className={"p-button-rounded p-button-danger " + styles.deleteOptionBtn} onClick={() => deleteNewFieldsOptionHandler(i)} /></li>
+                                      return <li key={"newfieldsArray" + i} className={styles.options}>{el} <Button type="button" icon="pi pi-times" className={"p-button-rounded p-button-danger " + styles.deleteOptionBtn} onClick={() => deleteNewFieldsOptionHandler(i)} /></li>
                                     })
                                   }
                                 </ul>
